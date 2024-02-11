@@ -1,0 +1,56 @@
+[
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\1Dproblem.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\1Dproblem.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/1Dproblem.cpp",
+  "output": "CMakeFiles/solver.dir/src/1Dproblem.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\2Dproblem.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\2Dproblem.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/2Dproblem.cpp",
+  "output": "CMakeFiles/solver.dir/src/2Dproblem.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\basic_function.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\basic_function.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/basic_function.cpp",
+  "output": "CMakeFiles/solver.dir/src/basic_function.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\fluid_mesh.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\fluid_mesh.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/fluid_mesh.cpp",
+  "output": "CMakeFiles/solver.dir/src/fluid_mesh.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\flux_function.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\flux_function.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/flux_function.cpp",
+  "output": "CMakeFiles/solver.dir/src/flux_function.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\output.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\output.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/output.cpp",
+  "output": "CMakeFiles/solver.dir/src/output.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\reconstruction.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\reconstruction.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/reconstruction.cpp",
+  "output": "CMakeFiles/solver.dir/src/reconstruction.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\time_advance.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\time_advance.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/time_advance.cpp",
+  "output": "CMakeFiles/solver.dir/src/time_advance.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\main.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\main.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/main.cpp",
+  "output": "CMakeFiles/solver.dir/main.obj"
+}
+]
