@@ -104,7 +104,7 @@ void SodTubeProblem()
 		{
 			//after determine the cfl condition, let's implement boundary condtion
 			leftboundary(fluids, block, bcvalue[0]);
-			//rightboundary(fluids, block, bcvalue[1]);
+			rightboundary(fluids, block, bcvalue[1]);
 			// here the boudary type, you shall go above the search the key words"BoundaryCondition leftboundary;"
 			// to see the pointer to the corresponding function
 
@@ -117,7 +117,7 @@ void SodTubeProblem()
 			//then is solver part
 			Calculate_flux(fluxes, interfaces, block, i);
 			//then is update flux part
-			Update_with_SSP_RK3(fluids, fluxes, block, i);
+			Update(fluids, fluxes, block, i);
 		}
 		// update the compression factor
 		//for (int j = 3; j < 402; j++) { cout << fluids[j].convar[0] << endl; }

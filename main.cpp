@@ -4,6 +4,6 @@
 int main()
 {
     omp_set_num_threads(6);
-    //SodTubeProblem();
+    SodTubeProblem();
     return 0;
 }

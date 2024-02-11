@@ -16,6 +16,40 @@ extern double R_gas; //the gas constant for real ideal air
 enum TAU_TYPE { Euler, NS};
 extern TAU_TYPE tau_type;
 
+//basic gks function
+// to store the moment
+class MMDF1d
+{
+private:
+	double u;
+	double lambda;
+
+public:
+	double uwhole[10];
+	double uplus[10];
+	double uminus[10];
+	double upxi[10][4];
+	double unxi[10][4];
+	double uxi[10][4];
+	double xi2;
+	double xi4;
+	double xi6;
+	MMDF1d();
+	MMDF1d(double u_in, double lambda_in);
+	void calcualte_MMDF1d();
+};
+
+// to calculate the microsolpe moment
+void G(int no_u, int no_xi, double* psi, double a[3], MMDF1d m);
+void GL(int no_u, int no_xi, double* psi, double a[3], MMDF1d m);
+void GR(int no_u, int no_xi, double* psi, double a[3], MMDF1d m);
+
+void Microslope(double* a, double der[3], double prim[3]);
+
+double Alpha(double lambda, double u);
+
+double Beta(double lambda, double u);
+
 void Convar_to_primvar_1D(double* primvar, double convar[3]);
 
 void Convar_to_ULambda_1d(double* primvar, double convar[3]);

@@ -109,3 +109,38 @@ double Dtx(double dtx, double dx, double CFL, double convar[3])
 	}
 	return dtx;
 }
+
+void Update(Fluid1d* fluids, Flux1d** fluxes, Block1d block, int stage)
+{
+	if (stage > block.stages)
+	{
+		cout << "wrong middle stage,pls check the time marching setting" << endl;
+		exit(0);
+	}
+
+	double dt = block.dt;
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost + 1; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			double Flux = 0.0;
+			for (int k = 0; k < stage + 1; ++k)
+			{
+				Flux = Flux
+					+ block.timecoefficient[stage][k][0] * fluxes[i][k].f[j]
+					+ block.timecoefficient[stage][k][1] * fluxes[i][k].derf[j];
+			}
+			fluxes[i][stage].F[j] = Flux;
+		}
+	}
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			fluids[i].convar[j] = fluids[i].convar_old[j] + 1.0 / fluids[i].dx * (fluxes[i][stage].F[j] - fluxes[i + 1][stage].F[j]);
+		}
+	}
+
+}

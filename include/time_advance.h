@@ -16,3 +16,5 @@ void Initial_stages(Block1d &block);
 double Get_CFL(Block1d& block, Fluid1d* fluids, double tstop);
 
 double Dtx(double dtx, double dx, double CFL, double convar[3]);
+
+void Update(Fluid1d* fluids, Flux1d** fluxes, Block1d block, int stage);

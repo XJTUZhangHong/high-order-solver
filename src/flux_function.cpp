@@ -1,7 +1,17 @@
 #include "flux_function.h"
 
+// one-dimensional problem
 GKS1d_type gks1dsolver = nothing; //initialization
 Flux_function flux_function = LF; //initialization
+
+void Calculate_flux(Flux1d** fluxes, Interface1d* interfaces, Block1d& block, int stage)
+{
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost + 1; ++i)
+	{
+		flux_function(fluxes[i][stage], interfaces[i], block.dt);
+	}
+}
 
 void LF(Flux1d& flux, Interface1d& interface, double dt)
 {

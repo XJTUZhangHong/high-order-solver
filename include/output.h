@@ -23,3 +23,5 @@ struct Runtime {
 		memset(this, 0, sizeof(Runtime));
 	}
 };
+
+void output1d(Fluid1d* fluids, Block1d block);
