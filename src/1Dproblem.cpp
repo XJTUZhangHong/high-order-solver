@@ -1,15 +1,15 @@
 #include "1Dproblem.h"
 
-void riemann_problem_1d()
+void SodTubeProblem()
 {
 	Runtime runtime;//statement for recording the running time
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 400;
-	block.ghost = 4;
+	block.nodex = 200;
+	block.ghost = 3;
 
-	double tstop = 1.8;
+	double tstop = 0.2;
 	block.CFL = 0.5;
 	Fluid1d* bcvalue = new Fluid1d[2];
 	K = 4;
@@ -21,7 +21,7 @@ void riemann_problem_1d()
 	tau_type = Euler;
 	//Smooth = false;
 	c1_euler = 0.01;
-	c2_euler = 5;
+	c2_euler = 1.0;
 
 	//prepare the boundary condtion function
 	BoundaryCondition leftboundary(0);
@@ -30,7 +30,7 @@ void riemann_problem_1d()
 	rightboundary = free_boundary_right;
 	//prepare the reconstruction function
 
-	cellreconstruction = WENO5;
+	cellreconstruction = Vanleer;
 	wenotype = wenoz;
 	reconstruction_variable = characteristic;
 	g0reconstruction = Center_collision;
@@ -38,7 +38,7 @@ void riemann_problem_1d()
 	//prepare the flux function
 	flux_function = LF;
 	//prepare time marching stratedgy
-	timecoe_list = RK3;
+	timecoe_list = RK2;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -60,18 +60,14 @@ void riemann_problem_1d()
 	//just using the index for address searching
 
 	block.left = 0.0;
-	block.right = 10.0;
+	block.right = 1.0;
 	block.dx = (block.right - block.left) / block.nodex;
 	//set the uniform geometry information
 	SetUniformMesh(block, fluids, interfaces, fluxes);
-
 	//ended mesh part
-	//ICfor1dRM(fluids, zone1, zone2, block);
-	//ICforSod(fluids, block);
-	ICforShuOsher(fluids, block);
-	//ICforBlastwave(fluids, block);
-	//initializing part end
 
+	ICforSodTube(fluids, block);
+	//initializing part end
 
 	//then we are about to do the loop
 	block.t = 0;//the current simulation time
@@ -104,8 +100,6 @@ void riemann_problem_1d()
 		//determine the cfl condtion
 		block.dt = Get_CFL(block, fluids, tstop);
 
-		if (block.step > 0) { cellreconstruction = DF_5th_resolution; }
-
 		for (int i = 0; i < block.stages; i++)
 		{
 			//after determine the cfl condition, let's implement boundary condtion
@@ -124,8 +118,6 @@ void riemann_problem_1d()
 			Calculate_flux(fluxes, interfaces, block, i);
 			//then is update flux part
 			Update_with_SSP_RK3(fluids, fluxes, block, i);
-
-			Update_alpha(interfaces, fluids, block);
 		}
 		// update the compression factor
 		//for (int j = 3; j < 402; j++) { cout << fluids[j].convar[0] << endl; }
@@ -144,5 +136,29 @@ void riemann_problem_1d()
 			//output1d_checking(fluids, interfaces, fluxes, block);
 		}
 	}
+}
 
+void ICforSodTube(Fluid1d* fluids, Block1d block)
+{
+	for (int i = block.ghost; i <= block.nodex + 2 * block.ghost - 1; i++)
+	{
+		if ((double)(i - block.ghost + 1) * block.dx <= 0.5)
+		{
+			fluids[i].primvar[0] = 1.0;
+			fluids[i].primvar[1] = 0.0;
+			fluids[i].primvar[2] = 1.0;
+		}
+		else
+		{
+			fluids[i].primvar[0] = 0.125;
+			fluids[i].primvar[1] = 0.0;
+			fluids[i].primvar[2] = 0.1;
+		}
+		//cout << fluids[i].primvar[0] << endl;
+	}
+
+	for (int i = 0; i < block.nx; i++)
+	{
+		Primvar_to_convar_1D(fluids[i].convar, fluids[i].primvar);
+	}
 }

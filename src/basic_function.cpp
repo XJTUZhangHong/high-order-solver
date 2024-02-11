@@ -20,6 +20,28 @@ void Convar_to_primvar_1D(double* primvar, double convar[3])
 
 }
 
+void Convar_to_ULambda_1d(double* primvar, double convar[3])
+{
+	primvar[0] = convar[0];
+	primvar[1] = U(convar[0], convar[1]);
+	primvar[2] = Lambda(convar[0], primvar[1], convar[2]);
+}
+
+void Primvar_to_convar_1D(double* convar, double primvar[3])
+{
+	convar[0] = primvar[0];
+	convar[1] = DensityU(primvar[0], primvar[1]);
+	convar[2] = DensityE(primvar[0], primvar[1], primvar[2]);
+}
+double DensityU(double density, double u)
+{
+	return density * u;
+}
+double DensityE(double density, double u, double pressure)
+{
+	return density * (pressure / density / (Gamma - 1) + 0.5 * (u * u));
+}
+
 double Pressure(double density, double densityu, double densityE)
 {
 	return (Gamma - 1) * (densityE - 0.5 * densityu * densityu / density);
@@ -28,4 +50,66 @@ double Pressure(double density, double densityu, double densityE)
 double U(double density, double q_densityu)
 {
 	return q_densityu / density;
+}
+
+double Lambda(double density, double u, double densityE)
+{
+	return (K + 1.0) * 0.25 * (density / (densityE - 0.5 * density * (u * u)));
+}
+
+Flux1d** Setflux_array(Block1d block)
+{
+	Flux1d** fluxes = new Flux1d * [block.nx + 1];  // dynamic variable (since block.nx is not determined)
+
+	for (int i = 0; i <= block.nx; i++)
+	{
+		// for m th step time marching schemes, m subflux needed
+		fluxes[i] = new Flux1d[block.stages];
+		for (int j = 0; j < block.stages; j++)
+		{
+			for (int k = 0; k < 3; k++)
+			{
+				fluxes[i][j].f[k] = 0.0;
+				fluxes[i][j].derf[k] = 0.0;
+			}
+		}
+	}
+	if (fluxes == 0)
+	{
+		cout << "memory allocation failed for muli-stage flux";
+		return NULL;
+	}
+	cout << "the memory for muli-stage flux has been allocated..." << endl;
+	return fluxes;
+}
+
+void SetUniformMesh(Block1d block, Fluid1d* fluids, Interface1d* interfaces, Flux1d** fluxes)
+{
+	//cell avg information
+	for (int i = 0; i < block.nx; i++)
+	{
+		fluids[i].dx = block.dx; //cell size
+		fluids[i].cx = block.left + (i + 0.5 - block.ghost) * block.dx; //cell center location
+	}
+	// interface information
+	for (int i = 0; i <= block.nx; i++)
+	{
+		interfaces[i].x = block.left + (i - block.ghost) * block.dx;
+		interfaces[i].left.x = interfaces[i].x;
+		interfaces[i].right.x = interfaces[i].x;
+		interfaces[i].center.x = interfaces[i].x;
+		interfaces[i].flux = fluxes[i];
+	}
+}
+
+void CopyFluid_new_to_old(Fluid1d* fluids, Block1d block)
+{
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.ghost + block.nodex; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			fluids[i].convar_old[j] = fluids[i].convar[j];
+		}
+	}
 }
