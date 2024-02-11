@@ -19,6 +19,12 @@
 },
 {
   "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\boundary_condition.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\boundary_condition.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/boundary_condition.cpp",
+  "output": "CMakeFiles/solver.dir/src/boundary_condition.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
   "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp -g -o CMakeFiles\\solver.dir\\src\\fluid_mesh.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\fluid_mesh.cpp\"",
   "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/fluid_mesh.cpp",
   "output": "CMakeFiles/solver.dir/src/fluid_mesh.obj"

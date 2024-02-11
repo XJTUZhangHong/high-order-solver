@@ -36,7 +36,7 @@ void riemann_problem_1d()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = GKS;
+	flux_function = LF;
 	//prepare time marching stratedgy
 	timecoe_list = RK3;
 	Initial_stages(block);

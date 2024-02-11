@@ -138,6 +138,9 @@ CMakeFiles/solver.dir/src/1Dproblem.obj: \
  C:/MinGW/include/c++/10.3.0/bits/ostream.tcc \
  C:/MinGW/include/c++/10.3.0/istream \
  C:/MinGW/include/c++/10.3.0/bits/istream.tcc \
+ C:/MinGW/include/c++/10.3.0/cmath \
+ C:/MinGW/x86_64-w64-mingw32/include/math.h \
+ C:/MinGW/x86_64-w64-mingw32/include/assert.h \
  D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/output.h \
  C:/MinGW/x86_64-w64-mingw32/include/string.h \
  C:/MinGW/x86_64-w64-mingw32/include/sec_api/string_s.h \
@@ -165,4 +168,5 @@ CMakeFiles/solver.dir/src/1Dproblem.obj: \
  C:/MinGW/x86_64-w64-mingw32/include/direct.h \
  C:/MinGW/x86_64-w64-mingw32/include/io.h \
  D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/reconstruction.h \
- D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/time_advance.h
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/time_advance.h \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/boundary_condition.h

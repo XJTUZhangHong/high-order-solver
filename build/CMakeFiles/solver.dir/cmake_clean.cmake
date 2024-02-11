@@ -7,6 +7,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/solver.dir/src/2Dproblem.obj.d"
   "CMakeFiles/solver.dir/src/basic_function.obj"
   "CMakeFiles/solver.dir/src/basic_function.obj.d"
+  "CMakeFiles/solver.dir/src/boundary_condition.obj"
+  "CMakeFiles/solver.dir/src/boundary_condition.obj.d"
   "CMakeFiles/solver.dir/src/fluid_mesh.obj"
   "CMakeFiles/solver.dir/src/fluid_mesh.obj.d"
   "CMakeFiles/solver.dir/src/flux_function.obj"

@@ -113,11 +113,26 @@ CMakeFiles/solver.dir/src/basic_function.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/solver.dir/src/basic_function.s"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\basic_function.cpp" -o CMakeFiles\solver.dir\src\basic_function.s
 
+CMakeFiles/solver.dir/src/boundary_condition.obj: CMakeFiles/solver.dir/flags.make
+CMakeFiles/solver.dir/src/boundary_condition.obj: CMakeFiles/solver.dir/includes_CXX.rsp
+CMakeFiles/solver.dir/src/boundary_condition.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/src/boundary_condition.cpp
+CMakeFiles/solver.dir/src/boundary_condition.obj: CMakeFiles/solver.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/solver.dir/src/boundary_condition.obj"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/src/boundary_condition.obj -MF CMakeFiles\solver.dir\src\boundary_condition.obj.d -o CMakeFiles\solver.dir\src\boundary_condition.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\boundary_condition.cpp"
+
+CMakeFiles/solver.dir/src/boundary_condition.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/solver.dir/src/boundary_condition.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\boundary_condition.cpp" > CMakeFiles\solver.dir\src\boundary_condition.i
+
+CMakeFiles/solver.dir/src/boundary_condition.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/solver.dir/src/boundary_condition.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\boundary_condition.cpp" -o CMakeFiles\solver.dir\src\boundary_condition.s
+
 CMakeFiles/solver.dir/src/fluid_mesh.obj: CMakeFiles/solver.dir/flags.make
 CMakeFiles/solver.dir/src/fluid_mesh.obj: CMakeFiles/solver.dir/includes_CXX.rsp
 CMakeFiles/solver.dir/src/fluid_mesh.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/src/fluid_mesh.cpp
 CMakeFiles/solver.dir/src/fluid_mesh.obj: CMakeFiles/solver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/solver.dir/src/fluid_mesh.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/solver.dir/src/fluid_mesh.obj"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/src/fluid_mesh.obj -MF CMakeFiles\solver.dir\src\fluid_mesh.obj.d -o CMakeFiles\solver.dir\src\fluid_mesh.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\fluid_mesh.cpp"
 
 CMakeFiles/solver.dir/src/fluid_mesh.i: cmake_force
@@ -132,7 +147,7 @@ CMakeFiles/solver.dir/src/flux_function.obj: CMakeFiles/solver.dir/flags.make
 CMakeFiles/solver.dir/src/flux_function.obj: CMakeFiles/solver.dir/includes_CXX.rsp
 CMakeFiles/solver.dir/src/flux_function.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/src/flux_function.cpp
 CMakeFiles/solver.dir/src/flux_function.obj: CMakeFiles/solver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/solver.dir/src/flux_function.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/solver.dir/src/flux_function.obj"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/src/flux_function.obj -MF CMakeFiles\solver.dir\src\flux_function.obj.d -o CMakeFiles\solver.dir\src\flux_function.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\flux_function.cpp"
 
 CMakeFiles/solver.dir/src/flux_function.i: cmake_force
@@ -147,7 +162,7 @@ CMakeFiles/solver.dir/src/output.obj: CMakeFiles/solver.dir/flags.make
 CMakeFiles/solver.dir/src/output.obj: CMakeFiles/solver.dir/includes_CXX.rsp
 CMakeFiles/solver.dir/src/output.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/src/output.cpp
 CMakeFiles/solver.dir/src/output.obj: CMakeFiles/solver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/solver.dir/src/output.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/solver.dir/src/output.obj"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/src/output.obj -MF CMakeFiles\solver.dir\src\output.obj.d -o CMakeFiles\solver.dir\src\output.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\output.cpp"
 
 CMakeFiles/solver.dir/src/output.i: cmake_force
@@ -162,7 +177,7 @@ CMakeFiles/solver.dir/src/reconstruction.obj: CMakeFiles/solver.dir/flags.make
 CMakeFiles/solver.dir/src/reconstruction.obj: CMakeFiles/solver.dir/includes_CXX.rsp
 CMakeFiles/solver.dir/src/reconstruction.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/src/reconstruction.cpp
 CMakeFiles/solver.dir/src/reconstruction.obj: CMakeFiles/solver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/solver.dir/src/reconstruction.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/solver.dir/src/reconstruction.obj"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/src/reconstruction.obj -MF CMakeFiles\solver.dir\src\reconstruction.obj.d -o CMakeFiles\solver.dir\src\reconstruction.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\reconstruction.cpp"
 
 CMakeFiles/solver.dir/src/reconstruction.i: cmake_force
@@ -177,7 +192,7 @@ CMakeFiles/solver.dir/src/time_advance.obj: CMakeFiles/solver.dir/flags.make
 CMakeFiles/solver.dir/src/time_advance.obj: CMakeFiles/solver.dir/includes_CXX.rsp
 CMakeFiles/solver.dir/src/time_advance.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/src/time_advance.cpp
 CMakeFiles/solver.dir/src/time_advance.obj: CMakeFiles/solver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/solver.dir/src/time_advance.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/solver.dir/src/time_advance.obj"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/src/time_advance.obj -MF CMakeFiles\solver.dir\src\time_advance.obj.d -o CMakeFiles\solver.dir\src\time_advance.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\src\time_advance.cpp"
 
 CMakeFiles/solver.dir/src/time_advance.i: cmake_force
@@ -192,7 +207,7 @@ CMakeFiles/solver.dir/main.obj: CMakeFiles/solver.dir/flags.make
 CMakeFiles/solver.dir/main.obj: CMakeFiles/solver.dir/includes_CXX.rsp
 CMakeFiles/solver.dir/main.obj: D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/main.cpp
 CMakeFiles/solver.dir/main.obj: CMakeFiles/solver.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/solver.dir/main.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/solver.dir/main.obj"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/solver.dir/main.obj -MF CMakeFiles\solver.dir\main.obj.d -o CMakeFiles\solver.dir\main.obj -c "D:\Research\Arbitrary high-order reconstruction based on DF\solver\main.cpp"
 
 CMakeFiles/solver.dir/main.i: cmake_force
@@ -208,6 +223,7 @@ solver_OBJECTS = \
 "CMakeFiles/solver.dir/src/1Dproblem.obj" \
 "CMakeFiles/solver.dir/src/2Dproblem.obj" \
 "CMakeFiles/solver.dir/src/basic_function.obj" \
+"CMakeFiles/solver.dir/src/boundary_condition.obj" \
 "CMakeFiles/solver.dir/src/fluid_mesh.obj" \
 "CMakeFiles/solver.dir/src/flux_function.obj" \
 "CMakeFiles/solver.dir/src/output.obj" \
@@ -221,6 +237,7 @@ solver_EXTERNAL_OBJECTS =
 solver.exe: CMakeFiles/solver.dir/src/1Dproblem.obj
 solver.exe: CMakeFiles/solver.dir/src/2Dproblem.obj
 solver.exe: CMakeFiles/solver.dir/src/basic_function.obj
+solver.exe: CMakeFiles/solver.dir/src/boundary_condition.obj
 solver.exe: CMakeFiles/solver.dir/src/fluid_mesh.obj
 solver.exe: CMakeFiles/solver.dir/src/flux_function.obj
 solver.exe: CMakeFiles/solver.dir/src/output.obj
@@ -231,7 +248,7 @@ solver.exe: CMakeFiles/solver.dir/build.make
 solver.exe: CMakeFiles/solver.dir/linkLibs.rsp
 solver.exe: CMakeFiles/solver.dir/objects1.rsp
 solver.exe: CMakeFiles/solver.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable solver.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="D:\Research\Arbitrary high-order reconstruction based on DF\solver\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable solver.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\solver.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -189,6 +189,21 @@ src/basic_function.s:
 .PHONY : src/basic_function.s
 
 # target to build an object file
+src/boundary_condition.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.obj
+.PHONY : src/boundary_condition.obj
+
+# target to preprocess a source file
+src/boundary_condition.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.i
+.PHONY : src/boundary_condition.i
+
+# target to generate assembly for a file
+src/boundary_condition.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.s
+.PHONY : src/boundary_condition.s
+
+# target to build an object file
 src/fluid_mesh.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.obj
 .PHONY : src/fluid_mesh.obj
@@ -284,6 +299,9 @@ help:
 	@echo ... src/basic_function.obj
 	@echo ... src/basic_function.i
 	@echo ... src/basic_function.s
+	@echo ... src/boundary_condition.obj
+	@echo ... src/boundary_condition.i
+	@echo ... src/boundary_condition.s
 	@echo ... src/fluid_mesh.obj
 	@echo ... src/fluid_mesh.i
 	@echo ... src/fluid_mesh.s
