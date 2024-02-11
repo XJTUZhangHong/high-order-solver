@@ -138,6 +138,78 @@ void Microslope(double* a, double der[3], double prim[3])
 	a[0] = der[0] / prim[0] - prim[1] * a[1] - 0.5 * a[2] * (prim[1] * prim[1] + 0.5 * (K + 1) / prim[2]);
 }
 
+double Get_Tau_NS(double density0, double lambda0)
+{
+	if (tau_type == Euler)
+	{
+		return 0.0;
+	}
+	else
+	{
+		// NS
+		if (Mu > 0.0)
+		{
+			//cout << "here" << endl;
+			return 2.0 * Mu * lambda0 / density0;
+		}
+		else if (Nu > 0.0)
+		{
+			return 2 * Nu * lambda0;
+		}
+		else
+		{
+			return 0.0;
+		}
+	}
+}
+
+double Get_Tau(double density_left, double density_right, double density0, double lambda_left, double lambda_right, double lambda0, double dt)
+{
+	if (tau_type == Euler)
+	{
+		if (c1_euler <= 0 && c2_euler <= 0)
+		{
+			return 0.0;
+		}
+		else
+		{
+			double C = c2_euler * abs(density_left / lambda_left - density_right / lambda_right) / abs(density_left / lambda_left + density_right / lambda_right);
+			return c1_euler * dt + dt * C;
+		}
+	}
+	else if (tau_type == NS)
+	{
+		double tau_n = c2_euler * abs(density_left / lambda_left - density_right / lambda_right) / abs(density_left / lambda_left + density_right / lambda_right) * dt;
+		if (tau_n != tau_n)
+		{
+			tau_n = 0.0;
+		}
+		if ((Mu > 0.0 && Nu > 0.0) || (Mu < 0.0 && Nu < 0.0))
+		{
+			return 0.0;
+		}
+		else
+		{
+			if (Mu > 0.0)
+			{
+				return tau_n + 2.0 * Mu * lambda0 / density0;
+			}
+			else if (Nu > 0.0)
+			{
+				return tau_n + 2 * Nu * lambda0;
+			}
+			else
+			{
+				return 0.0;
+			}
+		}
+	}
+	else
+	{
+		return 0.0;
+	}
+}
+
 double Alpha(double lambda, double u)
 {
 	return erfc(sqrt(lambda) * u);

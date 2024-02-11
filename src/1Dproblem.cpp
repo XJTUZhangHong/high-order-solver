@@ -36,7 +36,7 @@ void SodTubeProblem()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = LF;
+	flux_function = GKS;
 	//prepare time marching stratedgy
 	timecoe_list = RK2;
 	Initial_stages(block);

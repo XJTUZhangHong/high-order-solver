@@ -46,6 +46,10 @@ void GR(int no_u, int no_xi, double* psi, double a[3], MMDF1d m);
 
 void Microslope(double* a, double der[3], double prim[3]);
 
+double Get_Tau_NS(double density0, double lambda0);
+
+double Get_Tau(double density_left, double density_right, double density0, double lambda_left, double lambda_right, double lambda0, double dt);
+
 double Alpha(double lambda, double u);
 
 double Beta(double lambda, double u);
