@@ -242,10 +242,67 @@ void Primvar_to_convar_1D(double* convar, double primvar[3])
 	convar[1] = DensityU(primvar[0], primvar[1]);
 	convar[2] = DensityE(primvar[0], primvar[1], primvar[2]);
 }
+
+void Convar_to_char1D(double* character, double primvar[3], double convar[3])
+{
+	double c = sqrt(Gamma * primvar[2] / primvar[0]);
+	double	alfa = (Gamma - 1.0) / (2.0 * c * c);
+	double u = primvar[1];
+	double s[3][3];
+	s[0][0] = alfa * (0.5 * u * u + u * c / (Gamma - 1.0));
+	s[0][1] = alfa * (-u - c / (Gamma - 1.0));
+	s[0][2] = alfa;
+	s[1][0] = alfa * (-u * u + 2.0 * c * c / (Gamma - 1.0));
+	s[1][1] = alfa * 2.0 * u;
+	s[1][2] = -2.0 * alfa;
+	s[2][0] = alfa * (0.5 * u * u - u * c / (Gamma - 1.0));
+	s[2][1] = alfa * (-u + c / (Gamma - 1.0));
+	s[2][2] = alfa;
+
+	for (int i = 0; i < 3; i++)
+	{
+		character[i] = 0;
+	}
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			character[i] = character[i] + s[i][j] * convar[j];
+		}
+	}
+}
+
+void Char_to_convar1D(double* convar, double primvar[3], double charvar[3])
+{
+	double c = sqrt(Gamma * primvar[2] / primvar[0]);
+	double u = primvar[1];
+	double	h = 0.5 * u * u + c * c / (Gamma - 1.0);
+	double s[3][3];
+	s[0][0] = 1.0;
+	s[0][1] = 1.0;
+	s[0][2] = 1.0;
+	s[1][0] = u - c;
+	s[1][1] = u;
+	s[1][2] = u + c;
+	s[2][0] = h - u * c;
+	s[2][1] = u * u / 2.0;
+	s[2][2] = h + u * c;
+
+	for (int i = 0; i < 3; i++)
+	{
+		convar[i] = 0;
+		for (int j = 0; j < 3; j++)
+		{
+			convar[i] = convar[i] + s[i][j] * charvar[j];
+		}
+	}
+}
+
 double DensityU(double density, double u)
 {
 	return density * u;
 }
+
 double DensityE(double density, double u, double pressure)
 {
 	return density * (pressure / density / (Gamma - 1) + 0.5 * (u * u));
@@ -264,6 +321,14 @@ double U(double density, double q_densityu)
 double Lambda(double density, double u, double densityE)
 {
 	return (K + 1.0) * 0.25 * (density / (densityE - 0.5 * density * (u * u)));
+}
+
+void Copy_Array(double* target, double* origin, int dim)
+{
+	for (int i = 0; i < dim; i++)
+	{
+		target[i] = origin[i];
+	}
 }
 
 Flux1d** Setflux_array(Block1d block)

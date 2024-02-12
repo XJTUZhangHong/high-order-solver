@@ -21,6 +21,12 @@ void Reconstruction_within_cell(Interface1d* interfaces, Fluid1d* fluids, Block1
 
 void Vanleer(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
 
+void WENO5_AO(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
+
+void weno_5th_ao_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* beta, double h);
+
+void weno_5th_ao_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* beta, double h);
+
 // interface center reconstruction
 void Reconstruction_forg0(Interface1d *interfaces, Fluid1d *fluids, Block1d block);
 typedef void (*Reconstruction_forG0)(Interface1d &interfaces, Fluid1d *fluids);

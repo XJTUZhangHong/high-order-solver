@@ -60,6 +60,10 @@ void Convar_to_ULambda_1d(double* primvar, double convar[3]);
 
 void Primvar_to_convar_1D(double* convar, double primvar[3]);
 
+void Convar_to_char1D(double* character, double primvar[3], double convar[3]);
+
+void Char_to_convar1D(double* convar, double primvar[3], double charvar[3]);
+
 double DensityU(double density, double u);
 
 double DensityE(double density, double u, double pressure);
@@ -69,6 +73,8 @@ double Pressure(double density, double densityu, double densityE);
 double U(double density, double q_densityu);
 
 double Lambda(double density, double u, double densityE);
+
+void Copy_Array(double* target, double* origin, int dim);
 
 Flux1d** Setflux_array(Block1d block);
 

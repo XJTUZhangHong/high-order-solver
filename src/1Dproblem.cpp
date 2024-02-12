@@ -21,7 +21,7 @@ void SodTubeProblem()
 	tau_type = Euler;
 	//Smooth = false;
 	c1_euler = 0.01;
-	c2_euler = 1.0;
+	c2_euler = 5.0;
 
 	//prepare the boundary condtion function
 	BoundaryCondition leftboundary(0);
@@ -30,7 +30,7 @@ void SodTubeProblem()
 	rightboundary = free_boundary_right;
 	//prepare the reconstruction function
 
-	cellreconstruction = Vanleer;
+	cellreconstruction = WENO5_AO;
 	wenotype = wenoz;
 	reconstruction_variable = characteristic;
 	g0reconstruction = Center_collision;
@@ -38,7 +38,7 @@ void SodTubeProblem()
 	//prepare the flux function
 	flux_function = GKS;
 	//prepare time marching stratedgy
-	timecoe_list = RK2;
+	timecoe_list = S2O4;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
