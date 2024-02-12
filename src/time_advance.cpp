@@ -142,5 +142,72 @@ void Update(Fluid1d* fluids, Flux1d** fluxes, Block1d block, int stage)
 			fluids[i].convar[j] = fluids[i].convar_old[j] + 1.0 / fluids[i].dx * (fluxes[i][stage].F[j] - fluxes[i + 1][stage].F[j]);
 		}
 	}
+}
 
+// two-dimensional problem
+TimeMarchingCoefficient_2d timecoe_list_2d = S1O1_2D; //initilization
+
+void S1O1_2D(Block2d& block)
+{
+	block.stages = 1;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient[0][0][1] = 0.0;
+}
+
+void S1O2_2D(Block2d& block)
+{
+	block.stages = 1;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient[0][0][1] = 0.5;
+}
+
+void RK2_2D(Block2d& block)
+{
+	block.stages = 2;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient[1][0][0] = 0.5;
+	block.timecoefficient[1][1][0] = 0.5;
+}
+
+void S2O4_2D(Block2d& block)
+{
+	block.stages = 2;
+	block.timecoefficient[0][0][0] = 0.5;
+	block.timecoefficient[0][0][1] = 1.0 / 8.0;
+	block.timecoefficient[1][0][0] = 1.0;
+	block.timecoefficient[1][1][0] = 0.0;
+	block.timecoefficient[1][0][1] = 1.0 / 6.0;
+	block.timecoefficient[1][1][1] = 1.0 / 3.0;
+}
+
+void RK3_2D(Block2d& block)
+{
+	block.stages = 3;
+}
+
+void RK4_2D(Block2d& block)
+{
+	block.stages = 4;
+	block.timecoefficient[0][0][0] = 0.5;
+	block.timecoefficient[1][1][0] = 0.5;
+	block.timecoefficient[2][2][0] = 1.0;
+	block.timecoefficient[3][0][0] = 1.0 / 6.0;
+	block.timecoefficient[3][1][0] = 1.0 / 3.0;
+	block.timecoefficient[3][2][0] = 1.0 / 3.0;
+	block.timecoefficient[3][3][0] = 1.0 / 6.0;
+}
+
+void Initial_stages(Block2d& block)
+{
+	for (int i = 0; i < 5; i++) //refers the n stage
+	{
+		for (int j = 0; j < 5; j++) //refers the nth coefficient at n stage
+		{
+			for (int k = 0; k < 3; k++) //refers f, derf, der2f
+			{
+				block.timecoefficient[i][j][k] = 0.0;
+			}
+		}
+	}
+	timecoe_list_2d(block);
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include "fluid_mesh.h"
-#include <cmath>
 #include <assert.h>
 
 extern int K;

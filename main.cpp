@@ -4,6 +4,9 @@
 int main()
 {
     omp_set_num_threads(6);
+    // 1-D problem
     SodTubeProblem();
+    // 2-D problem
+    PlanarShock();
     return 0;
 }

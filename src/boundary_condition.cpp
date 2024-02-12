@@ -21,3 +21,63 @@ void free_boundary_right(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
 		fluids[i].convar[2] = fluids[i - 1].convar[2];
 	}
 }
+
+// two-dimensional problem
+void free_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int i = block.ghost - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			fluids[i * block.ny + j].convar[0] = fluids[(i + 1) * block.ny + j].convar[0];
+			fluids[i * block.ny + j].convar[1] = fluids[(i + 1) * block.ny + j].convar[1];
+			fluids[i * block.ny + j].convar[2] = fluids[(i + 1) * block.ny + j].convar[2];
+			fluids[i * block.ny + j].convar[3] = fluids[(i + 1) * block.ny + j].convar[3];
+		}
+	}
+}
+
+void free_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int i = block.nx - block.ghost; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			fluids[i * block.ny + j].convar[0] = fluids[(i - 1) * block.ny + j].convar[0];
+			fluids[i * block.ny + j].convar[1] = fluids[(i - 1) * block.ny + j].convar[1];
+			fluids[i * block.ny + j].convar[2] = fluids[(i - 1) * block.ny + j].convar[2];
+			fluids[i * block.ny + j].convar[3] = fluids[(i - 1) * block.ny + j].convar[3];
+		}
+
+	}
+
+}
+
+void free_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int j = block.ghost - 1; j >= 0; j--)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			fluids[i * block.ny + j].convar[0] = fluids[i * block.ny + j + 1].convar[0];
+			fluids[i * block.ny + j].convar[1] = fluids[i * block.ny + j + 1].convar[1];
+			fluids[i * block.ny + j].convar[2] = fluids[i * block.ny + j + 1].convar[2];
+			fluids[i * block.ny + j].convar[3] = fluids[i * block.ny + j + 1].convar[3];
+		}
+	}
+
+}
+
+void free_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int j = block.ny - block.ghost; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			fluids[i * block.ny + j].convar[0] = fluids[i * block.ny + j - 1].convar[0];
+			fluids[i * block.ny + j].convar[1] = fluids[i * block.ny + j - 1].convar[1];
+			fluids[i * block.ny + j].convar[2] = fluids[i * block.ny + j - 1].convar[2];
+			fluids[i * block.ny + j].convar[3] = fluids[i * block.ny + j - 1].convar[3];
+		}
+	}
+}
