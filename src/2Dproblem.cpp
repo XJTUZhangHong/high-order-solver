@@ -6,8 +6,8 @@ void PlanarShock()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 200;
-	block.nodey = 200;
+	block.nodex = 100;
+	block.nodey = 100;
 	block.ghost = 3;
 
 	block.CFL = 0.5;
