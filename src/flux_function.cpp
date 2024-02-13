@@ -309,3 +309,7 @@ void get_Euler_flux(double p[3], double* flux)
 	double ENERGS = 0.5 * (p[1] * p[1]) * p[0] + p[2] / (Gamma - 1.0);
 	flux[2] = p[1] * (ENERGS + p[2]);
 }
+
+// two-dimensional problem
+GKS2d_type gks2dsolver = kfvs1st_2d; //initilization
+Flux_function_2d flux_function_2d = GKS2D; //initilization

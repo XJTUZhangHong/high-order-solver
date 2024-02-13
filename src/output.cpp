@@ -13,3 +13,21 @@ void output1d(Fluid1d* fluids, Block1d block)
 	}
 	ResultFile.close();
 }
+
+void output2d(Fluid2d* fluids, Block2d block)
+{
+	int N = block.nodex, ghost = block.ghost;
+	int n = block.nodex + 2 * block.ghost;
+
+	// Lunix File Output Directory
+	ofstream ofs;
+	ofs.open("../../data/R2d.txt", ios::trunc);
+	for (int j = block.ghost; j < block.ghost + block.nodey; j++)
+	{
+		for (int i = block.ghost; i < block.ghost + block.nodex; i++)
+		{
+			ofs << fluids[i * block.ny + j].convar[0] << endl;
+		}
+	}
+	ofs.close();
+}

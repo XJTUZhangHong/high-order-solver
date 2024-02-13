@@ -25,3 +25,5 @@ struct Runtime {
 };
 
 void output1d(Fluid1d* fluids, Block1d block);
+
+void output2d(Fluid2d* fluids, Block2d block);

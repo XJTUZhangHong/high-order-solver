@@ -11,3 +11,13 @@ extern Flux_function flux_function;
 void GKS(Flux1d& flux, Interface1d& interface, double dt);
 void LF(Flux1d& flux, Interface1d& interface, double dt);
 void get_Euler_flux(double p[3], double* flux);
+
+// two-dimensional problem
+enum GKS2d_type { nothing_2d, kfvs1st_2d, kfvs2nd_2d, gks1st_2d, gks2nd_2d};
+extern GKS2d_type gks2dsolver;
+
+void Calculate_flux(Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Interface2d* xinterfaces, Interface2d* yinterfaces, Block2d block, int stage);
+typedef void(*Flux_function_2d)(Flux2d &flux, Recon2d & re, double dt);
+extern Flux_function_2d flux_function_2d;
+void GKS2D_smooth(Flux2d &flux, Recon2d& interface, double dt);
+void GKS2D(Flux2d &flux, Recon2d& interface, double dt);

@@ -6,8 +6,8 @@ void PlanarShock()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 500;
-	block.nodey = 500;
+	block.nodex = 100;
+	block.nodey = 100;
 	block.ghost = 3;
 
 	block.CFL = 0.5;
@@ -26,13 +26,8 @@ void PlanarShock()
 	rightboundary = free_boundary_right;
 	downboundary = free_boundary_down;
 	upboundary = free_boundary_up;
-	//leftboundary = reflection_boundary_left;
-	//rightboundary = reflection_boundary_right;
-	//downboundary = RT_boundary_down;
-	//upboundary = RT_boundary_up;
 
 	//prepare the reconstruction function
-
 	gausspoint = 2;
 	SetGuassPoint();
 
@@ -88,28 +83,15 @@ void PlanarShock()
 	SetUniformMesh(block, fluids, xinterfaces, yinterfaces, xfluxes, yfluxes);
 	//ended mesh part
 
-	////RM 2 T=0.6 with x,y = 0.7
-	/*double tstop[]{ 0.6 };
+	//RM 2 T=0.6 with x,y = 0.7
+	double tstop[]{ 0.6 };
 	double zone1[]{ 0.138, 1.206, 1.206, 0.029 };
 	double zone2[]{ 0.5323, 0, 1.206, 0.3 };
 	double zone3[]{ 1.5, 0, 0, 1.5 };
-	double zone4[]{ 0.5323, 1.206, 0, 0.3 };*/
+	double zone4[]{ 0.5323, 1.206, 0, 0.3 };
 
-	double tstop[] = { 1.6 };
-	double p0 = 1.0; // this p0 is for adjust the speed of shear layer
-	double zone1[]{ 1, -0.75, 0.5, p0 };
-	double zone2[]{ 3.0, -0.75, -0.5, p0 };
-	double zone3[]{ 1.0, 0.75, -0.5, p0 };
-	double zone4[]{ 2.0, 0.75, 0.5, p0 };
-
-	IC_for_riemann_2d(fluids, zone1, zone2, zone3, zone4, block);
-	//double tstop[] = {1.95};
-	//IC_for_sod_tube(fluids, block);
-	//IC_for_R_T_instability(fluids, block);
-	//IC_for_R_M_instability(fluids, block);
-
-	//IC_for_hurricane_problem(fluids, block);
-	//double tstop[] = { 0.045 };
+    double discon[]{0.7, 0.7};
+	IC_for_riemann_2d(fluids, zone1, zone2, zone3, zone4, block, discon);
 
 	runtime.finish_initial = clock();
 	block.t = 0;//the current simulation time
@@ -135,7 +117,7 @@ void PlanarShock()
 				cin >> inputstep;
 				if (inputstep == 0)
 				{
-					output2d_binary(xinterfaces, yinterfaces, fluids, block);
+					output2d(fluids, block);
 					break;
 				}
 			}
@@ -172,16 +154,58 @@ void PlanarShock()
 			}
 			if (block.step % 100 == 0)
 			{
-				output2d(xinterfaces, yinterfaces, fluids, block);
+				output2d(fluids, block);
 			}
 			block.step++;
 			//cout << "The step is " << block.step << endl;
 			block.t = block.t + block.dt;
 		}
-		output2d(xinterfaces, yinterfaces, fluids, block);
+		output2d(fluids, block);
 	}
 	runtime.finish_compute = clock();
 	cout << "the total run time is " << (double)(runtime.finish_compute - runtime.start_initial) / CLOCKS_PER_SEC << " second !" << endl;
 	cout << "initializing time is" << (double)(runtime.finish_initial - runtime.start_initial) / CLOCKS_PER_SEC << " second !" << endl;
 	cout << "the pure computational time is" << (double)(runtime.finish_compute - runtime.start_compute) / CLOCKS_PER_SEC << " second !" << endl;
+}
+
+void IC_for_riemann_2d(Fluid2d* fluid, double* zone1, double* zone2, double* zone3, double* zone4, Block2d block, double* discon)
+{	
+    for (int i = block.ghost; i < block.nx - block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.ny - block.ghost; j++)
+		{
+			if (i - block.ghost + 1 < discon[0] / block.dx && j - block.ghost + 1 < discon[1] / block.dx)
+			{
+				Copy_Array(fluid[i * block.ny + j].primvar, zone1, 4);
+			}
+			else
+			{
+				if (i - block.ghost + 1 >= discon[0] / block.dx && j - block.ghost + 1 < discon[1] / block.dx)
+				{
+					Copy_Array(fluid[i * block.ny + j].primvar, zone2, 4);
+				}
+				else
+				{
+					if (i - block.ghost + 1 >= discon[0] / block.dx && j - block.ghost + 1 >= discon[1] / block.dx)
+					{
+						Copy_Array(fluid[i * block.ny + j].primvar, zone3, 4);
+					}
+					else
+					{
+						Copy_Array(fluid[i * block.ny + j].primvar, zone4, 4);
+					}
+				}
+			}
+
+		}
+	}
+
+	for (int i = 0; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			Primvar_to_convar_2D(fluid[i * block.ny + j].convar, fluid[i * block.ny + j].primvar);
+
+		}
+	}
 }
