@@ -75,6 +75,8 @@ void GL_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m
 
 void GR_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m);
 
+void G_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m);
+
 double Get_Tau_NS(double density0, double lambda0);
 
 double Get_Tau(double density_left, double density_right, double density0, double lambda_left, double lambda_right, double lambda0, double dt);
@@ -82,6 +84,10 @@ double Get_Tau(double density_left, double density_right, double density0, doubl
 double Alpha(double lambda, double u);
 
 double Beta(double lambda, double u);
+
+bool negative_density_or_pressure(double* primvar);
+
+void Convar_to_Primvar(Fluid2d* fluids, Block2d block);
 
 void Convar_to_primvar_1D(double* primvar, double convar[3]);
 
@@ -129,6 +135,8 @@ void Copy_Array(double* target, double* origin, int dim);
 
 void YchangetoX(double* fluidtmp, double* fluid);
 
+void Local_to_Global(double *change,double *normal);
+
 Flux1d** Setflux_array(Block1d block);
 
 void SetUniformMesh(Block1d block, Fluid1d* fluids, Interface1d* interfaces, Flux1d** fluxes);
@@ -152,3 +160,5 @@ void Set_Gauss_Intergation_Location_x(Point2d& xgauss, int index, double h);
 void Set_Gauss_Intergation_Location_y(Point2d& ygauss, int index, double h);
 
 void CopyFluid_new_to_old(Fluid1d* fluids, Block1d block);
+
+void CopyFluid_new_to_old(Fluid2d* fluids, Block2d block);

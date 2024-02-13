@@ -273,6 +273,18 @@ void GR_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m
 		a[3] * 0.5 * (m.unvxi[no_u + 4][no_v][no_xi] + m.unvxi[no_u][no_v + 4][no_xi] + m.unvxi[no_u][no_v][no_xi + 2] + 2 * m.unvxi[no_u + 2][no_v + 2][no_xi] + 2 * m.unvxi[no_u + 2][no_v][no_xi + 1] + 2 * m.unvxi[no_u][no_v + 2][no_xi + 1]));
 }
 
+void G_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m)
+{
+
+	psi[0] = a[0] * m.uvxi[no_u][no_v][no_xi] + a[1] * m.uvxi[no_u + 1][no_v][no_xi] + a[2] * m.uvxi[no_u][no_v + 1][no_xi] + a[3] * 0.5 * (m.uvxi[no_u + 2][no_v][no_xi] + m.uvxi[no_u][no_v + 2][no_xi] + m.uvxi[no_u][no_v][no_xi + 1]);
+	psi[1] = a[0] * m.uvxi[no_u + 1][no_v][no_xi] + a[1] * m.uvxi[no_u + 2][no_v][no_xi] + a[2] * m.uvxi[no_u + 1][no_v + 1][no_xi] + a[3] * 0.5 * (m.uvxi[no_u + 3][no_v][no_xi] + m.uvxi[no_u + 1][no_v + 2][no_xi] + m.uvxi[no_u + 1][no_v][no_xi + 1]);
+	psi[2] = a[0] * m.uvxi[no_u][no_v + 1][no_xi] + a[1] * m.uvxi[no_u + 1][no_v + 1][no_xi] + a[2] * m.uvxi[no_u][no_v + 2][no_xi] + a[3] * 0.5 * (m.uvxi[no_u + 2][no_v + 1][no_xi] + m.uvxi[no_u][no_v + 3][no_xi] + m.uvxi[no_u][no_v + 1][no_xi + 1]);
+	psi[3] = 0.5 * (a[0] * (m.uvxi[no_u + 2][no_v][no_xi] + m.uvxi[no_u][no_v + 2][no_xi] + m.uvxi[no_u][no_v][no_xi + 1]) +
+		a[1] * (m.uvxi[no_u + 3][no_v][no_xi] + m.uvxi[no_u + 1][no_v + 2][no_xi] + m.uvxi[no_u + 1][no_v][no_xi + 1]) +
+		a[2] * (m.uvxi[no_u + 2][no_v + 1][no_xi] + m.uvxi[no_u][no_v + 3][no_xi] + m.uvxi[no_u][no_v + 1][no_xi + 1]) +
+		a[3] * 0.5 * (m.uvxi[no_u + 4][no_v][no_xi] + m.uvxi[no_u][no_v + 4][no_xi] + m.uvxi[no_u][no_v][no_xi + 2] + 2 * m.uvxi[no_u + 2][no_v + 2][no_xi] + 2 * m.uvxi[no_u + 2][no_v][no_xi + 1] + 2 * m.uvxi[no_u][no_v + 2][no_xi + 1]));
+}
+
 double Get_Tau_NS(double density0, double lambda0)
 {
 	if (tau_type == Euler)
@@ -354,6 +366,44 @@ double Beta(double lambda, double u)
 {
 	double pi = 3.14159265358979323846;
 	return exp(-lambda * u * u) / sqrt(pi * lambda);
+}
+
+bool negative_density_or_pressure(double* primvar)
+{
+	//detect whether density or pressure is negative
+	if (primvar[0] < 0 || primvar[3] < 0 ||
+		isnan(primvar[0])
+		|| isnan(primvar[3]))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void Convar_to_Primvar(Fluid2d* fluids, Block2d block)
+{
+	bool all_positive = true;
+#pragma omp parallel  for
+	for (int i = 0; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			Convar_to_primvar_2D(fluids[i * block.ny + j].primvar, fluids[i * block.ny + j].convar);
+			if (negative_density_or_pressure(fluids[i * block.ny + j].primvar))
+			{
+				all_positive = false;
+			}
+		}
+	}
+
+	if (all_positive == false)
+	{
+		cout << "the program blows up at t=" << block.t << "!" << endl;
+		exit(0);
+	}
 }
 
 void Convar_to_primvar_1D(double* primvar, double convar[3])
@@ -601,6 +651,15 @@ void YchangetoX(double* fluidtmp, double* fluid)
 	fluidtmp[1] = fluid[2];
 	fluidtmp[2] = -fluid[1];
 	fluidtmp[3] = fluid[3];
+}
+
+void Local_to_Global(double *change,double *normal)
+{
+    double temp[2];
+    temp[0] = change[1];
+    temp[1] = change[2];
+    change[1] = temp[0] * normal[0] - temp[1] * normal[1];
+    change[2] = temp[0] * normal[1] + temp[1] * normal[0];
 }
 
 Flux1d** Setflux_array(Block1d block)
@@ -908,3 +967,19 @@ void CopyFluid_new_to_old(Fluid1d* fluids, Block1d block)
 		}
 	}
 }
+
+void CopyFluid_new_to_old(Fluid2d* fluids, Block2d block)
+{
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.ghost + block.nodex; i++)
+	{
+		for (int j = block.ghost; j < block.ghost + block.nodey; j++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].convar_old[var] = fluids[i * block.ny + j].convar[var];
+			}
+		}
+	}
+}
+

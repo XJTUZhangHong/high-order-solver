@@ -22,6 +22,28 @@ void free_boundary_right(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
 	}
 }
 
+void reflection_boundary_left(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
+{
+	for (int i = block.ghost - 1; i >= 0; i--)
+	{
+		int ref = 2 * block.ghost - 1 - i;
+		fluids[i].convar[0] = fluids[ref].convar[0];
+		fluids[i].convar[1] = -fluids[ref].convar[1];
+		fluids[i].convar[2] = fluids[ref].convar[2];
+	}
+}
+
+void reflection_boundary_right(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
+{
+	for (int i = block.nx - block.ghost; i < block.nx; i++)
+	{
+		int ref = 2 * (block.nx - block.ghost) - 1 - i;
+		fluids[i].convar[0] = fluids[ref].convar[0];
+		fluids[i].convar[1] = -fluids[ref].convar[1];
+		fluids[i].convar[2] = fluids[ref].convar[2];
+	}
+}
+
 // two-dimensional problem
 void free_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
 {

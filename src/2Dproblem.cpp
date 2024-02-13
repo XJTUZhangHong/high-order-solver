@@ -44,13 +44,11 @@ void PlanarShock()
 	//prepare the flux function
 	gks2dsolver = gks2nd_2d;
 	tau_type = Euler;
-	c1_euler = 0.05;
-	c2_euler = 1.0;
+	c1_euler = 0.01;
+	c2_euler = 5.0;
 	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
-
-
 	//time coe list must be 2d
 	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
@@ -72,9 +70,9 @@ void PlanarShock()
 	//end the allocate memory part
 
 	block.left = 0.0;
-	block.right = 2.0;
+	block.right = 1.0;
 	block.down = 0.0;
-	block.up = 2.0;
+	block.up = 1.0;
 	block.dx = (block.right - block.left) / block.nodex;
 	block.dy = (block.up - block.down) / block.nodey;
 	block.overdx = 1 / block.dx;

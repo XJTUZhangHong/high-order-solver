@@ -30,3 +30,12 @@ void S2O4_2D(Block2d &block);
 void RK4_2D(Block2d& block);
 void RK3_2D(Block2d& block);
 void Initial_stages(Block2d &block);
+
+double Get_CFL(Block2d& block, Fluid2d* fluids, double tstop);
+
+double Dtx(double dtx, double dx, double CFL, double density, double u,double v, double pressure);
+
+void Update(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
+
+void Update_with_gauss(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
+

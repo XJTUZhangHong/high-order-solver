@@ -90,22 +90,26 @@ void WENO5_AO(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block)
 	double wp2[3]; Copy_Array(wp2, fluids[2].convar, 3);
 	double tmp;
 	//non-uniform grid was treated as uniform grid
-	double h = fluids[0].dx;
+	double  h = fluids[0].dx;
+
+	// sommthness indicators
 	double beta[4];
+	for (int i = 0; i < 3; i++)
+	{
+		beta[0] = 13.0 / 12.0 * pow((wn2[i] - 2.0 * wn1[i] + w0[i]), 2) + 0.25 * pow((wn2[i] - 4.0 * wn1[i] + 3.0 * w0[i]), 2);
+		beta[1] = 13.0 / 12.0 * pow((wn1[i] - 2.0 * w0[i] + wp1[i]), 2) + 0.25 * pow((wn1[i] - wp1[i]), 2);
+		beta[2] = 13.0 / 12.0 * pow((w0[i] - 2.0 * wp1[i] + wp2[i]), 2) + 0.25 * pow((3.0 * w0[i] - 4.0 * wp1[i] + wp2[i]), 2);
+		beta[3] = (1.0 / 5040.0) * (231153.0 * w0[i] * w0[i] + 104963.0 * wn1[i] * wn1[i] + 6908.0 * wn2[i] * wn2[i] -
+			38947.0 * wn2[i] * wp1[i] + 104963.0 * wp1[i] * wp1[i] +
+			wn1[i] * (-51001.0 * wn2[i] + 179098.0 * wp1[i] - 38947.0 * wp2[i]) -
+			3.0 * w0[i] * (99692.0 * wn1[i] - 22641.0 * wn2[i] + 99692.0 * wp1[i] - 22641.0 * wp2[i]) +
+			8209.0 * wn2[i] * wp2[i] - 51001.0 * wp1[i] * wp2[i] + 6908.0 * wp2[i] * wp2[i]);
+	}
 
 	if (reconstruction_variable == conservative)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			beta[0] = 13.0 / 12.0 * pow((wn2[i] - 2.0 * wn1[i] + w0[i]), 2) + 0.25 * pow((wn2[i] - 4.0 * wn1[i] + 3.0 * w0[i]), 2);
-			beta[1] = 13.0 / 12.0 * pow((wn1[i] - 2.0 * w0[i] + wp1[i]), 2) + 0.25 * pow((wn1[i] - wp1[i]), 2);
-			beta[2] = 13.0 / 12.0 * pow((w0[i] - 2.0 * wp1[i] + wp2[i]), 2) + 0.25 * pow((3.0 * w0[i] - 4.0 * wp1[i] + wp2[i]), 2);
-			beta[3] = (1.0 / 5040.0) * (231153.0 * w0[i] * w0[i] + 104963.0 * wn1[i] * wn1[i] + 6908.0 * wn2[i] * wn2[i] -
-			38947.0 * wn2[i] * wp1[i] + 104963.0 * wp1[i] * wp1[i] +
-			wn1[i] * (-51001.0 * wn2[i] + 179098.0 * wp1[i] - 38947.0 * wp2[i]) -
-			3.0 * w0[i] * (99692.0 * wn1[i] - 22641.0 * wn2[i] + 99692.0 * wp1[i] - 22641.0 * wp2[i]) +
-			8209.0 * wn2[i] * wp2[i] - 51001.0 * wp1[i] * wp2[i] + 6908.0 * wp2[i] * wp2[i]);
-			
 			weno_5th_ao_right(right.convar[i], right.der1[i], tmp, wn2[i], wn1[i], w0[i], wp1[i], wp2[i], beta, h);
 			weno_5th_ao_left(left.convar[i], left.der1[i], tmp, wn2[i], wn1[i], w0[i], wp1[i], wp2[i], beta, h);
 		}
@@ -114,10 +118,8 @@ void WENO5_AO(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block)
 	if (reconstruction_variable == characteristic)
 	{
 
-		double l_ren2[3], l_ren1[3], l_re0[3], l_rep1[3], l_rep2[3];
-		double r_ren2[3], r_ren1[3], r_re0[3], r_rep1[3], r_rep2[3];
-		double l_var[3], l_der1[3], l_der2[3];
-		double r_var[3], r_der1[3], r_der2[3];
+		double ren3[3], ren2[3], ren1[3], re0[3], rep1[3], rep2[3], rep3[3];
+		double var[3], der1[3], der2[3];
 
 		double base_left[3], base_right[3];
 
@@ -131,39 +133,40 @@ void WENO5_AO(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block)
 			base_left[i] = 0.5 * (wn1_primvar[i] + w_primvar[i]);
 			base_right[i] = 0.5 * (wp1_primvar[i] + w_primvar[i]);
 		}
-		// left side
-		Convar_to_char1D(l_ren2, base_left, wn2);
-		Convar_to_char1D(l_ren1, base_left, wn1);
-		Convar_to_char1D(l_re0, base_left, w0);
-		Convar_to_char1D(l_rep1, base_left, wp1);
-		Convar_to_char1D(l_rep2, base_left, wp2);
-		// right side
-		Convar_to_char1D(r_ren2, base_right, wn2);
-		Convar_to_char1D(r_ren1, base_right, wn1);
-		Convar_to_char1D(r_re0, base_right, w0);
-		Convar_to_char1D(r_rep1, base_right, wp1);
-		Convar_to_char1D(r_rep2, base_right, wp2);
+
+		Convar_to_char1D(ren2, base_left, wn2);
+		Convar_to_char1D(ren1, base_left, wn1);
+		Convar_to_char1D(re0, base_left, w0);
+		Convar_to_char1D(rep1, base_left, wp1);
+		Convar_to_char1D(rep2, base_left, wp2);
+
+		// left_reconstruction
+		for (int i = 0; i < 3; i++)
+		{
+			weno_5th_ao_left(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], beta, h);
+		}
+		Char_to_convar1D(left.convar, base_left, var);
+		Char_to_convar1D(left.der1, base_left, der1);
+	
+		// right reconstruction
+
+		Convar_to_char1D(ren2, base_right, wn2);
+		Convar_to_char1D(ren1, base_right, wn1);
+		Convar_to_char1D(re0, base_right, w0);
+		Convar_to_char1D(rep1, base_right, wp1);
+		Convar_to_char1D(rep2, base_right, wp2);
 
 		for (int i = 0; i < 3; i++)
 		{
-			beta[0] = 13.0 / 12.0 * pow((wn2[i] - 2.0 * wn1[i] + w0[i]), 2) + 0.25 * pow((wn2[i] - 4.0 * wn1[i] + 3.0 * w0[i]), 2);
-			beta[1] = 13.0 / 12.0 * pow((wn1[i] - 2.0 * w0[i] + wp1[i]), 2) + 0.25 * pow((wn1[i] - wp1[i]), 2);
-			beta[2] = 13.0 / 12.0 * pow((w0[i] - 2.0 * wp1[i] + wp2[i]), 2) + 0.25 * pow((3.0 * w0[i] - 4.0 * wp1[i] + wp2[i]), 2);
-			beta[3] = (1.0 / 5040.0) * (231153.0 * w0[i] * w0[i] + 104963.0 * wn1[i] * wn1[i] + 6908.0 * wn2[i] * wn2[i] -
-			38947.0 * wn2[i] * wp1[i] + 104963.0 * wp1[i] * wp1[i] +
-			wn1[i] * (-51001.0 * wn2[i] + 179098.0 * wp1[i] - 38947.0 * wp2[i]) -
-			3.0 * w0[i] * (99692.0 * wn1[i] - 22641.0 * wn2[i] + 99692.0 * wp1[i] - 22641.0 * wp2[i]) +
-			8209.0 * wn2[i] * wp2[i] - 51001.0 * wp1[i] * wp2[i] + 6908.0 * wp2[i] * wp2[i]);
-			
-			weno_5th_ao_left(l_var[i], l_der1[i], l_der2[i], l_ren2[i], l_ren1[i], l_re0[i], l_rep1[i], l_rep2[i], beta, h);
-			weno_5th_ao_right(r_var[i], r_der1[i], r_der2[i], r_ren2[i], r_ren1[i], r_re0[i], r_rep1[i], r_rep2[i], beta, h);
+			weno_5th_ao_right(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], beta, h);
 		}
-		Char_to_convar1D(left.convar, base_left, l_var);
-		Char_to_convar1D(left.der1, base_left, l_der1);
-		Char_to_convar1D(right.convar, base_right, r_var);
-		Char_to_convar1D(right.der1, base_right, r_der1);
+		Char_to_convar1D(right.convar, base_right, var);
+		Char_to_convar1D(right.der1, base_right, der1);
+
 	}
+
 	Check_Order_Reduce(left, right, fluids[0]);
+
 }
 
 void weno_5th_ao_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* beta, double h)
@@ -193,6 +196,16 @@ void weno_5th_ao_left(double& var, double& der1, double& der2, double wn2, doubl
 	}
 	else
 	{
+		//cout << "here" << endl;
+		// beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+		// beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+		// beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+		// beta[3] = (1.0 / 5040.0) * (231153.0 * w0 * w0 + 104963.0 * wn1 * wn1 + 6908.0 * wn2 * wn2 -
+		// 	38947.0 * wn2 * wp1 + 104963.0 * wp1 * wp1 +
+		// 	wn1 * (-51001.0 * wn2 + 179098.0 * wp1 - 38947.0 * wp2) -
+		// 	3.0 * w0 * (99692.0 * wn1 - 22641.0 * wn2 + 99692.0 * wp1 - 22641.0 * wp2) +
+		// 	8209.0 * wn2 * wp2 - 51001.0 * wp1 * wp2 + 6908.0 * wp2 * wp2);
+
 		double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
 
 		if (wenotype == wenojs)
@@ -283,6 +296,16 @@ void weno_5th_ao_right(double& var, double& der1, double& der2, double wn2, doub
 	}
 	else
 	{
+
+		beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+		beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+		beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+
+		beta[3] = (1.0 / 5040.0) * (231153.0 * w0 * w0 + 104963.0 * wn1 * wn1 + 6908.0 * wn2 * wn2 -
+			38947.0 * wn2 * wp1 + 104963.0 * wp1 * wp1 +
+			wn1 * (-51001.0 * wn2 + 179098.0 * wp1 - 38947.0 * wp2) -
+			3.0 * w0 * (99692.0 * wn1 - 22641.0 * wn2 + 99692.0 * wp1 - 22641.0 * wp2) +
+			8209.0 * wn2 * wp2 - 51001.0 * wp1 * wp2 + 6908.0 * wp2 * wp2);
 		double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
 
 		if (wenotype == wenojs)
@@ -465,6 +488,20 @@ void WENO5_AO(Point2d& left, Point2d& right, double* wn2, double* wn1, double* w
 	Convar_to_primvar_2D(w_primvar, w);
 	Convar_to_primvar_2D(wp1_primvar, wp1);
 
+	// sommthness indicators
+	double beta[4];
+	for (int i = 0; i < 3; i++)
+	{
+		beta[0] = 13.0 / 12.0 * pow((wn2[i] - 2.0 * wn1[i] + w[i]), 2) + 0.25 * pow((wn2[i] - 4.0 * wn1[i] + 3.0 * w[i]), 2);
+		beta[1] = 13.0 / 12.0 * pow((wn1[i] - 2.0 * w[i] + wp1[i]), 2) + 0.25 * pow((wn1[i] - wp1[i]), 2);
+		beta[2] = 13.0 / 12.0 * pow((w[i] - 2.0 * wp1[i] + wp2[i]), 2) + 0.25 * pow((3.0 * w[i] - 4.0 * wp1[i] + wp2[i]), 2);
+		beta[3] = (1.0 / 5040.0) * (231153.0 * w[i] * w[i] + 104963.0 * wn1[i] * wn1[i] + 6908.0 * wn2[i] * wn2[i] -
+			38947.0 * wn2[i] * wp1[i] + 104963.0 * wp1[i] * wp1[i] +
+			wn1[i] * (-51001.0 * wn2[i] + 179098.0 * wp1[i] - 38947.0 * wp2[i]) -
+			3.0 * w[i] * (99692.0 * wn1[i] - 22641.0 * wn2[i] + 99692.0 * wp1[i] - 22641.0 * wp2[i]) +
+			8209.0 * wn2[i] * wp2[i] - 51001.0 * wp1[i] * wp2[i] + 6908.0 * wp2[i] * wp2[i]);
+	}
+
 	for (int i = 0; i < 4; i++)
 	{
 		base_left[i] = 0.5 * (wn1_primvar[i] + w_primvar[i]);
@@ -490,19 +527,11 @@ void WENO5_AO(Point2d& left, Point2d& right, double* wn2, double* wn1, double* w
 		Convar_to_char(rep1, base_left, wp1);
 		Convar_to_char(rep2, base_left, wp2);
 	}
-	// smoothness indicator
-	double beta[4];
+
 	for (int i = 0; i < 4; i++)
 	{
-		beta[0] = 13.0 / 12.0 * pow((wn2[i] - 2.0 * wn1[i] + w[i]), 2) + 0.25 * pow((wn2[i] - 4.0 * wn1[i] + 3.0 * w[i]), 2);
-		beta[1] = 13.0 / 12.0 * pow((wn1[i] - 2.0 * w[i] + wp1[i]), 2) + 0.25 * pow((wn1[i] - wp1[i]), 2);
-		beta[2] = 13.0 / 12.0 * pow((w[i] - 2.0 * wp1[i] + wp2[i]), 2) + 0.25 * pow((3.0 * w[i] - 4.0 * wp1[i] + wp2[i]), 2);
-		beta[3] = (1.0 / 5040.0) * (231153.0 * w[i] * w[i] + 104963.0 * wn1[i] * wn1[i] + 6908.0 * wn2[i] * wn2[i] -
-			38947.0 * wn2[i] * wp1[i] + 104963.0 * wp1[i] * wp1[i] +
-			wn1[i] * (-51001.0 * wn2[i] + 179098.0 * wp1[i] - 38947.0 * wp2[i]) -
-			3.0 * w[i] * (99692.0 * wn1[i] - 22641.0 * wn2[i] + 99692.0 * wp1[i] - 22641.0 * wp2[i]) +
-			8209.0 * wn2[i] * wp2[i] - 51001.0 * wp1[i] * wp2[i] + 6908.0 * wp2[i] * wp2[i]);
 		weno_5th_ao_left(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], beta, h);
+
 	}
 
 	if (reconstruction_variable == conservative)
@@ -544,15 +573,7 @@ void WENO5_AO(Point2d& left, Point2d& right, double* wn2, double* wn1, double* w
 
 	for (int i = 0; i < 4; i++)
 	{
-		beta[0] = 13.0 / 12.0 * pow((wn2[i] - 2.0 * wn1[i] + w[i]), 2) + 0.25 * pow((wn2[i] - 4.0 * wn1[i] + 3.0 * w[i]), 2);
-		beta[1] = 13.0 / 12.0 * pow((wn1[i] - 2.0 * w[i] + wp1[i]), 2) + 0.25 * pow((wn1[i] - wp1[i]), 2);
-		beta[2] = 13.0 / 12.0 * pow((w[i] - 2.0 * wp1[i] + wp2[i]), 2) + 0.25 * pow((3.0 * w[i] - 4.0 * wp1[i] + wp2[i]), 2);
-		beta[3] = (1.0 / 5040.0) * (231153.0 * w[i] * w[i] + 104963.0 * wn1[i] * wn1[i] + 6908.0 * wn2[i] * wn2[i] -
-			38947.0 * wn2[i] * wp1[i] + 104963.0 * wp1[i] * wp1[i] +
-			wn1[i] * (-51001.0 * wn2[i] + 179098.0 * wp1[i] - 38947.0 * wp2[i]) -
-			3.0 * w[i] * (99692.0 * wn1[i] - 22641.0 * wn2[i] + 99692.0 * wp1[i] - 22641.0 * wp2[i]) +
-			8209.0 * wn2[i] * wp2[i] - 51001.0 * wp1[i] * wp2[i] + 6908.0 * wp2[i] * wp2[i]);
-		weno_5th_ao_left(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], beta, h);
+		weno_5th_ao_right(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], beta, h);
 	}
 
 	if (reconstruction_variable == conservative)

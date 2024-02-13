@@ -9,4 +9,6 @@ void SodTubeProblem();
 
 void ICforSodTube(Fluid1d* fluids, Block1d block);
 
-void ICforSodTube(Fluid1d* fluids, Block1d block);
+void Blastwave();
+
+void ICforBlastwave(Fluid1d* fluids, Block1d block);

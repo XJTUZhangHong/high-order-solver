@@ -1,5 +1,6 @@
 #pragma once
 #include "time_advance.h"
+#include "reconstruction.h"
 
 // one-dimensional problem
 enum GKS1d_type{nothing, kfvs1st, kfvs2nd, gks1st, gks2nd};
