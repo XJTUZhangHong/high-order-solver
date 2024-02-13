@@ -1178,3 +1178,73 @@ events:
         
       exitCode: 0
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "CMakeLists.txt:14 (CHECK_CXX_COMPILER_FLAG)"
+    checks:
+      - "Performing Test COMPILER_SUPPORTS_CXX11"
+    directories:
+      source: "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-5j97fd"
+      binary: "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-5j97fd"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+    buildResult:
+      variable: "COMPILER_SUPPORTS_CXX11"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-5j97fd'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_1e708/fast
+        C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_1e708.dir\\build.make CMakeFiles/cmTC_1e708.dir/build
+        mingw32-make[1]: Entering directory 'D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-5j97fd'
+        Building CXX object CMakeFiles/cmTC_1e708.dir/src.cxx.obj
+        C:\\MinGW\\bin\\g++.exe -DCOMPILER_SUPPORTS_CXX11  -std=c++11 -o CMakeFiles\\cmTC_1e708.dir\\src.cxx.obj -c "D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\build\\CMakeFiles\\CMakeScratch\\TryCompile-5j97fd\\src.cxx"
+        Linking CXX executable cmTC_1e708.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_1e708.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_1e708.dir/objects.a
+        C:\\MinGW\\bin\\ar.exe qc CMakeFiles\\cmTC_1e708.dir/objects.a @CMakeFiles\\cmTC_1e708.dir\\objects1.rsp
+        C:\\MinGW\\bin\\g++.exe -Wl,--whole-archive CMakeFiles\\cmTC_1e708.dir/objects.a -Wl,--no-whole-archive -o cmTC_1e708.exe -Wl,--out-implib,libcmTC_1e708.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_1e708.dir\\linkLibs.rsp
+        mingw32-make[1]: Leaving directory 'D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-5j97fd'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.28/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.28/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/Program Files/CMake/share/cmake-3.28/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "CMakeLists.txt:15 (CHECK_CXX_COMPILER_FLAG)"
+    checks:
+      - "Performing Test COMPILER_SUPPORTS_CXX0X"
+    directories:
+      source: "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-i8jycj"
+      binary: "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-i8jycj"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+    buildResult:
+      variable: "COMPILER_SUPPORTS_CXX0X"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-i8jycj'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/MinGW/bin/mingw32-make.exe -f Makefile cmTC_a05de/fast
+        C:/MinGW/bin/mingw32-make.exe  -f CMakeFiles\\cmTC_a05de.dir\\build.make CMakeFiles/cmTC_a05de.dir/build
+        mingw32-make[1]: Entering directory 'D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-i8jycj'
+        Building CXX object CMakeFiles/cmTC_a05de.dir/src.cxx.obj
+        C:\\MinGW\\bin\\g++.exe -DCOMPILER_SUPPORTS_CXX0X  -std=c++0x -o CMakeFiles\\cmTC_a05de.dir\\src.cxx.obj -c "D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\build\\CMakeFiles\\CMakeScratch\\TryCompile-i8jycj\\src.cxx"
+        Linking CXX executable cmTC_a05de.exe
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E cmake_link_script CMakeFiles\\cmTC_a05de.dir\\link.txt --verbose=1
+        "C:\\Program Files\\CMake\\bin\\cmake.exe" -E rm -f CMakeFiles\\cmTC_a05de.dir/objects.a
+        C:\\MinGW\\bin\\ar.exe qc CMakeFiles\\cmTC_a05de.dir/objects.a @CMakeFiles\\cmTC_a05de.dir\\objects1.rsp
+        C:\\MinGW\\bin\\g++.exe -Wl,--whole-archive CMakeFiles\\cmTC_a05de.dir/objects.a -Wl,--no-whole-archive -o cmTC_a05de.exe -Wl,--out-implib,libcmTC_a05de.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\\cmTC_a05de.dir\\linkLibs.rsp
+        mingw32-make[1]: Leaving directory 'D:/Research/Arbitrary high-order reconstruction based on DF/solver/build/CMakeFiles/CMakeScratch/TryCompile-i8jycj'
+        
+      exitCode: 0
+...

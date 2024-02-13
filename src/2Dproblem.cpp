@@ -6,8 +6,8 @@ void PlanarShock()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 500;
-	block.nodey = 500;
+	block.nodex = 200;
+	block.nodey = 200;
 	block.ghost = 3;
 
 	block.CFL = 0.5;
@@ -148,11 +148,7 @@ void PlanarShock()
 			}
 			if (block.step % 10 == 0)
 			{
-				cout << block.step << endl;
-			}
-			if (block.step % 100 == 0)
-			{
-				output2d(fluids, block);
+				cout << "The step now is " << block.step << endl;
 			}
 			block.step++;
 			//cout << "The step is " << block.step << endl;
