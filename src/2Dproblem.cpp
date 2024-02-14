@@ -44,8 +44,8 @@ void PlanarShock()
 	//prepare the flux function
 	gks2dsolver = gks2nd_2d;
 	tau_type = Euler;
-	c1_euler = 0.01;
-	c2_euler = 5.0;
+	c1_euler = 0.05;
+	c2_euler = 1.0;
 	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
@@ -146,10 +146,7 @@ void PlanarShock()
 
 				Update(fluids, xfluxes, yfluxes, block, i);
 			}
-			if (block.step % 10 == 0)
-			{
-				cout << "The step now is " << block.step << endl;
-			}
+			cout << "The step now is " << block.step << endl;
 			block.step++;
 			//cout << "The step is " << block.step << endl;
 			block.t = block.t + block.dt;
