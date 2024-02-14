@@ -332,7 +332,7 @@ void ShuOsher()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 10000;
+	block.nodex = 400;
 	block.ghost = 4;
 
 	double tstop = 1.8;
