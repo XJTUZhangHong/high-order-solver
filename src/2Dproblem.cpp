@@ -146,7 +146,6 @@ void PlanarShock()
 
 				Update(fluids, xfluxes, yfluxes, block, i);
 			}
-			cout << "The step now is " << block.step << endl;
 			block.step++;
 			//cout << "The step is " << block.step << endl;
 			block.t = block.t + block.dt;
@@ -200,3 +199,4 @@ void IC_for_riemann_2d(Fluid2d* fluid, double* zone1, double* zone2, double* zon
 		}
 	}
 }
+

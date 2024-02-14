@@ -84,9 +84,9 @@ double Get_CFL(Block1d& block, Fluid1d* fluids, double tstop)
 		dt = tstop - block.t + 1e-15;
 	}
 	//print time step information
-	cout << "step= " << block.step
-		<< "time size is " << dt
-		<< " time= " << block.t << endl;
+	cout << "step = " << block.step
+		<< " time size is " << dt
+		<< " time = " << block.t << endl;
 	return dt;
 }
 
@@ -226,18 +226,13 @@ double Get_CFL(Block2d& block, Fluid2d* fluids, double tstop)
 				fluids[i * block.ny + j].primvar[2], fluids[i * block.ny + j].primvar[3]);
 		}
 	}
+	cout << "step = " << block.step
+		<< " time size is " << dt
+		<< " time = " << block.t << endl;
 	if (block.t + dt > tstop)
 	{
 		dt = tstop - block.t + 1e-16;
 		cout << "last step here" << endl;
-	}
-	//print time step information
-	if (block.step % 100 == 0)
-	{
-		cout << "step= " << block.step
-			<< "time size is " << dt
-			<< " time= " << block.t
-			<< endl;
 	}
 	return dt;
 }

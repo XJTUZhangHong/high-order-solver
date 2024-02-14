@@ -6,6 +6,7 @@ Reconstruction_forG0 g0reconstruction = Center_collision; //initialization
 Reconstruction_variable reconstruction_variable = conservative; //initialization
 WENOtype wenotype = wenojs; //initialization
 bool is_reduce_order_warning = false; //initialization
+bool is_using_df_factor = false;
 
 void Check_Order_Reduce(Point1d& left, Point1d& right, Fluid1d& fluid)
 {

@@ -7,6 +7,7 @@ int main()
     // 1-D problem
     //SodTubeProblem();
     //Blastwave();
+    //ShuOsher();
     // 2-D problem
     PlanarShock();
     return 0;

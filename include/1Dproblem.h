@@ -12,3 +12,8 @@ void ICforSodTube(Fluid1d* fluids, Block1d block);
 void Blastwave();
 
 void ICforBlastwave(Fluid1d* fluids, Block1d block);
+
+void ShuOsher();
+
+void ICforShuOsher(Fluid1d* fluids, Block1d block);
+
