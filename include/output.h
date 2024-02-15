@@ -26,4 +26,6 @@ struct Runtime {
 
 void output1d(Fluid1d* fluids, Block1d block);
 
+void output_error_form(double CFL, double dt_ratio, int mesh_set, int* mesh_number, double** error);
+
 void output2d(Fluid2d* fluids, Block2d block);

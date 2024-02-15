@@ -497,13 +497,13 @@ void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	//one big stencil
 	d[3] = dhi;
 
-	// beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	// beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	// beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
 
-	beta[0] = (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0);
-	beta[1] = (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0);
-	beta[2] = (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0);
+	// beta[0] = (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0);
+	// beta[1] = (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0);
+	// beta[2] = (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0);
 	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
 	double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
@@ -582,13 +582,13 @@ void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	//one big stencil
 	d[3] = dhi;
 
-	// beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	// beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	// beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
 
-	beta[0] = (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0);
-	beta[1] = (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0);
-	beta[2] = (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0);
+	// beta[0] = (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0);
+	// beta[1] = (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0);
+	// beta[2] = (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0);
 
 	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
@@ -1098,6 +1098,31 @@ void Update_alpha(Interface2d* xinterfaces, Interface2d* yinterfaces, Fluid2d* f
 }
 
 // cell left & right side normal reconstruction
+void First_order_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)
+{
+	first_order(left.line.right, right.line.left,
+		left.normal, right.normal, fluids[0].convar);
+
+	first_order(down.line.right, up.line.left,
+		down.normal, up.normal, fluids[0].convar);
+}
+
+void first_order(Point2d& left, Point2d& right, double* normal_l, double* normal_r, double* w)
+{
+	double splus[4], sminus[4];
+
+	double w_l[4];
+	Global_to_Local(w_l, w, normal_l);
+	Copy_Array(left.convar, w_l, 4);
+	Array_zero(left.der1x, 4);
+
+	double w_r[4];
+	Global_to_Local(w_r, w, normal_r);
+	Copy_Array(right.convar, w_r, 4);
+	Array_zero(right.der1x, 4);
+
+}
+
 void WENO5_AO_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)	
 {
 	if ((fluids[0].xindex > block.ghost - 2) && (fluids[0].xindex < block.nx - block.ghost + 1))
@@ -1224,8 +1249,8 @@ void WENO5_AO(Point2d& left, Point2d& right, double* wn2, double* wn1, double* w
 
 	if (left.is_reduce_order == true || right.is_reduce_order == true)
 	{
-		if (is_reduce_order_warning == true)
-			cout << " WENO5-cell-splitting order reduce" << endl;
+		//if (is_reduce_order_warning == true)
+			//cout << " WENO5-cell-splitting order reduce" << endl;
 		for (int m = 0; m < 4; m++)
 		{
 			right.convar[m] = w[m];
@@ -1389,6 +1414,25 @@ void WENO5_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn2,
 }
 
 // cell left & right side tangent reconstruction
+void First_order_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
+{
+	for (int num_gauss = 0; num_gauss < gausspoint; ++num_gauss)
+	{
+		first_order_tangent(left[0].gauss[num_gauss].right, left[0].line.right);
+		first_order_tangent(right[0].gauss[num_gauss].left, right[0].line.left);
+		first_order_tangent(down[0].gauss[num_gauss].right, down[0].line.right);
+		first_order_tangent(up[0].gauss[num_gauss].left, up[0].line.left);
+	}
+}
+
+void first_order_tangent(Point2d& gauss, Point2d& w0)
+{
+	//tangential
+	Copy_Array(gauss.convar, w0.convar, 4);
+	Copy_Array(gauss.der1x, w0.der1x, 4);
+	Array_zero(gauss.der1y, 4);
+}
+
 void WENO5_AO_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
 {
 	// along x direction tangitial recontruction,

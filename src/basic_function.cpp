@@ -368,6 +368,22 @@ double Beta(double lambda, double u)
 	return exp(-lambda * u * u) / sqrt(pi * lambda);
 }
 
+void Global_to_Local(double* change, double* origin, double* normal)
+{
+	change[0] = origin[0];
+	change[1] = origin[1] * normal[0] + origin[2] * normal[1];
+	change[2] = -origin[1] * normal[1] + origin[2] * normal[0];
+	change[3] = origin[3];
+}
+
+void Array_zero(double* target, int dim)
+{
+	for (int i = 0; i < dim; i++)
+	{
+		target[i] = 0.0;
+	}
+}
+
 bool negative_density_or_pressure(double* primvar)
 {
 	//detect whether density or pressure is negative

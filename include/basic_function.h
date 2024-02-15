@@ -85,6 +85,10 @@ double Alpha(double lambda, double u);
 
 double Beta(double lambda, double u);
 
+void Global_to_Local(double* change, double* origin, double* normal);
+
+void Array_zero(double* target, int dim);
+
 bool negative_density_or_pressure(double* primvar);
 
 void Convar_to_Primvar(Fluid2d* fluids, Block2d block);

@@ -12,6 +12,7 @@ void free_boundary_left(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
 		fluids[i].convar[2] = fluids[i + 1].convar[2];
 	}
 }
+
 void free_boundary_right(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
 {
 	for (int i = block.nx - block.ghost; i < block.nx; i++)
@@ -44,6 +45,23 @@ void reflection_boundary_right(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
 	}
 }
 
+void periodic_boundary_left(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
+{
+	for (int i = block.nodex_begin - 1; i >= 0; i--)
+	{
+		int ref = i + block.nodex;
+		Copy_Array(fluids[i].convar, fluids[ref].convar, 3);
+	}
+}
+
+void periodic_boundary_right(Fluid1d* fluids, Block1d block, Fluid1d bcvalue)
+{
+	for (int i = block.nodex_end + 1; i < block.nx; i++)
+	{
+		int ref = i - block.nodex;
+		Copy_Array(fluids[i].convar, fluids[ref].convar, 3);
+	}
+}
 // two-dimensional problem
 void free_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
 {
@@ -102,4 +120,68 @@ void free_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
 			fluids[i * block.ny + j].convar[3] = fluids[i * block.ny + j - 1].convar[3];
 		}
 	}
+}
+
+void periodic_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int i = block.ghost - 1; i >= 0; i--)
+	{
+		int tar = i + block.nodex;
+		for (int j = 0; j < block.ny; j++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].convar[var] = fluids[tar * block.ny + j].convar[var];
+			}
+		}
+	}
+
+}
+
+void periodic_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int i = block.nx - block.ghost; i < block.nx; i++)
+	{
+		int tar = i - block.nodex;
+		for (int j = 0; j < block.ny; j++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].convar[var] = fluids[tar * block.ny + j].convar[var];
+			}
+		}
+	}
+
+}
+
+void periodic_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int j = block.ghost - 1; j >= 0; j--)
+	{
+		int tar = j + block.nodey;
+		for (int i = 0; i < block.nx; i++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].convar[var] = fluids[i * block.ny + tar].convar[var];
+			}
+		}
+	}
+
+}
+
+void periodic_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int j = block.ny - block.ghost; j < block.ny; j++)
+	{
+		int tar = j - block.nodey;
+		for (int i = 0; i < block.nx; i++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].convar[var] = fluids[i * block.ny + tar].convar[var];
+			}
+		}
+	}
+
 }

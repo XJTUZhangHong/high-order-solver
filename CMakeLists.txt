@@ -3,6 +3,8 @@ aux_source_directory(. SRC_CUR)
 add_executable(solver ${SRC_SUB} ${SRC_CUR})
 include_directories(include)
 
+#set(CMAKE_BUILD_TYPE release CACHE STRING "Build Type" FORCE)
+
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 find_package(OpenMP)
 if (OPENMP_FOUND)
