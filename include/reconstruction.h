@@ -28,6 +28,16 @@ void weno_5th_ao_left(double& var, double& der1, double& der2, double wn2, doubl
 
 void weno_5th_ao_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double h);
 
+double Calculate_alpha_k_1d(double* prim_left, double* prim_right);
+
+void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block);
+
+void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
+
+void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
+
+void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
+
 // interface center reconstruction
 void Reconstruction_forg0(Interface1d *interfaces, Fluid1d *fluids, Block1d block);
 typedef void (*Reconstruction_forG0)(Interface1d &interfaces, Fluid1d *fluids);

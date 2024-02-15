@@ -4,7 +4,7 @@
 int main()
 {
     omp_set_num_threads(6);
-    is_using_df_factor = false;
+    is_using_df_factor = true;
     // 1-D problem
     //SodTubeProblem();
     //Blastwave();

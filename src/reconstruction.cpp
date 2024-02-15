@@ -357,6 +357,291 @@ void weno_5th_ao_right(double& var, double& der1, double& der2, double wn2, doub
 	}
 }
 
+double Calculate_alpha_k_1d(double* prim_left, double* prim_right)
+{
+	double A, Ma_left_normal, Ma_right_normal;
+
+	Ma_left_normal = prim_left[1] / sqrt(Gamma * prim_left[2] / prim_left[0]);
+	Ma_right_normal = prim_right[1] / sqrt(Gamma * prim_right[2] / prim_right[0]);
+
+	A = abs(prim_left[2] - prim_right[2]) / prim_left[2] + abs(prim_left[2] - prim_right[2]) / prim_right[2];
+	A = A + pow(Ma_left_normal - Ma_right_normal, 2);
+	// if (A < 1.0) { return 1.0; }
+	// else { return 1.0 / (1.0 + (A - 1.0) * (A - 1.0)); }
+	return A;
+}
+
+void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
+{
+	double prim_left_left[4], prim_left_right[4], prim_right_left[4], prim_right_right[4];
+	double alpha_left, alpha_right;
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		// here two gaussian points are used by default
+		Convar_to_primvar_1D(prim_left_left, interfaces[i].left.convar);
+		Convar_to_primvar_1D(prim_left_right, interfaces[i].right.convar);
+		Convar_to_primvar_1D(prim_right_left, interfaces[i + 1].left.convar);
+		Convar_to_primvar_1D(prim_right_right, interfaces[i + 1].right.convar);
+		
+		alpha_left = Calculate_alpha_k_1d(prim_left_left, prim_left_right);
+		alpha_right = Calculate_alpha_k_1d(prim_right_left, prim_right_right);
+
+		if (alpha_left + alpha_right < 1.0)
+		{
+			fluids[i].alpha = 1.0;
+		}
+		else
+		{
+			fluids[i].alpha = 2.0 / (1.0 + (alpha_left + alpha_right));
+		}
+	}
+}
+
+void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block)
+{
+	// discontiunity feedback factor
+	double df[5];
+	df[0] = fluids[-2].alpha;
+	df[1] = fluids[-1].alpha;
+	df[2] = fluids[0].alpha;
+	df[3] = fluids[1].alpha;
+	df[4] = fluids[2].alpha;
+	//Note: function by WENO5_AO reconstruction
+	double wn2[3]; Copy_Array(wn2, fluids[-2].convar, 3);
+	double wn1[3]; Copy_Array(wn1, fluids[-1].convar, 3);
+	double w0[3];  Copy_Array(w0, fluids[0].convar, 3);
+	double wp1[3]; Copy_Array(wp1, fluids[1].convar, 3);
+	double wp2[3]; Copy_Array(wp2, fluids[2].convar, 3);
+	double tmp;
+	//non-uniform grid was treated as uniform grid
+	double  h = fluids[0].dx;
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			weno_5th_ao_with_df_right(right.convar[i], right.der1[i], tmp, wn2[i], wn1[i], w0[i], wp1[i], wp2[i], df, h);
+			weno_5th_ao_with_df_left(left.convar[i], left.der1[i], tmp, wn2[i], wn1[i], w0[i], wp1[i], wp2[i], df, h);
+		}
+	}
+
+	if (reconstruction_variable == characteristic)
+	{
+
+		double ren3[3], ren2[3], ren1[3], re0[3], rep1[3], rep2[3], rep3[3];
+		double var[3], der1[3], der2[3];
+
+		double base_left[3], base_right[3];
+
+		double wn1_primvar[3], w_primvar[3], wp1_primvar[3];
+		Convar_to_primvar_1D(wn1_primvar, wn1);
+		Convar_to_primvar_1D(w_primvar, w0);
+		Convar_to_primvar_1D(wp1_primvar, wp1);
+
+		for (int i = 0; i < 3; i++)
+		{
+			base_left[i] = 0.5 * (wn1_primvar[i] + w_primvar[i]);
+			base_right[i] = 0.5 * (wp1_primvar[i] + w_primvar[i]);
+		}
+
+		Convar_to_char1D(ren2, base_left, wn2);
+		Convar_to_char1D(ren1, base_left, wn1);
+		Convar_to_char1D(re0, base_left, w0);
+		Convar_to_char1D(rep1, base_left, wp1);
+		Convar_to_char1D(rep2, base_left, wp2);
+
+		// left_reconstruction
+		for (int i = 0; i < 3; i++)
+		{
+			weno_5th_ao_with_df_left(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], df, h);
+		}
+		Char_to_convar1D(left.convar, base_left, var);
+		Char_to_convar1D(left.der1, base_left, der1);
+	
+		// right reconstruction
+
+		Convar_to_char1D(ren2, base_right, wn2);
+		Convar_to_char1D(ren1, base_right, wn1);
+		Convar_to_char1D(re0, base_right, w0);
+		Convar_to_char1D(rep1, base_right, wp1);
+		Convar_to_char1D(rep2, base_right, wp2);
+
+		for (int i = 0; i < 3; i++)
+		{
+			weno_5th_ao_with_df_right(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], df, h);
+		}
+		Char_to_convar1D(right.convar, base_right, var);
+		Char_to_convar1D(right.der1, base_right, der1);
+
+	}
+
+	Check_Order_Reduce(left, right, fluids[0]);
+
+}
+
+void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h)
+{
+	double dhi = 0.85;
+	double dlo = 0.85;
+	//-- - parameter of WENO-- -
+	double beta[4], d[4], ww[4], alpha[4];
+	double epsilonW = 1e-10;
+	//-- - intermediate parameter-- -
+	double p[4], px[4], pxx[4], tempvar;
+	double sum_alpha;
+
+	//three small stencil
+	d[0] = (1.0 - dhi) * (1.0 - dlo) / 2.0;
+	d[1] = (1.0 - dhi) * dlo;
+	d[2] = (1.0 - dhi) * (1.0 - dlo) / 2.0;
+	//one big stencil
+	d[3] = dhi;
+
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+
+	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+
+	double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
+
+	sum_alpha = 0.0;
+	for (int i = 0; i < 4; i++)
+	{
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		sum_alpha += alpha[i];
+	}
+
+	for (int k = 0; k < 4; k++)
+	{
+		ww[k] = alpha[k] / sum_alpha;
+	}
+	//-- - candidate polynomial-- -
+	double b2, c2, b4, c4, d4, e4, x = -1.0;
+	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
+	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
+	p[0] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[0] = df[2] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 2
+	b2 = wp1 - w0;
+	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
+	p[1] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[1] = df[2] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 3
+	b2 = wp1 - w0;
+	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
+	p[2] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[2] = df[2] * (b2 + 2.0 * c2 * x) / h;
+	// 5th order polynomial
+	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
+	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
+	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
+	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 +
+		df[2] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
+	px[3] = df[2] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+
+	//-- - combination-- -
+	var = 0.0;
+	der1 = 0.0;
+	double final_weight[4];
+	final_weight[3] = ww[3] / d[3];
+	for (int k = 0; k < 3; k++)
+	{
+		final_weight[k] = ww[k] - ww[3] / d[3] * d[k];
+	}
+
+	for (int k = 0; k < 4; k++)
+	{
+		var += final_weight[k] * p[k];
+		der1 += final_weight[k] * px[k];
+	}
+}
+
+void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h)
+{
+	double dhi = 0.85;
+	double dlo = 0.85;
+	//-- - parameter of WENO-- -
+	double beta[4], d[4], ww[4], alpha[4];
+	double epsilonW = 1e-10;
+
+	//-- - intermediate parameter-- -
+	double p[4], px[4], pxx[4], tempvar;
+	double sum_alpha;
+
+	//three small stencil
+	d[0] = (1 - dhi) * (1 - dlo) / 2.0;
+	d[1] = (1 - dhi) * dlo;
+	d[2] = (1 - dhi) * (1 - dlo) / 2.0;
+	//one big stencil
+	d[3] = dhi;
+
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+
+	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+
+	double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
+
+	sum_alpha = 0.0;
+	for (int i = 0; i < 4; i++)
+	{
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		sum_alpha += alpha[i];
+	}
+
+	for (int k = 0; k < 4; k++)
+	{
+		ww[k] = alpha[k] / sum_alpha;
+	}
+	//-- - candidate polynomial-- -
+	double b2, c2, b4, c4, d4, e4, x = 0.0;
+	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
+	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
+	p[0] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[0] = df[2] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 2
+	b2 = wp1 - w0;
+	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
+	p[1] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[1] = df[2] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 3
+	b2 = wp1 - w0;
+	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
+	p[2] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[2] = df[2] * (b2 + 2.0 * c2 * x) / h;
+	// 5th order polynomial
+	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
+	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
+	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
+	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 +
+		df[2] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
+	px[3] = df[2] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+
+	//-- - combination-- -
+	var = 0.0;
+	der1 = 0.0;
+	double final_weight[4];
+	final_weight[3] = ww[3] / d[3];
+	for (int k = 0; k < 3; k++)
+	{
+		final_weight[k] = ww[k] - ww[3] / d[3] * d[k];
+	}
+
+	for (int k = 0; k < 4; k++)
+	{
+		var += final_weight[k] * p[k];
+		der1 += final_weight[k] * px[k];
+	}
+}
+
 void Reconstruction_forg0(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
 {
 #pragma omp parallel  for

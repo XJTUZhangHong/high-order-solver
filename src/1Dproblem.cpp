@@ -426,7 +426,11 @@ void ShuOsher()
 		//determine the cfl condtion
 		block.dt = Get_CFL(block, fluids, tstop);
 
-		//if (block.step > 0) { cellreconstruction = DF_5th_resolution; }
+		
+		if (block.step > 0 && is_using_df_factor)
+		{
+			cellreconstruction = WENO5_AO_with_DF;
+		}
 
 		for (int i = 0; i < block.stages; i++)
 		{
@@ -446,6 +450,11 @@ void ShuOsher()
 			Calculate_flux(fluxes, interfaces, block, i);
 			//then is update flux part
 			Update(fluids, fluxes, block, i);
+
+			if (is_using_df_factor)
+			{
+				Update_alpha(interfaces, fluids, block);
+			}
 		}
 		block.step++;
 		block.t = block.t + block.dt;
