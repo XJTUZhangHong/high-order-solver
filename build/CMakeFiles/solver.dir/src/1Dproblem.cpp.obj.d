@@ -1,5 +1,8 @@
-CMakeFiles/solver.dir/src/basic_function.obj: \
- D:\Research\Arbitrary\ high-order\ reconstruction\ based\ on\ DF\solver\src\basic_function.cpp \
+CMakeFiles/solver.dir/src/1Dproblem.cpp.obj: \
+ D:\Research\Arbitrary\ high-order\ reconstruction\ based\ on\ DF\solver\src\1Dproblem.cpp \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/1Dproblem.h \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/flux_function.h \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/time_advance.h \
  D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/basic_function.h \
  D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/fluid_mesh.h \
  C:/MinGW/lib/gcc/x86_64-w64-mingw32/10.3.0/include/omp.h \
@@ -137,4 +140,32 @@ CMakeFiles/solver.dir/src/basic_function.obj: \
  C:/MinGW/include/c++/10.3.0/bits/ostream.tcc \
  C:/MinGW/include/c++/10.3.0/istream \
  C:/MinGW/include/c++/10.3.0/bits/istream.tcc \
- C:/MinGW/x86_64-w64-mingw32/include/assert.h
+ C:/MinGW/x86_64-w64-mingw32/include/assert.h \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/reconstruction.h \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/output.h \
+ C:/MinGW/x86_64-w64-mingw32/include/string.h \
+ C:/MinGW/x86_64-w64-mingw32/include/sec_api/string_s.h \
+ C:/MinGW/include/c++/10.3.0/fstream \
+ C:/MinGW/include/c++/10.3.0/bits/codecvt.h \
+ C:/MinGW/include/c++/10.3.0/x86_64-w64-mingw32/bits/basic_file.h \
+ C:/MinGW/include/c++/10.3.0/x86_64-w64-mingw32/bits/c++io.h \
+ C:/MinGW/include/c++/10.3.0/bits/fstream.tcc \
+ C:/MinGW/include/c++/10.3.0/sstream \
+ C:/MinGW/include/c++/10.3.0/bits/sstream.tcc \
+ C:/MinGW/include/c++/10.3.0/iomanip C:/MinGW/include/c++/10.3.0/locale \
+ C:/MinGW/include/c++/10.3.0/bits/locale_facets_nonio.h \
+ C:/MinGW/include/c++/10.3.0/ctime \
+ C:/MinGW/include/c++/10.3.0/x86_64-w64-mingw32/bits/time_members.h \
+ C:/MinGW/include/c++/10.3.0/x86_64-w64-mingw32/bits/messages_members.h \
+ C:/MinGW/include/c++/10.3.0/bits/locale_facets_nonio.tcc \
+ C:/MinGW/include/c++/10.3.0/bits/locale_conv.h \
+ C:/MinGW/include/c++/10.3.0/bits/unique_ptr.h \
+ C:/MinGW/include/c++/10.3.0/utility \
+ C:/MinGW/include/c++/10.3.0/bits/stl_relops.h \
+ C:/MinGW/include/c++/10.3.0/tuple C:/MinGW/include/c++/10.3.0/array \
+ C:/MinGW/include/c++/10.3.0/bits/uses_allocator.h \
+ C:/MinGW/include/c++/10.3.0/bits/invoke.h \
+ C:/MinGW/include/c++/10.3.0/bits/quoted_string.h \
+ C:/MinGW/x86_64-w64-mingw32/include/direct.h \
+ C:/MinGW/x86_64-w64-mingw32/include/io.h \
+ D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/boundary_condition.h

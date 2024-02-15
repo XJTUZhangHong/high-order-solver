@@ -1,8 +1,5 @@
-CMakeFiles/solver.dir/src/reconstruction.obj: \
- D:\Research\Arbitrary\ high-order\ reconstruction\ based\ on\ DF\solver\src\reconstruction.cpp \
- D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/reconstruction.h \
- D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/flux_function.h \
- D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/time_advance.h \
+CMakeFiles/solver.dir/src/basic_function.cpp.obj: \
+ D:\Research\Arbitrary\ high-order\ reconstruction\ based\ on\ DF\solver\src\basic_function.cpp \
  D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/basic_function.h \
  D:/Research/Arbitrary\ high-order\ reconstruction\ based\ on\ DF/solver/include/fluid_mesh.h \
  C:/MinGW/lib/gcc/x86_64-w64-mingw32/10.3.0/include/omp.h \

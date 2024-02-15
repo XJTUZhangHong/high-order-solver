@@ -157,7 +157,10 @@ void PlanarShock()
 				}
 			}
 			block.step++;
-			//cout << "The step is " << block.step << endl;
+			if (block.step % 10 == 0)
+			{
+				cout << "The step is " << block.step << endl;
+			}
 			block.t = block.t + block.dt;
 		}
 		output2d(fluids, block);

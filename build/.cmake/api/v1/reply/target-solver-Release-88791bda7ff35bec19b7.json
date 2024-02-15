@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "solver.exe"
+			"path" : "D:/Research/Arbitrary high-order reconstruction based on DF/solver/solver.exe"
 		},
 		{
-			"path" : "solver.pdb"
+			"path" : "D:/Research/Arbitrary high-order reconstruction based on DF/solver/solver.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -28,13 +28,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 3,
+				"line" : 8,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 4,
+				"line" : 9,
 				"parent" : 0
 			}
 		]
@@ -45,7 +45,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -fopenmp -g"
+					"fragment" : " -fopenmp  -O3 -Wall"
 				}
 			],
 			"includes" : 
@@ -77,7 +77,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-fopenmp -g",
+				"fragment" : "-fopenmp  -O3 -Wall",
 				"role" : "flags"
 			},
 			{

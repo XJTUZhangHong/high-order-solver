@@ -226,9 +226,9 @@ double Get_CFL(Block2d& block, Fluid2d* fluids, double tstop)
 				fluids[i * block.ny + j].primvar[2], fluids[i * block.ny + j].primvar[3]);
 		}
 	}
-	cout << "step = " << block.step
-		<< " time size is " << dt
-		<< " time = " << block.t << endl;
+	// cout << "step = " << block.step
+	// 	<< " time size is " << dt
+	// 	<< " time = " << block.t << endl;
 	if (block.t + dt > tstop)
 	{
 		dt = tstop - block.t + 1e-16;

@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = @CMakeFiles/solver.dir/includes_CXX.rsp
 
-CXX_FLAGS =  -fopenmp -g
+CXX_FLAGS =  -fopenmp  -O3 -Wall
 

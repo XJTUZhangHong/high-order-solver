@@ -128,155 +128,245 @@ solver/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/build
 .PHONY : solver/fast
 
-# target to build an object file
-main.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/main.obj
+main.obj: main.cpp.obj
 .PHONY : main.obj
 
-# target to preprocess a source file
-main.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/main.i
+# target to build an object file
+main.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/main.cpp.obj
+.PHONY : main.cpp.obj
+
+main.i: main.cpp.i
 .PHONY : main.i
 
-# target to generate assembly for a file
-main.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/main.s
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
 .PHONY : main.s
 
-# target to build an object file
-src/1Dproblem.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/1Dproblem.obj
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/main.cpp.s
+.PHONY : main.cpp.s
+
+src/1Dproblem.obj: src/1Dproblem.cpp.obj
 .PHONY : src/1Dproblem.obj
 
-# target to preprocess a source file
-src/1Dproblem.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/1Dproblem.i
+# target to build an object file
+src/1Dproblem.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/1Dproblem.cpp.obj
+.PHONY : src/1Dproblem.cpp.obj
+
+src/1Dproblem.i: src/1Dproblem.cpp.i
 .PHONY : src/1Dproblem.i
 
-# target to generate assembly for a file
-src/1Dproblem.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/1Dproblem.s
+# target to preprocess a source file
+src/1Dproblem.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/1Dproblem.cpp.i
+.PHONY : src/1Dproblem.cpp.i
+
+src/1Dproblem.s: src/1Dproblem.cpp.s
 .PHONY : src/1Dproblem.s
 
-# target to build an object file
-src/2Dproblem.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.obj
+# target to generate assembly for a file
+src/1Dproblem.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/1Dproblem.cpp.s
+.PHONY : src/1Dproblem.cpp.s
+
+src/2Dproblem.obj: src/2Dproblem.cpp.obj
 .PHONY : src/2Dproblem.obj
 
-# target to preprocess a source file
-src/2Dproblem.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.i
+# target to build an object file
+src/2Dproblem.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.cpp.obj
+.PHONY : src/2Dproblem.cpp.obj
+
+src/2Dproblem.i: src/2Dproblem.cpp.i
 .PHONY : src/2Dproblem.i
 
-# target to generate assembly for a file
-src/2Dproblem.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.s
+# target to preprocess a source file
+src/2Dproblem.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.cpp.i
+.PHONY : src/2Dproblem.cpp.i
+
+src/2Dproblem.s: src/2Dproblem.cpp.s
 .PHONY : src/2Dproblem.s
 
-# target to build an object file
-src/basic_function.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/basic_function.obj
+# target to generate assembly for a file
+src/2Dproblem.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.cpp.s
+.PHONY : src/2Dproblem.cpp.s
+
+src/basic_function.obj: src/basic_function.cpp.obj
 .PHONY : src/basic_function.obj
 
-# target to preprocess a source file
-src/basic_function.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/basic_function.i
+# target to build an object file
+src/basic_function.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/basic_function.cpp.obj
+.PHONY : src/basic_function.cpp.obj
+
+src/basic_function.i: src/basic_function.cpp.i
 .PHONY : src/basic_function.i
 
-# target to generate assembly for a file
-src/basic_function.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/basic_function.s
+# target to preprocess a source file
+src/basic_function.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/basic_function.cpp.i
+.PHONY : src/basic_function.cpp.i
+
+src/basic_function.s: src/basic_function.cpp.s
 .PHONY : src/basic_function.s
 
-# target to build an object file
-src/boundary_condition.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.obj
+# target to generate assembly for a file
+src/basic_function.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/basic_function.cpp.s
+.PHONY : src/basic_function.cpp.s
+
+src/boundary_condition.obj: src/boundary_condition.cpp.obj
 .PHONY : src/boundary_condition.obj
 
-# target to preprocess a source file
-src/boundary_condition.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.i
+# target to build an object file
+src/boundary_condition.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.cpp.obj
+.PHONY : src/boundary_condition.cpp.obj
+
+src/boundary_condition.i: src/boundary_condition.cpp.i
 .PHONY : src/boundary_condition.i
 
-# target to generate assembly for a file
-src/boundary_condition.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.s
+# target to preprocess a source file
+src/boundary_condition.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.cpp.i
+.PHONY : src/boundary_condition.cpp.i
+
+src/boundary_condition.s: src/boundary_condition.cpp.s
 .PHONY : src/boundary_condition.s
 
-# target to build an object file
-src/fluid_mesh.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.obj
+# target to generate assembly for a file
+src/boundary_condition.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/boundary_condition.cpp.s
+.PHONY : src/boundary_condition.cpp.s
+
+src/fluid_mesh.obj: src/fluid_mesh.cpp.obj
 .PHONY : src/fluid_mesh.obj
 
-# target to preprocess a source file
-src/fluid_mesh.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.i
+# target to build an object file
+src/fluid_mesh.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.cpp.obj
+.PHONY : src/fluid_mesh.cpp.obj
+
+src/fluid_mesh.i: src/fluid_mesh.cpp.i
 .PHONY : src/fluid_mesh.i
 
-# target to generate assembly for a file
-src/fluid_mesh.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.s
+# target to preprocess a source file
+src/fluid_mesh.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.cpp.i
+.PHONY : src/fluid_mesh.cpp.i
+
+src/fluid_mesh.s: src/fluid_mesh.cpp.s
 .PHONY : src/fluid_mesh.s
 
-# target to build an object file
-src/flux_function.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/flux_function.obj
+# target to generate assembly for a file
+src/fluid_mesh.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/fluid_mesh.cpp.s
+.PHONY : src/fluid_mesh.cpp.s
+
+src/flux_function.obj: src/flux_function.cpp.obj
 .PHONY : src/flux_function.obj
 
-# target to preprocess a source file
-src/flux_function.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/flux_function.i
+# target to build an object file
+src/flux_function.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/flux_function.cpp.obj
+.PHONY : src/flux_function.cpp.obj
+
+src/flux_function.i: src/flux_function.cpp.i
 .PHONY : src/flux_function.i
 
-# target to generate assembly for a file
-src/flux_function.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/flux_function.s
+# target to preprocess a source file
+src/flux_function.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/flux_function.cpp.i
+.PHONY : src/flux_function.cpp.i
+
+src/flux_function.s: src/flux_function.cpp.s
 .PHONY : src/flux_function.s
 
-# target to build an object file
-src/output.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/output.obj
+# target to generate assembly for a file
+src/flux_function.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/flux_function.cpp.s
+.PHONY : src/flux_function.cpp.s
+
+src/output.obj: src/output.cpp.obj
 .PHONY : src/output.obj
 
-# target to preprocess a source file
-src/output.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/output.i
+# target to build an object file
+src/output.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/output.cpp.obj
+.PHONY : src/output.cpp.obj
+
+src/output.i: src/output.cpp.i
 .PHONY : src/output.i
 
-# target to generate assembly for a file
-src/output.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/output.s
+# target to preprocess a source file
+src/output.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/output.cpp.i
+.PHONY : src/output.cpp.i
+
+src/output.s: src/output.cpp.s
 .PHONY : src/output.s
 
-# target to build an object file
-src/reconstruction.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/reconstruction.obj
+# target to generate assembly for a file
+src/output.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/output.cpp.s
+.PHONY : src/output.cpp.s
+
+src/reconstruction.obj: src/reconstruction.cpp.obj
 .PHONY : src/reconstruction.obj
 
-# target to preprocess a source file
-src/reconstruction.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/reconstruction.i
+# target to build an object file
+src/reconstruction.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/reconstruction.cpp.obj
+.PHONY : src/reconstruction.cpp.obj
+
+src/reconstruction.i: src/reconstruction.cpp.i
 .PHONY : src/reconstruction.i
 
-# target to generate assembly for a file
-src/reconstruction.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/reconstruction.s
+# target to preprocess a source file
+src/reconstruction.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/reconstruction.cpp.i
+.PHONY : src/reconstruction.cpp.i
+
+src/reconstruction.s: src/reconstruction.cpp.s
 .PHONY : src/reconstruction.s
 
-# target to build an object file
-src/time_advance.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/time_advance.obj
+# target to generate assembly for a file
+src/reconstruction.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/reconstruction.cpp.s
+.PHONY : src/reconstruction.cpp.s
+
+src/time_advance.obj: src/time_advance.cpp.obj
 .PHONY : src/time_advance.obj
 
-# target to preprocess a source file
-src/time_advance.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/time_advance.i
+# target to build an object file
+src/time_advance.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/time_advance.cpp.obj
+.PHONY : src/time_advance.cpp.obj
+
+src/time_advance.i: src/time_advance.cpp.i
 .PHONY : src/time_advance.i
 
-# target to generate assembly for a file
-src/time_advance.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/time_advance.s
+# target to preprocess a source file
+src/time_advance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/time_advance.cpp.i
+.PHONY : src/time_advance.cpp.i
+
+src/time_advance.s: src/time_advance.cpp.s
 .PHONY : src/time_advance.s
+
+# target to generate assembly for a file
+src/time_advance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/time_advance.cpp.s
+.PHONY : src/time_advance.cpp.s
 
 # Help Target
 help:

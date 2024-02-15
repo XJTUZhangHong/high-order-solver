@@ -1,10 +1,12 @@
+cmake_minimum_required(VERSION 3.28)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+SET(CMAKE_BUILD_TYPE "Release")
 aux_source_directory(src SRC_SUB)
 aux_source_directory(. SRC_CUR)
 add_executable(solver ${SRC_SUB} ${SRC_CUR})
 include_directories(include)
-
-#set(CMAKE_BUILD_TYPE release CACHE STRING "Build Type" FORCE)
-
 SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 find_package(OpenMP)
 if (OPENMP_FOUND)
