@@ -949,7 +949,7 @@ void WENO5_AO(Point2d& left, Point2d& right, double* wn2, double* wn1, double* w
 	
 }
 
-void DF_5th_resolution_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)
+void WENO5_AO_with_df_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)
 {
 	if ((fluids[0].xindex > block.ghost - 2) && (fluids[0].xindex < block.nx - block.ghost + 1))
 	{
@@ -959,7 +959,7 @@ void DF_5th_resolution_normal(Interface2d& left, Interface2d& right, Interface2d
 		alpha[2] = fluids[0].alpha_x;
 		alpha[3] = fluids[block.ny].alpha_x;
 		alpha[4] = fluids[2 * block.ny].alpha_x;
-		DF_5th_resolution(left.line.right, right.line.left, alpha, fluids[-2 * block.ny].convar, fluids[-block.ny].convar, fluids[0].convar, fluids[block.ny].convar, fluids[2 * block.ny].convar, fluids[0].dx);
+		WENO5_AO_with_df(left.line.right, right.line.left, alpha, fluids[-2 * block.ny].convar, fluids[-block.ny].convar, fluids[0].convar, fluids[block.ny].convar, fluids[2 * block.ny].convar, fluids[0].dx);
 	}
 
 
@@ -975,11 +975,11 @@ void DF_5th_resolution_normal(Interface2d& left, Interface2d& right, Interface2d
 		alpha[2] = fluids[0].alpha_y;
 		alpha[3] = fluids[1].alpha_y;
 		alpha[4] = fluids[2].alpha_y;
-		DF_5th_resolution(down.line.right, up.line.left, alpha, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, fluids[0].dy);
+		WENO5_AO_with_df(down.line.right, up.line.left, alpha, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, fluids[0].dy);
 	}
 }
 
-void DF_5th_resolution(Point2d& left, Point2d& right, double* alpha, double* wn2, double* wn1, double* w, double* wp1, double* wp2, double h)
+void WENO5_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn2, double* wn1, double* w, double* wp1, double* wp2, double h)
 {
 	//we denote that   |left...cell-center...right|
 	double ren2[4], ren1[4], re0[4], rep1[4], rep2[4];
@@ -1422,7 +1422,7 @@ void weno_5th_ao_2gauss(double& g1, double& g1x, double& g1xx, double& g2, doubl
 	}
 }
 
-void DF_5th_resolution_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
+void WENO5_AO_with_df_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
 {
 	// along x direction tangitial recontruction,
 	double alpha1[5], alpha2[5];
@@ -1432,7 +1432,7 @@ void DF_5th_resolution_tangent(Interface2d* left, Interface2d* right, Interface2
 	alpha2[0] = fluids[block.ny - 2].alpha_x; alpha2[1] = fluids[block.ny - 1].alpha_x;
 	alpha2[2] = fluids[block.ny].alpha_x;  alpha2[3] = fluids[block.ny + 1].alpha_x;
 	alpha2[4] = fluids[block.ny + 2].alpha_x;
-	DF_5th_resolution_tangential(right[0].gauss,
+	weno_5th_ao_with_df_tangential(right[0].gauss,
 		right[-2].line, right[-1].line, right[0].line, right[1].line, right[2].line, alpha1, alpha2, right[0].length);
 
 	//since we already do the coordinate transform, along y, no transform needed.
@@ -1442,11 +1442,11 @@ void DF_5th_resolution_tangent(Interface2d* left, Interface2d* right, Interface2
 	alpha2[0] = fluids[2 * block.ny + 1].alpha_y; alpha2[1] = fluids[block.ny + 1].alpha_y;
 	alpha2[2] = fluids[1].alpha_y;  alpha2[3] = fluids[-block.ny + 1].alpha_y;
 	alpha2[4] = fluids[-2 * block.ny + 1].alpha_y;
-	DF_5th_resolution_tangential(up[0].gauss, up[2 * (block.ny + 1)].line, up[block.ny + 1].line,
+	weno_5th_ao_with_df_tangential(up[0].gauss, up[2 * (block.ny + 1)].line, up[block.ny + 1].line,
 		up[0].line, up[-(block.ny + 1)].line, up[-2 * (block.ny + 1)].line, alpha1, alpha2, up[0].length);
 }
 
-void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, double* alpha1, double* alpha2, double h)
+void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, double* alpha1, double* alpha2, double h)
 {
 	//lets first reconstruction the left value
 
@@ -1468,7 +1468,7 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 		{
 			if (gausspoint == 2)
 			{
-				DF_5th_resolution_2gauss(re[0].left.convar[i], re[0].left.der1y[i], tmp[0],
+				weno_5th_ao_with_df_2gauss(re[0].left.convar[i], re[0].left.der1y[i], tmp[0],
 					re[1].left.convar[i], re[1].left.der1y[i], tmp[1], alpha1,
 					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], h, 2);
 			}
@@ -1486,7 +1486,7 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 			double var[2][4], der1[2][4], der2[2][4];
 			for (int i = 0; i < 4; i++)
 			{
-				DF_5th_resolution_2gauss(var[0][i], der1[0][i], der2[0][i],
+				weno_5th_ao_with_df_2gauss(var[0][i], der1[0][i], der2[0][i],
 					var[1][i], der1[1][i], der2[1][i], alpha1,
 					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h, 2);
 			}
@@ -1504,7 +1504,7 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 		double tmp[4];
 		if (gausspoint == 2)
 		{
-			DF_5th_resolution_2gauss(re[0].left.der1x[i], tmp[0], tmp[1],
+			weno_5th_ao_with_df_2gauss(re[0].left.der1x[i], tmp[0], tmp[1],
 				re[1].left.der1x[i], tmp[2], tmp[3], alpha1,
 				wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], h, 1);
 		}
@@ -1524,7 +1524,7 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 		{
 			if (gausspoint == 2)
 			{
-				DF_5th_resolution_2gauss(re[0].right.convar[i], re[0].right.der1y[i], tmp[0],
+				weno_5th_ao_with_df_2gauss(re[0].right.convar[i], re[0].right.der1y[i], tmp[0],
 					re[1].right.convar[i], re[1].right.der1y[i], tmp[1], alpha2,
 					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], h, 2);
 			}
@@ -1542,7 +1542,7 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 			double var[2][4], der1[2][4], der2[2][4];
 			for (int i = 0; i < 4; i++)
 			{
-				DF_5th_resolution_2gauss(var[0][i], der1[0][i], der2[0][i],
+				weno_5th_ao_with_df_2gauss(var[0][i], der1[0][i], der2[0][i],
 					var[1][i], der1[1][i], der2[1][i], alpha2,
 					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h, 2);
 			}
@@ -1559,7 +1559,7 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 		double tmp[4];
 		if (gausspoint == 2)
 		{
-			DF_5th_resolution_2gauss(re[0].right.der1x[i], tmp[0], tmp[1],
+			weno_5th_ao_with_df_2gauss(re[0].right.der1x[i], tmp[0], tmp[1],
 				re[1].right.der1x[i], tmp[2], tmp[3], alpha2,
 				wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], h, 1);
 		}
@@ -1595,10 +1595,9 @@ void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon
 			}
 		}
 	}
-
 }
 
-void DF_5th_resolution_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* alpham, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order)
+void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* alpham, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order)
 {
 	//the parameter order constrols up to which order you want construct
 	// order from 0, 1, 2

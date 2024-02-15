@@ -8,8 +8,8 @@ int main()
     // 1-D problem
     //SodTubeProblem();
     //Blastwave();
-    ShuOsher();
+    //ShuOsher();
     // 2-D problem
-    //PlanarShock();
+    PlanarShock();
     return 0;
 }

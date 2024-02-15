@@ -129,6 +129,11 @@ void PlanarShock()
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
 
+			if (block.step > 0 && is_using_df_factor)
+			{
+				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+			}
 			for (int i = 0; i < block.stages; i++)
 			{
 				leftboundary(fluids, block, bcvalue[0]);
@@ -145,6 +150,11 @@ void PlanarShock()
 				Calculate_flux(xfluxes, yfluxes, xinterfaces, yinterfaces, block, i);
 
 				Update(fluids, xfluxes, yfluxes, block, i);
+
+				if (is_using_df_factor)
+				{
+					Update_alpha(xinterfaces, yinterfaces, fluids, block);
+				}
 			}
 			block.step++;
 			//cout << "The step is " << block.step << endl;
