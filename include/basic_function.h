@@ -135,6 +135,8 @@ void Copy_Array(double* target, double* origin, int dim);
 
 void YchangetoX(double* fluidtmp, double* fluid);
 
+void XchangetoY(double* fluidtmp, double* fluid);
+
 void Local_to_Global(double *change,double *normal);
 
 Flux1d** Setflux_array(Block1d block);

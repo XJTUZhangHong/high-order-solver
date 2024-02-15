@@ -100,6 +100,11 @@ void SodTubeProblem()
 		//determine the cfl condtion
 		block.dt = Get_CFL(block, fluids, tstop);
 
+		if (block.step > 0 && is_using_df_factor)
+		{
+			cellreconstruction = WENO5_AO_with_DF;
+		}
+
 		for (int i = 0; i < block.stages; i++)
 		{
 			//after determine the cfl condition, let's implement boundary condtion
@@ -118,6 +123,11 @@ void SodTubeProblem()
 			Calculate_flux(fluxes, interfaces, block, i);
 			//then is update flux part
 			Update(fluids, fluxes, block, i);
+
+			if (is_using_df_factor)
+			{
+				Update_alpha(interfaces, fluids, block);
+			}
 		}
 		// update the compression factor
 		//for (int j = 3; j < 402; j++) { cout << fluids[j].convar[0] << endl; }
@@ -264,7 +274,10 @@ void Blastwave()
 		//determine the cfl condtion
 		block.dt = Get_CFL(block, fluids, tstop);
 
-		//if (block.step > 0) { cellreconstruction = DF_5th_resolution; }
+		if (block.step > 0 && is_using_df_factor)
+		{
+			cellreconstruction = WENO5_AO_with_DF;
+		}
 
 		for (int i = 0; i < block.stages; i++)
 		{
@@ -284,6 +297,11 @@ void Blastwave()
 			Calculate_flux(fluxes, interfaces, block, i);
 			//then is update flux part
 			Update(fluids, fluxes, block, i);
+
+			if (is_using_df_factor)
+			{
+				Update_alpha(interfaces, fluids, block);
+			}
 		}
 		block.step++;
 		block.t = block.t + block.dt;

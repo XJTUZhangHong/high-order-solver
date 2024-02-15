@@ -653,6 +653,14 @@ void YchangetoX(double* fluidtmp, double* fluid)
 	fluidtmp[3] = fluid[3];
 }
 
+void XchangetoY(double* fluidtmp, double* fluid)
+{
+	fluidtmp[0] = fluid[0];
+	fluidtmp[1] = -fluid[2];
+	fluidtmp[2] = fluid[1];
+	fluidtmp[3] = fluid[3];
+}
+
 void Local_to_Global(double *change,double *normal)
 {
     double temp[2];

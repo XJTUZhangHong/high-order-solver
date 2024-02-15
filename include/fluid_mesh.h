@@ -160,7 +160,8 @@ public:
 	bool is_hweno;
 	double node[8];
 	bool boundary;
-	double alpha = 1.0; // compression factor
+	double alpha_x = 1.0;
+	double alpha_y = 1.0;
 	string direction;   // x direction or y direction
 	bool is_left = false;
 	double Sw1[2][4];

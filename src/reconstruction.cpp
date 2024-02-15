@@ -728,6 +728,87 @@ void Check_Order_Reduce_by_Lambda_2D(bool& order_reduce, double* convar)
 	}
 }
 
+double Calculate_alpha_k(double* prim_left, double* prim_right)
+{
+	double A, Ma_left_normal, Ma_right_normal;
+	double Ma_left_tangent, Ma_right_tangent;
+
+	Ma_left_normal  = prim_left[1] / sqrt(Gamma * prim_left[3] / prim_left[0]);
+	Ma_left_tangent = prim_left[2] / sqrt(Gamma * prim_left[3] / prim_left[0]);
+	Ma_right_normal = prim_right[1] / sqrt(Gamma * prim_right[3] / prim_right[0]);
+	Ma_right_tangent = prim_right[2] / sqrt(Gamma * prim_right[3] / prim_right[0]);
+
+	A = abs(prim_left[3] - prim_right[3]) / prim_left[3] + abs(prim_left[3] - prim_right[3]) / prim_right[3];
+	//A = A + abs(prim_left[0] - prim_right[0]) / prim_left[0] + abs(prim_left[0] - prim_right[0]) / prim_right[0];
+	A = A + pow(Ma_left_normal - Ma_right_normal, 2) + pow(Ma_left_tangent - Ma_right_tangent, 2);
+	return A;
+}
+
+void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d& fluids)
+{
+	double prim_left_left[4], prim_left_right[4], prim_right_left[4], prim_right_right[4];
+	double prim_down_left[4], prim_down_right[4], prim_up_left[4], prim_up_right[4];
+	double alpha_left, alpha_right, alpha_down, alpha_up;
+	double alpha[2][4];
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		// here two gaussian points are used by default
+		Convar_to_primvar_2D(prim_left_left, left.gauss[num_gauss].left.convar);
+		Convar_to_primvar_2D(prim_left_right, left.gauss[num_gauss].right.convar);
+		Convar_to_primvar_2D(prim_right_left, right.gauss[num_gauss].left.convar);
+		Convar_to_primvar_2D(prim_right_right, right.gauss[num_gauss].right.convar);
+		// here
+		Convar_to_primvar_2D(prim_down_left, down.gauss[num_gauss].left.convar);
+		Convar_to_primvar_2D(prim_down_right, down.gauss[num_gauss].right.convar);
+		Convar_to_primvar_2D(prim_up_left, up.gauss[num_gauss].left.convar);
+		Convar_to_primvar_2D(prim_up_right, up.gauss[num_gauss].right.convar);
+		double down_left[4], down_right[4], up_left[4], up_right[4];
+		XchangetoY(down_left, prim_down_left); XchangetoY(down_right, prim_down_right); 
+		XchangetoY(up_left, prim_up_left); XchangetoY(up_right, prim_up_right);
+
+		alpha[num_gauss][0] = Calculate_alpha_k(prim_left_left, prim_left_right);
+		alpha[num_gauss][1] = Calculate_alpha_k(prim_right_left, prim_right_right);
+		alpha[num_gauss][2] = Calculate_alpha_k(down_left, down_right);
+		alpha[num_gauss][3] = Calculate_alpha_k(up_left, up_right);
+	}
+	alpha_left = 0.5 * (alpha[0][0] + alpha[1][0]);
+	alpha_right = 0.5 * (alpha[0][1] + alpha[1][1]);
+	alpha_down = 0.5 * (alpha[0][2] + alpha[1][2]);
+	alpha_up = 0.5 * (alpha[0][3] + alpha[1][3]);
+	double sum_alpha_x, sum_alpha_y;
+	sum_alpha_x = alpha_left + alpha_right;
+	sum_alpha_y = alpha_down + alpha_up;
+	if (sum_alpha_x < 1.0)
+	{
+		fluids.alpha_x = 1.0;
+	}
+	else
+	{
+		fluids.alpha_x = 2.0 / (1.0 + sum_alpha_x);
+	}
+	if (sum_alpha_y < 1.0)
+	{
+		fluids.alpha_y = 1.0;
+	}
+	else
+	{
+		fluids.alpha_y = 2.0 / (1.0 + sum_alpha_y);
+	}
+}
+
+void Update_alpha(Interface2d* xinterfaces, Interface2d* yinterfaces, Fluid2d* fluids, Block2d block)
+{
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodex + block.ghost; j++)
+		{
+			Calculate_alpha(xinterfaces[i * (block.ny + 1) + j], xinterfaces[(i + 1) * (block.ny + 1) + j],
+				yinterfaces[i * (block.ny + 1) + j], yinterfaces[i * (block.ny + 1) + j + 1], fluids[i * block.ny + j]);
+		}
+	}
+}
+
 // cell left & right side normal reconstruction
 void WENO5_AO_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)	
 {
@@ -857,6 +938,157 @@ void WENO5_AO(Point2d& left, Point2d& right, double* wn2, double* wn1, double* w
 	{
 		if (is_reduce_order_warning == true)
 			cout << " WENO5-cell-splitting order reduce" << endl;
+		for (int m = 0; m < 4; m++)
+		{
+			right.convar[m] = w[m];
+			left.convar[m] = w[m];
+			right.der1x[m] = 0.0;
+			left.der1x[m] = 0.0;
+		}
+	}
+	
+}
+
+void DF_5th_resolution_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)
+{
+	if ((fluids[0].xindex > block.ghost - 2) && (fluids[0].xindex < block.nx - block.ghost + 1))
+	{
+		double alpha[5];
+		alpha[0] = fluids[-2 * block.ny].alpha_x;
+		alpha[1] = fluids[-block.ny].alpha_x;
+		alpha[2] = fluids[0].alpha_x;
+		alpha[3] = fluids[block.ny].alpha_x;
+		alpha[4] = fluids[2 * block.ny].alpha_x;
+		DF_5th_resolution(left.line.right, right.line.left, alpha, fluids[-2 * block.ny].convar, fluids[-block.ny].convar, fluids[0].convar, fluids[block.ny].convar, fluids[2 * block.ny].convar, fluids[0].dx);
+	}
+
+
+	if ((fluids[0].yindex > block.ghost - 2) && (fluids[0].yindex < block.ny - block.ghost + 1))
+	{
+		double wn2tmp[4], wn1tmp[4], wtmp[4], wp1tmp[4], wp2tmp[4];
+		YchangetoX(wn1tmp, fluids[-1].convar); YchangetoX(wtmp, fluids[0].convar); YchangetoX(wp1tmp, fluids[1].convar);
+		YchangetoX(wn2tmp, fluids[-2].convar); YchangetoX(wp2tmp, fluids[2].convar);
+
+		double alpha[5];
+		alpha[0] = fluids[-2].alpha_y;
+		alpha[1] = fluids[-1].alpha_y;
+		alpha[2] = fluids[0].alpha_y;
+		alpha[3] = fluids[1].alpha_y;
+		alpha[4] = fluids[2].alpha_y;
+		DF_5th_resolution(down.line.right, up.line.left, alpha, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, fluids[0].dy);
+	}
+}
+
+void DF_5th_resolution(Point2d& left, Point2d& right, double* alpha, double* wn2, double* wn1, double* w, double* wp1, double* wp2, double h)
+{
+	//we denote that   |left...cell-center...right|
+	double ren2[4], ren1[4], re0[4], rep1[4], rep2[4];
+	double var[4], der1[4], der2[4];
+
+	double base_left[4];
+	double base_right[4];
+	double wn1_primvar[4], w_primvar[4], wp1_primvar[4];
+	Convar_to_primvar_2D(wn1_primvar, wn1);
+	Convar_to_primvar_2D(w_primvar, w);
+	Convar_to_primvar_2D(wp1_primvar, wp1);
+
+	for (int i = 0; i < 4; i++)
+	{
+		base_left[i] = 0.5 * (wn1_primvar[i] + w_primvar[i]);
+		base_right[i] = 0.5 * (wp1_primvar[i] + w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ren2[i] = wn2[i];
+			ren1[i] = wn1[i];
+			re0[i] = w[i];
+			rep1[i] = wp1[i];
+			rep2[i] = wp2[i];
+		}
+	}
+	else
+	{
+		Convar_to_char(ren2, base_left, wn2);
+		Convar_to_char(ren1, base_left, wn1);
+		Convar_to_char(re0, base_left, w);
+		Convar_to_char(rep1, base_left, wp1);
+		Convar_to_char(rep2, base_left, wp2);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		weno_5th_ao_with_df_left(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], alpha, h);
+
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			left.convar[i] = var[i];
+			left.der1x[i] = der1[i];
+
+		}
+	}
+	else
+	{
+		Char_to_convar(left.convar, base_left, var);
+		Char_to_convar(left.der1x, base_left, der1);
+
+	}
+
+	// cell right
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ren2[i] = wn2[i];
+			ren1[i] = wn1[i];
+			re0[i] = w[i];
+			rep1[i] = wp1[i];
+			rep2[i] = wp2[i];
+		}
+	}
+	else
+	{
+		Convar_to_char(ren2, base_right, wn2);
+		Convar_to_char(ren1, base_right, wn1);
+		Convar_to_char(re0, base_right, w);
+		Convar_to_char(rep1, base_right, wp1);
+		Convar_to_char(rep2, base_right, wp2);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		weno_5th_ao_with_df_right(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], alpha, h);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			right.convar[i] = var[i];
+			right.der1x[i] = der1[i];
+		}
+	}
+	else
+	{
+		Char_to_convar(right.convar, base_right, var);
+		Char_to_convar(right.der1x, base_right, der1);
+
+	}
+
+	
+	Check_Order_Reduce_by_Lambda_2D(right.is_reduce_order, right.convar);
+	Check_Order_Reduce_by_Lambda_2D(left.is_reduce_order, left.convar);
+
+	if (left.is_reduce_order == true || right.is_reduce_order == true)
+	{
+		//if (is_reduce_order_warning == true)
+			//cout << " WENO5-cell-splitting order reduce" << endl;
 		for (int m = 0; m < 4; m++)
 		{
 			right.convar[m] = w[m];
@@ -1187,6 +1419,312 @@ void weno_5th_ao_2gauss(double& g1, double& g1x, double& g1xx, double& g2, doubl
 		{
 			g2xx += final_weight[k] * pxx[k];
 		}
+	}
+}
+
+void DF_5th_resolution_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
+{
+	// along x direction tangitial recontruction,
+	double alpha1[5], alpha2[5];
+	alpha1[0] = fluids[-2].alpha_x; alpha1[1] = fluids[-1].alpha_x;
+	alpha1[2] = fluids[0].alpha_x;  alpha1[3] = fluids[1].alpha_x;
+	alpha1[4] = fluids[2].alpha_x;
+	alpha2[0] = fluids[block.ny - 2].alpha_x; alpha2[1] = fluids[block.ny - 1].alpha_x;
+	alpha2[2] = fluids[block.ny].alpha_x;  alpha2[3] = fluids[block.ny + 1].alpha_x;
+	alpha2[4] = fluids[block.ny + 2].alpha_x;
+	DF_5th_resolution_tangential(right[0].gauss,
+		right[-2].line, right[-1].line, right[0].line, right[1].line, right[2].line, alpha1, alpha2, right[0].length);
+
+	//since we already do the coordinate transform, along y, no transform needed.
+	alpha1[0] = fluids[2 * block.ny].alpha_y; alpha1[1] = fluids[block.ny].alpha_y;
+	alpha1[2] = fluids[0].alpha_y;  alpha1[3] = fluids[-block.ny].alpha_y;
+	alpha1[4] = fluids[-2 * block.ny].alpha_y;
+	alpha2[0] = fluids[2 * block.ny + 1].alpha_y; alpha2[1] = fluids[block.ny + 1].alpha_y;
+	alpha2[2] = fluids[1].alpha_y;  alpha2[3] = fluids[-block.ny + 1].alpha_y;
+	alpha2[4] = fluids[-2 * block.ny + 1].alpha_y;
+	DF_5th_resolution_tangential(up[0].gauss, up[2 * (block.ny + 1)].line, up[block.ny + 1].line,
+		up[0].line, up[-(block.ny + 1)].line, up[-2 * (block.ny + 1)].line, alpha1, alpha2, up[0].length);
+}
+
+void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, double* alpha1, double* alpha2, double h)
+{
+	//lets first reconstruction the left value
+
+	double ren2[4], ren1[4], re0[4], rep1[4], rep2[4];
+	double base_left[4];
+	double base_right[4];
+	double wn1_primvar[4], w_primvar[4], wp1_primvar[4];
+	Convar_to_primvar_2D(w_primvar, w0.left.convar);
+
+	for (int i = 0; i < 4; i++)
+	{
+		base_left[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		double tmp[2];
+		for (int i = 0; i < 4; i++)
+		{
+			if (gausspoint == 2)
+			{
+				DF_5th_resolution_2gauss(re[0].left.convar[i], re[0].left.der1y[i], tmp[0],
+					re[1].left.convar[i], re[1].left.der1y[i], tmp[1], alpha1,
+					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], h, 2);
+			}
+		}
+	}
+	else
+	{
+		Convar_to_char(ren2, base_left, wn2.left.convar);
+		Convar_to_char(ren1, base_left, wn1.left.convar);
+		Convar_to_char(re0, base_left, w0.left.convar);
+		Convar_to_char(rep1, base_left, wp1.left.convar);
+		Convar_to_char(rep2, base_left, wp2.left.convar);
+		if (gausspoint == 2)
+		{
+			double var[2][4], der1[2][4], der2[2][4];
+			for (int i = 0; i < 4; i++)
+			{
+				DF_5th_resolution_2gauss(var[0][i], der1[0][i], der2[0][i],
+					var[1][i], der1[1][i], der2[1][i], alpha1,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h, 2);
+			}
+			for (int igauss = 0; igauss < gausspoint; igauss++)
+			{
+				Char_to_convar(re[igauss].left.convar, base_left, var[igauss]);
+				Char_to_convar(re[igauss].left.der1y, base_left, der1[igauss]);
+			}
+		}
+
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		double tmp[4];
+		if (gausspoint == 2)
+		{
+			DF_5th_resolution_2gauss(re[0].left.der1x[i], tmp[0], tmp[1],
+				re[1].left.der1x[i], tmp[2], tmp[3], alpha1,
+				wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], h, 1);
+		}
+	}
+
+	//then let's construct the right part....
+	Convar_to_primvar_2D(w_primvar, w0.right.convar);
+	for (int i = 0; i < 4; i++)
+	{
+		base_right[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		double tmp[2];
+		for (int i = 0; i < 4; i++)
+		{
+			if (gausspoint == 2)
+			{
+				DF_5th_resolution_2gauss(re[0].right.convar[i], re[0].right.der1y[i], tmp[0],
+					re[1].right.convar[i], re[1].right.der1y[i], tmp[1], alpha2,
+					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], h, 2);
+			}
+		}
+	}
+	else
+	{
+		Convar_to_char(ren2, base_right, wn2.right.convar);
+		Convar_to_char(ren1, base_right, wn1.right.convar);
+		Convar_to_char(re0, base_right, w0.right.convar);
+		Convar_to_char(rep1, base_right, wp1.right.convar);
+		Convar_to_char(rep2, base_right, wp2.right.convar);
+		if (gausspoint == 2)
+		{
+			double var[2][4], der1[2][4], der2[2][4];
+			for (int i = 0; i < 4; i++)
+			{
+				DF_5th_resolution_2gauss(var[0][i], der1[0][i], der2[0][i],
+					var[1][i], der1[1][i], der2[1][i], alpha2,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h, 2);
+			}
+			for (int igauss = 0; igauss < gausspoint; igauss++)
+			{
+				Char_to_convar(re[igauss].right.convar, base_right, var[igauss]);
+				Char_to_convar(re[igauss].right.der1y, base_right, der1[igauss]);
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		double tmp[4];
+		if (gausspoint == 2)
+		{
+			DF_5th_resolution_2gauss(re[0].right.der1x[i], tmp[0], tmp[1],
+				re[1].right.der1x[i], tmp[2], tmp[3], alpha2,
+				wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], h, 1);
+		}
+	}
+
+
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].left.is_reduce_order, re[num_gauss].left.convar);
+		if (re[num_gauss].left.is_reduce_order == true)
+		{
+			//cout << " WENO5-cell-multi-left order reduce" << endl;
+			for (int var = 0; var < 4; var++)
+			{
+				re[num_gauss].left.convar[var] = w0.left.convar[var];
+				re[num_gauss].left.der1x[var] = w0.left.der1x[var];
+				re[num_gauss].left.der1y[var] = 0.0;
+			}
+		}
+	}
+
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].right.is_reduce_order, re[num_gauss].right.convar);
+		if (re[num_gauss].right.is_reduce_order == true)
+		{
+			//cout << " WENO5-cell-multi-right order reduce" << endl;
+			for (int var = 0; var < 4; var++)
+			{
+				re[num_gauss].right.convar[var] = w0.right.convar[var];
+				re[num_gauss].right.der1x[var] = w0.right.der1x[var];
+				re[num_gauss].right.der1y[var] = 0.0;
+			}
+		}
+	}
+
+}
+
+void DF_5th_resolution_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* alpham, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order)
+{
+	//the parameter order constrols up to which order you want construct
+	// order from 0, 1, 2
+	if (order > 2 || order < 0)
+	{
+		cout << "invalid order input for the function " << __FUNCTION__ << endl;
+		exit(0);
+	}
+	double dhi = 0.85;
+	double dlo = 0.85;
+	//-- - parameter of WENO-- -
+	double beta[4], d[4], ww[4], alpha[4];
+	double epsilonW = 1e-10;
+	//-- - intermediate parameter-- -
+	double p[4], px[4], pxx[4], tempvar;
+	double sum_alpha;
+
+	//three small stencil
+	d[0] = (1.0 - dhi) * (1.0 - dlo) / 2.0;
+	d[1] = (1.0 - dhi) * dlo;
+	d[2] = (1.0 - dhi) * (1.0 - dlo) / 2.0;
+	//one big stencil
+	d[3] = dhi;
+
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
+	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+
+	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+
+	sum_alpha = 0.0;
+	for (int i = 0; i < 4; i++)
+	{
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		sum_alpha += alpha[i];
+	}
+
+	for (int k = 0; k < 4; k++)
+	{
+		ww[k] = alpha[k] / sum_alpha;
+	}
+	//-- - candidate polynomial-- -
+	double b2, c2, b4, c4, d4, e4, x;
+	double DF31, DF32, DF33, DF5;
+	DF31 = alpham[2];
+	DF32 = alpham[2];
+	DF33 = alpham[2];
+	DF5 = alpham[2];
+	// gauss point 1
+	x = -0.5 - sqrt(3) / 6.0;
+	// 3th order polynomial 1
+	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
+	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
+	p[0] = w0 + DF31 * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[0] = DF31 * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 2
+	b2 = wp1 - w0;
+	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
+	p[1] = w0 + DF32 * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[1] = DF32 * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 3
+	b2 = wp1 - w0;
+	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
+	p[2] = w0 + DF33 * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[2] = DF33 * (b2 + 2.0 * c2 * x) / h;
+	// 5th order polynomial
+	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
+	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
+	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
+	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 +
+		DF5 * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
+	px[3] = DF5 * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+	//-- - combination-- -
+	g1 = 0.0;
+	g1x = 0.0;
+	double final_weight[4];
+	final_weight[3] = ww[3] / d[3];
+	for (int k = 0; k < 3; k++)
+	{
+		final_weight[k] = ww[k] - ww[3] / d[3] * d[k];
+	}
+
+	for (int k = 0; k < 4; k++)
+	{
+		g1 += final_weight[k] * p[k];
+		g1x += final_weight[k] * px[k];
+	}
+	// gauss point 2
+	x = -0.5 + sqrt(3) / 6.0;
+	// 3th order polynomial 1
+	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
+	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
+	p[0] = w0 + DF31 * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[0] = DF31 * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 2
+	b2 = wp1 - w0;
+	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
+	p[1] = w0 + DF32 * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[1] = DF32 * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 3
+	b2 = wp1 - w0;
+	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
+	p[2] = w0 + DF33 * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[2] = DF33 * (b2 + 2.0 * c2 * x) / h;
+	// 5th order polynomial
+	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
+	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
+	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
+	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 +
+		DF5 * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
+	px[3] = DF5 * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+	//-- - combination-- -
+	g2 = 0.0;
+	g2x = 0.0;
+
+	for (int k = 0; k < 4; k++)
+	{
+		g2 += final_weight[k] * p[k];
+		g2x += final_weight[k] * px[k];
 	}
 }
 

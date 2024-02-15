@@ -52,12 +52,17 @@ extern Reconstruction_within_Cell_2D_normal cellreconstruction_2D_normal;
 void Check_Order_Reduce_by_Lambda_2D(bool& order_reduce, double* convar);
 void WENO5_AO_normal(Interface2d &left, Interface2d &right, Interface2d &down, Interface2d &up, Fluid2d *fluids, Block2d block);
 void WENO5_AO(Point2d &left, Point2d &right, double * wn2, double * wn1, double * w, double * wp1, double * wp2, double h);
+void DF_5th_resolution_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block);
+void DF_5th_resolution(Point2d& left, Point2d& right, double* alpha, double* wn2, double* wn1, double* w, double* wp1, double* wp2, double h);
 
 typedef void(*Reconstruction_within_Cell_2D_tangent)(Interface2d *left, Interface2d *right, Interface2d *down, Interface2d *up, Fluid2d *fluids, Block2d block);
 extern Reconstruction_within_Cell_2D_tangent cellreconstruction_2D_tangent;
 void WENO5_AO_tangent(Interface2d *left, Interface2d *right, Interface2d *down, Interface2d *up, Fluid2d *fluids, Block2d block);
 void WENO5_AO_tangential(Recon2d *re, Recon2d &wn2, Recon2d &wn1, Recon2d &w0, Recon2d &wp1, Recon2d &wp2, double h);
 void weno_5th_ao_2gauss(double &g1, double &g1x, double &g1xx, double &g2, double &g2x, double &g2xx, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order);
+void DF_5th_resolution_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block);
+void DF_5th_resolution_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, double* alpha1, double* alpha2, double h);
+void DF_5th_resolution_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* alpham, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order);
 
 void Reconstruction_forg0(Interface2d *xinterfaces, Interface2d *yinterfaces, Fluid2d *fluids, Block2d block);
 typedef void(*Reconstruction_forG0_2D_normal)(Interface2d *xinterfaces, Interface2d *yinterfaces, Fluid2d *fluids, Block2d block);
