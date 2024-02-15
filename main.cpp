@@ -4,12 +4,12 @@
 int main()
 {
     omp_set_num_threads(6);
-    is_using_df_factor = true;
+    is_using_df_factor = false;
     // 1-D problem
     //SodTubeProblem();
-    //Blastwave();
+    Blastwave();
     //ShuOsher();
     // 2-D problem
-    PlanarShock();
+    //PlanarShock();
     return 0;
 }

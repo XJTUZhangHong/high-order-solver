@@ -374,7 +374,7 @@ void ShuOsher()
 	rightboundary = free_boundary_right;
 	//prepare the reconstruction function
 
-	cellreconstruction = WENO5_AO;
+	cellreconstruction = WENO5_AO_with_single_weight;
 	wenotype = wenoz;
 	reconstruction_variable = characteristic;
 	g0reconstruction = Center_collision;
