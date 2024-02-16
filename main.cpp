@@ -11,7 +11,8 @@ int main()
     //accuracy_sinwave_1d();
     //ShuOsher();
     // 2-D problem
-    PlanarShock();
+    //PlanarShock();
+    PlanarSheer();
     //High_mach_astrophusical_jet();
     return 0;
 }

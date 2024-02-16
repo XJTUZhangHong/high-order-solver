@@ -4,7 +4,7 @@ void output1d(Fluid1d* fluids, Block1d block)
 {
 	ofstream ResultFile;
 	int N = block.nodex, ghost = block.ghost;
-	const char* filePath_R = "../../data/R.txt";
+	const char* filePath_R = "../data/R.txt";
 
 	ResultFile.open(filePath_R);
 	for (int i = ghost; i < N + ghost; i++)
@@ -18,7 +18,7 @@ void output_error_form(double CFL, double dt_ratio, int mesh_set, int* mesh_numb
 {
 	cout << "Accuracy-residual-file-output" << endl;
 
-	ofstream error_out("../../data/error.txt");
+	ofstream error_out("../data/error.txt");
 	error_out << "the CFL number is " << CFL << endl;
 	error_out << "the dt ratio over dx is " << dt_ratio << endl;
 
@@ -68,7 +68,7 @@ void output2d(Fluid2d* fluids, Block2d block)
 
 	// Lunix File Output Directory
 	ofstream ofs;
-	ofs.open("../../data/R2d.txt", ios::trunc);
+	ofs.open("../data/R2d.txt", ios::trunc);
 	for (int j = block.ghost; j < block.ghost + block.nodey; j++)
 	{
 		for (int i = block.ghost; i < block.ghost + block.nodex; i++)

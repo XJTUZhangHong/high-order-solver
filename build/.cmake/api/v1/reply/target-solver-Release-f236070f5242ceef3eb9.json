@@ -45,7 +45,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : " -fopenmp  -O3 -Wall"
+					"fragment" : " -fopenmp  -O3"
 				}
 			],
 			"includes" : 
@@ -77,7 +77,7 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-fopenmp  -O3 -Wall",
+				"fragment" : "-fopenmp  -O3",
 				"role" : "flags"
 			},
 			{
