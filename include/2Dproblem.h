@@ -17,6 +17,9 @@ void IC_for_astrophusical_jet(Fluid2d* fluid, Block2d block);
 
 void inflow_boundary_left(Fluid2d* fluids, Block2d block);
 
+void RT_instability();
+
+void IC_for_RT_instability(Fluid2d* fluid, Block2d block);
 
 
 

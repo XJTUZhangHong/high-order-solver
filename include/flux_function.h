@@ -22,3 +22,6 @@ typedef void(*Flux_function_2d)(Flux2d &flux, Recon2d & re, double dt);
 extern Flux_function_2d flux_function_2d;
 void GKS2D_smooth(Flux2d &flux, Recon2d& interface, double dt);
 void GKS2D(Flux2d &flux, Recon2d& interface, double dt);
+void LF2D(Flux2d& flux, Recon2d& interface, double dt);
+void get_flux(double p[4], double* flux);
+void NS_by_central_difference_prim_2D(Flux2d& flux, Recon2d& interface, double dt);

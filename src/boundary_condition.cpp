@@ -183,5 +183,60 @@ void periodic_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
 			}
 		}
 	}
+}
 
+void RT_boundary(Fluid2d* fluids, Block2d block)
+{
+	// left
+	int order;
+	order = block.ghost;
+	for (int i = order - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			int index = i * block.ny + j;
+			int ref = (2 * order - 1 - i) * block.ny + j;
+			for (int k = 0; k < 4; k++)
+			{
+				fluids[index].convar[k] = fluids[ref].convar[k];
+			}
+			fluids[index].convar[1] = -fluids[ref].convar[1];
+		}
+	}
+	// right
+	for (int i = block.nx - order; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			int index = i * block.ny + j;
+			int ref = (2 * block.nx - 2 * order - 1 - i) * block.ny + j;
+			for (int k = 0; k < 4; k++)
+			{
+				fluids[index].convar[k] = fluids[ref].convar[k];
+			}
+			fluids[index].convar[1] = -fluids[ref].convar[1];
+		}
+	}
+	// down
+	for (int j = block.ghost - 1; j >= 0; j--)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			fluids[i * block.ny + j].convar[0] = 2.0;
+			fluids[i * block.ny + j].convar[1] = 0.0;
+			fluids[i * block.ny + j].convar[2] = 0.0;
+			fluids[i * block.ny + j].convar[3] = 1.0 / (Gamma - 1.0);
+		}
+	}
+	// up
+	for (int j = block.ny - block.ghost; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			fluids[i * block.ny + j].convar[0] = 1.0;
+			fluids[i * block.ny + j].convar[1] = 0.0;
+			fluids[i * block.ny + j].convar[2] = 0.0;
+			fluids[i * block.ny + j].convar[3] = 2.5 / (Gamma - 1);
+		}
+	}
 }

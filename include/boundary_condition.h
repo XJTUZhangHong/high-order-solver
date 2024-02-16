@@ -19,3 +19,5 @@ void periodic_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
+void RT_boundary(Fluid2d* fluids, Block2d block);
+

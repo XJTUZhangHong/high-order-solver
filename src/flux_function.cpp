@@ -696,3 +696,59 @@ void GKS2D(Flux2d& flux, Recon2d& interface, double dt)
 		exit(0);
 	}
 }
+
+void LF2D(Flux2d& flux, Recon2d& interface, double dt)
+{
+	double pl[4], pr[4];
+	Convar_to_primvar_2D(pl, interface.left.convar);
+	Convar_to_primvar_2D(pr, interface.right.convar);
+
+	double k[2];
+	k[0] = abs(pl[1]) + sqrt(Gamma * pl[3] / pl[0]);
+	k[1] = abs(pr[1]) + sqrt(Gamma * pr[3] / pr[0]);
+	double beta = k[0];
+	if (k[1] > k[0]) { beta = k[1]; }
+	double flux_l[4], flux_r[4];
+	get_flux(pl, flux_l);
+	get_flux(pr, flux_r);
+
+	for (int m = 0; m < 4; m++)
+	{
+		flux.f[m] = 0.5 * ((flux_l[m] + flux_r[m]) - beta * (interface.right.convar[m] - interface.left.convar[m]));
+		flux.f[m] *= dt;
+	}
+	if (tau_type == NS)
+	{
+		NS_by_central_difference_prim_2D(flux, interface, dt);
+	}
+}
+
+void get_flux(double p[4], double* flux)
+{
+	flux[0] = p[0] * p[1];
+	flux[1] = p[0] * p[1] * p[1] + p[3];
+	flux[2] = p[0] * p[1] * p[2];
+	double ENERGS = 0.5 * (p[1] * p[1] + p[2] * p[2]) * p[0] + p[3] / (Gamma - 1.0);
+	flux[3] = p[1] * (ENERGS + p[3]);
+}
+
+void NS_by_central_difference_prim_2D(Flux2d& flux, Recon2d& interface, double dt)
+{
+	// Note : Sixth-order centrial differential scheme for viscous term
+	// here convar[i] represents density, u, v, and temperature
+	double mu = Mu;
+	if (Nu > 0) { mu = Nu * interface.center.convar[0]; }
+	double u = interface.center.convar[1];
+	double v = interface.center.convar[2];
+	double ux, uy, vx, vy;
+	ux = interface.center.der1x[1];
+	vx = interface.center.der1x[2];
+	uy = interface.center.der1y[1];
+	vy = interface.center.der1y[2];
+	double tau_xx = 2 * mu * ux - 2.0 / 3.0 * mu * (ux + vy);
+	double tau_xy = mu * (uy + vx);
+	double q = u * tau_xx + v * tau_xy + (K + 4) / (2 * Pr) * mu * interface.center.der1x[3];
+	flux.f[1] += tau_xx * dt;
+	flux.f[2] += tau_xy * dt;
+	flux.f[3] += q * dt;
+}

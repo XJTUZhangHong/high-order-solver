@@ -46,11 +46,11 @@ void PlanarShock()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -213,11 +213,11 @@ void PlanarSheer()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -410,6 +410,7 @@ void High_mach_astrophusical_jet()
 	reconstruction_variable = characteristic;
 	wenotype = wenoz;
 
+	// First order tangent reconstruction corresponding to the positive-preserving gks
 	cellreconstruction_2D_normal = WENO5_AO_normal;
 	cellreconstruction_2D_tangent = WENO5_AO_tangent;
 	g0reconstruction_2D_normal = Center_do_nothing_normal;
@@ -422,11 +423,11 @@ void High_mach_astrophusical_jet()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -589,5 +590,211 @@ void inflow_boundary_left(Fluid2d* fluids, Block2d block)
 	}
 }
 
+void RT_instability()
+{
+	Runtime runtime;
+	runtime.start_initial = clock();
+	Block2d block;
+	block.uniform = true;
+	block.nodex = 64;
+	block.nodey = 256;
+	block.ghost = 3;
 
+
+
+	block.CFL = 0.5;
+	Fluid2d* bcvalue = new Fluid2d[4];
+
+	K = 3;
+	Gamma = 1.4;
+
+	//prepare the boundary condtion function
+	BoundaryCondition2d leftboundary(0);
+	BoundaryCondition2d rightboundary(0);
+	BoundaryCondition2d downboundary(0);
+	BoundaryCondition2d upboundary(0);
+
+	//prepare the reconstruction function
+
+	gausspoint = 2;
+	SetGuassPoint();
+
+	reconstruction_variable = characteristic;
+	wenotype = wenoz;
+
+	cellreconstruction_2D_normal = WENO5_AO_normal;
+	cellreconstruction_2D_tangent = WENO5_AO_tangent;
+	g0reconstruction_2D_normal = Center_do_nothing_normal;
+	g0reconstruction_2D_tangent = Center_all_collision_multi;
+
+	is_reduce_order_warning = true;
+
+	//prepare the flux function
+	gks2dsolver = gks2nd_2d;
+	tau_type = Euler;
+	c1_euler = 0.05;
+	c2_euler = 1;
+	flux_function_2d = LF2D;
+
+	//prepare time marching stratedgy
+
+
+	//time coe list must be 2d
+	timecoe_list_2d = RK2_2D;
+	Initial_stages(block);
+
+
+	// allocate memory for 2-D fluid field
+	// in a standard finite element method, we have 
+	// first the cell average value, N*N
+	block.nx = block.nodex + 2 * block.ghost;
+	block.ny = block.nodey + 2 * block.ghost;
+
+	Fluid2d* fluids = Setfluid(block);
+	// then the interfaces reconstructioned value, (N+1)*(N+1)
+	Interface2d* xinterfaces = Setinterface_array(block);
+	Interface2d* yinterfaces = Setinterface_array(block);
+	// then the flux, which the number is identical to interfaces
+	Flux2d_gauss** xfluxes = Setflux_gauss_array(block);
+	Flux2d_gauss** yfluxes = Setflux_gauss_array(block);
+	//end the allocate memory part
+
+	block.left = 0.0;
+	block.right = 0.25;
+	block.down = 0.0;
+	block.up = 1.0;
+	block.dx = (block.right - block.left) / block.nodex;
+	block.dy = (block.up - block.down) / block.nodey;
+	block.overdx = 1 / block.dx;
+	block.overdy = 1 / block.dy;
+	//set the uniform geometry information
+	SetUniformMesh(block, fluids, xinterfaces, yinterfaces, xfluxes, yfluxes);
+	//ended mesh part
+
+	IC_for_RT_instability(fluids, block);
+	double tstop[] = { 1.95 };
+
+	//IC_for_hurricane_problem(fluids, block);
+	//double tstop[] = { 0.045 };
+
+	runtime.finish_initial = clock();
+	block.t = 0;//the current simulation time
+	block.step = 0; //the current step
+	int tstop_dim = sizeof(tstop) / sizeof(double);
+
+	int inputstep = 1;//input a certain step,
+	//initialize inputstep=1, to avoid a 0 result
+
+	for (int instant = 0; instant < tstop_dim; ++instant)
+	{
+
+		if (inputstep == 0)
+		{
+			break;
+		}
+		while (block.t < tstop[instant])
+		{
+
+			if (block.step % inputstep == 0)
+			{
+				cout << "pls cin interation step, if input is 0, then the program will exit " << endl;
+				cin >> inputstep;
+				if (inputstep == 0)
+				{
+					output2d(fluids, block);
+					break;
+				}
+			}
+			if (runtime.start_compute == 0.0)
+			{
+				runtime.start_compute = clock();
+				cout << "runtime-start " << endl;
+			}
+
+			CopyFluid_new_to_old(fluids, block);
+
+			block.dt = Get_CFL(block, fluids, tstop[instant]);
+
+			if (block.step > 00 && is_using_df_factor)
+			{
+				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+			}
+			for (int i = 0; i < block.stages; i++)
+			{
+				RT_boundary(fluids, block);
+
+				Convar_to_Primvar(fluids, block);
+
+				Reconstruction_within_cell(xinterfaces, yinterfaces, fluids, block);
+
+				Reconstruction_forg0(xinterfaces, yinterfaces, fluids, block);
+
+				Calculate_flux(xfluxes, yfluxes, xinterfaces, yinterfaces, block, i);
+
+				Update_RT(fluids, xfluxes, yfluxes, block, i);
+
+				if (is_using_df_factor)
+				{
+					Update_alpha(xinterfaces, yinterfaces, fluids, block);
+				}
+			}
+			if (block.step % 100 == 0)
+			{
+				output2d(fluids, block);
+			}
+			block.step++;
+			//cout << "The step is " << block.step << endl;
+			block.t = block.t + block.dt;
+		}
+		output2d(fluids, block);
+	}
+	runtime.finish_compute = clock();
+	cout << "the total run time is " << (double)(runtime.finish_compute - runtime.start_initial) / CLOCKS_PER_SEC << " second !" << endl;
+	cout << "initializing time is" << (double)(runtime.finish_initial - runtime.start_initial) / CLOCKS_PER_SEC << " second !" << endl;
+	cout << "the pure computational time is" << (double)(runtime.finish_compute - runtime.start_compute) / CLOCKS_PER_SEC << " second !" << endl;
+}
+
+void IC_for_RT_instability(Fluid2d* fluid, Block2d block)
+{
+	double c, p, v, pi = acos(-1);
+	for (int i = block.ghost; i < block.nx - block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.ny - block.ghost; j++)
+		{
+			if (j - block.ghost + 1 < 0.5 / block.dy)
+			{
+				// p = 2y + 1
+				p = 2.0 * (j - block.ghost + 0.5) * block.dy + 1.0;
+				c = sqrt(Gamma * p / 2.0);
+				v = -0.025 * c * cos(8.0 * pi * (i - block.ghost + 0.5) * block.dx);
+				fluid[i * block.ny + j].primvar[0] = 2.0;
+				fluid[i * block.ny + j].primvar[1] = 0.0;
+				fluid[i * block.ny + j].primvar[2] = v;
+				fluid[i * block.ny + j].primvar[3] = p;
+			}
+			else
+			{
+				p = (j - block.ghost + 0.5) * block.dy + 1.5;
+				c = sqrt(Gamma * p / 1.0);
+				v = -0.025 * c * cos(8.0 * pi * (i - block.ghost + 0.5) * block.dx);
+				fluid[i * block.ny + j].primvar[0] = 1.0;
+				fluid[i * block.ny + j].primvar[1] = 0.0;
+				fluid[i * block.ny + j].primvar[2] = v;
+				fluid[i * block.ny + j].primvar[3] = p;
+			}
+		}
+	}
+	int i, j;
+	for (i = 0; i < block.nx; i++)
+	{
+		for (j = 0; j < block.ny; j++)
+		{
+			fluid[i * block.ny + j].convar[0] = fluid[i * block.ny + j].primvar[0];
+			fluid[i * block.ny + j].convar[1] = Q_densityu(fluid[i * block.ny + j].primvar[0], fluid[i * block.ny + j].primvar[1]);
+			fluid[i * block.ny + j].convar[2] = Q_densityv(fluid[i * block.ny + j].primvar[0], fluid[i * block.ny + j].primvar[2]);
+			fluid[i * block.ny + j].convar[3] = Q_densityE(fluid[i * block.ny + j].primvar[0], fluid[i * block.ny + j].primvar[1], fluid[i * block.ny + j].primvar[2], fluid[i * block.ny + j].primvar[3]);
+		}
+	}
+}
 
