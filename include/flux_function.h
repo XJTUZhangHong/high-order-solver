@@ -3,7 +3,7 @@
 #include "reconstruction.h"
 
 // one-dimensional problem
-enum GKS1d_type{nothing, kfvs1st, kfvs2nd, gks1st, gks2nd};
+enum GKS1d_type{nothing, kfvs1st, kfvs2nd, gks1st, gks2nd, pp_gks}; // positive-preserving gks
 extern GKS1d_type gks1dsolver;
 
 void Calculate_flux(Flux1d** fluxes, Interface1d* interfaces, Block1d &block, int stage);
@@ -14,7 +14,7 @@ void LF(Flux1d& flux, Interface1d& interface, double dt);
 void get_Euler_flux(double p[3], double* flux);
 
 // two-dimensional problem
-enum GKS2d_type { nothing_2d, kfvs1st_2d, kfvs2nd_2d, gks1st_2d, gks2nd_2d};
+enum GKS2d_type { nothing_2d, kfvs1st_2d, kfvs2nd_2d, gks1st_2d, gks2nd_2d, pp_gks_2d};
 extern GKS2d_type gks2dsolver;
 
 void Calculate_flux(Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Interface2d* xinterfaces, Interface2d* yinterfaces, Block2d block, int stage);
