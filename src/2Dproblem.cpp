@@ -424,11 +424,11 @@ void High_mach_astrophusical_jet()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 
@@ -460,7 +460,7 @@ void High_mach_astrophusical_jet()
 	//ended mesh part
 
 	//RM 2 T=0.6 with x,y = 0.7
-	double tstop[]{ 0.001 };
+	double tstop[]{ 0.0002 };
 	IC_for_astrophusical_jet(fluids, block);
 
 	runtime.finish_initial = clock();
@@ -500,7 +500,7 @@ void High_mach_astrophusical_jet()
 			CopyFluid_new_to_old(fluids, block);
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
-			block.dt = 2e-6;
+			block.dt = 2e-7;
 			if (block.step > 0 && is_using_df_factor)
 			{
 				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
@@ -574,7 +574,7 @@ void inflow_boundary_left(Fluid2d* fluids, Block2d block)
 			if (j * block.dy > 0.45 && j * block.dy < 0.55)
 			{
 				fluids[i * block.nx + j].primvar[0] = 5.0;
-				fluids[i * block.nx + j].primvar[1] = 800.0;
+				fluids[i * block.nx + j].primvar[1] = 4000.0;
 				fluids[i * block.nx + j].primvar[2] = 0.0;
 				fluids[i * block.nx + j].primvar[3] = 0.4127;
 			}
