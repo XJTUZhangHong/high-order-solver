@@ -88,3 +88,42 @@ typedef void(*Reconstruction_forG0_2D_tangent)(Interface2d *xinterfaces, Interfa
 extern Reconstruction_forG0_2D_tangent g0reconstruction_2D_tangent;
 void Center_all_collision_multi(Interface2d *xinterfaces, Interface2d *yinterfaces, Fluid2d *fluids, Block2d block);
 void Center_all_collision_2d_multi(Recon2d &gauss);
+
+// three-dimensional problem
+enum G0_construct_type { collisionn, collisionnless,all_collisionn };
+extern G0_construct_type g0type;
+
+typedef void(*Reconstruction_within_Cell_3D_of_face_value)
+(Interface3d &left, Interface3d &right, Interface3d &down, Interface3d &up, Interface3d &back, Interface3d &front, Fluid3d *fluids, Block3d block);
+extern Reconstruction_within_Cell_3D_of_face_value cellreconstruction_3D_of_face_value;
+void WENO5_AO_splitting_3d(Interface3d &left, Interface3d &right, Interface3d &down, Interface3d &up, Interface3d &back, Interface3d &front, Fluid3d *fluids, Block3d block);
+void WENO5_AO(Point3d &left, Point3d &right, double * wn2, double * wn1, double * w, double * wp1, double * wp2, double h);
+
+typedef void(*Reconstruction_within_Cell_3D_of_line_value)
+(Interface3d *xinterface, Interface3d *yinterface, Interface3d *zinterface, Block3d block);
+extern Reconstruction_within_Cell_3D_of_line_value cellreconstruction_3D_of_line_value;
+void WENO5_AO_of_line_value(Interface3d *right, Interface3d *up, Interface3d *front, Block3d block);
+void WENO5_AO_for_line_value(Recon3d *line, Recon3d& wn2, Recon3d& wn1, Recon3d& w0, Recon3d& wp1, Recon3d& wp2, double h);
+
+typedef void(*Reconstruction_within_Cell_3D_of_point_value)
+(Interface3d *xinterface, Interface3d *yinterface, Interface3d *zinterface, Block3d block);
+extern Reconstruction_within_Cell_3D_of_point_value cellreconstruction_3D_of_point_value;
+void WENO5_AO_of_point_value(Interface3d *right, Interface3d *up, Interface3d *front, Block3d block);
+void WENO5_AO_for_point_value(Recon3d *point, Recon3d& wn2, Recon3d& wn1, Recon3d& w0, Recon3d& wp1, Recon3d& wp2, double h);
+
+typedef void(*Reconstruction_forG0_3D_of_face_value)(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Fluid3d *fluids, Block3d block);
+extern Reconstruction_forG0_3D_of_face_value g0reconstruction_3D_of_face_value;
+void Do_nothing_splitting_3d(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, 
+	Fluid3d *fluids, Block3d block);
+
+typedef void(*Reconstruction_forG0_3D_of_line_value)
+(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Block3d block);
+extern Reconstruction_forG0_3D_of_line_value g0reconstruction_3D_of_line_value;
+void Do_nothing_reconstruction_of_line_value
+	(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Block3d block);
+
+typedef void(*Reconstruction_forG0_3D_of_point_value)
+(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Block3d block);
+extern Reconstruction_forG0_3D_of_point_value g0reconstruction_3D_of_point_value;
+void Do_nothing_reconstruction_of_point_value
+	(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Block3d block);

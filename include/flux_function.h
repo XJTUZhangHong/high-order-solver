@@ -25,3 +25,14 @@ void GKS2D(Flux2d &flux, Recon2d& interface, double dt);
 void LF2D(Flux2d& flux, Recon2d& interface, double dt);
 void get_flux(double p[4], double* flux);
 void NS_by_central_difference_prim_2D(Flux2d& flux, Recon2d& interface, double dt);
+
+// three-dimensional problem
+enum GKS3d_type {
+	nothing_3d, kfvs1st_3d, kfvs2nd_3d, gks1st_3d, gks2nd_3d
+};
+extern GKS3d_type gks3dsolver;
+
+typedef void(*Flux_function_3d)(Flux3d &flux, Recon3d & re, double area, double dt);
+extern Flux_function_3d flux_function_3d;
+void GKS3D(Flux3d &flux, Recon3d& interface, double area, double dt);
+void GKS3D_speed(Flux3d &flux, Recon3d& interface, double area, double dt);

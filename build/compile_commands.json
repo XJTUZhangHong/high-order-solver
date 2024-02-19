@@ -13,6 +13,12 @@
 },
 {
   "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp  -O3 -o CMakeFiles\\solver.dir\\src\\3Dproblem.cpp.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\3Dproblem.cpp\"",
+  "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/3Dproblem.cpp",
+  "output": "CMakeFiles/solver.dir/src/3Dproblem.cpp.obj"
+},
+{
+  "directory": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
   "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/solver.dir/includes_CXX.rsp  -fopenmp  -O3 -o CMakeFiles\\solver.dir\\src\\basic_function.cpp.obj -c \"D:\\Research\\Arbitrary high-order reconstruction based on DF\\solver\\src\\basic_function.cpp\"",
   "file": "D:/Research/Arbitrary high-order reconstruction based on DF/solver/src/basic_function.cpp",
   "output": "CMakeFiles/solver.dir/src/basic_function.cpp.obj"

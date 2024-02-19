@@ -200,6 +200,30 @@ src/2Dproblem.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/2Dproblem.cpp.s
 .PHONY : src/2Dproblem.cpp.s
 
+src/3Dproblem.obj: src/3Dproblem.cpp.obj
+.PHONY : src/3Dproblem.obj
+
+# target to build an object file
+src/3Dproblem.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/3Dproblem.cpp.obj
+.PHONY : src/3Dproblem.cpp.obj
+
+src/3Dproblem.i: src/3Dproblem.cpp.i
+.PHONY : src/3Dproblem.i
+
+# target to preprocess a source file
+src/3Dproblem.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/3Dproblem.cpp.i
+.PHONY : src/3Dproblem.cpp.i
+
+src/3Dproblem.s: src/3Dproblem.cpp.s
+.PHONY : src/3Dproblem.s
+
+# target to generate assembly for a file
+src/3Dproblem.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\solver.dir\build.make CMakeFiles/solver.dir/src/3Dproblem.cpp.s
+.PHONY : src/3Dproblem.cpp.s
+
 src/basic_function.obj: src/basic_function.cpp.obj
 .PHONY : src/basic_function.obj
 
@@ -386,6 +410,9 @@ help:
 	@echo ... src/2Dproblem.obj
 	@echo ... src/2Dproblem.i
 	@echo ... src/2Dproblem.s
+	@echo ... src/3Dproblem.obj
+	@echo ... src/3Dproblem.i
+	@echo ... src/3Dproblem.s
 	@echo ... src/basic_function.obj
 	@echo ... src/basic_function.i
 	@echo ... src/basic_function.s

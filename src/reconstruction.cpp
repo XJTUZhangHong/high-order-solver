@@ -2104,8 +2104,8 @@ void Center_all_collision_2d_multi(Recon2d& gauss)
 	Convar_to_ULambda_2d(prim_left, gauss.left.convar);
 	Convar_to_ULambda_2d(prim_right, gauss.right.convar);
 
-	MMDF ml(prim_left[1], prim_left[2], prim_left[3]);
-	MMDF mr(prim_right[1], prim_right[2], prim_right[3]);
+	MMDF2d ml(prim_left[1], prim_left[2], prim_left[3]);
+	MMDF2d mr(prim_right[1], prim_right[2], prim_right[3]);
 	Collision(gauss.center.convar, prim_left[0], prim_right[0], ml, mr);
 
 	double a0[4] = { 1.0, 0.0, 0.0, 0.0 };
@@ -2133,6 +2133,739 @@ void Center_all_collision_2d_multi(Recon2d& gauss)
 		gauss.center.der1x[var] = prim_left[0] * al0x[var] + prim_right[0] * ar0x[var];
 		gauss.center.der1y[var] = prim_left[0] * al0y[var] + prim_right[0] * ar0y[var];
 	}
+}
+
+// three-dimensional problem
+G0_construct_type g0type = all_collisionn;
+Reconstruction_within_Cell_3D_of_face_value cellreconstruction_3D_of_face_value = WENO5_AO_splitting_3d;
+Reconstruction_forG0_3D_of_face_value g0reconstruction_3D_of_face_value = Do_nothing_splitting_3d;
+Reconstruction_within_Cell_3D_of_line_value cellreconstruction_3D_of_line_value= WENO5_AO_of_line_value;
+Reconstruction_within_Cell_3D_of_point_value cellreconstruction_3D_of_point_value= WENO5_AO_of_point_value;
+Reconstruction_forG0_3D_of_line_value g0reconstruction_3D_of_line_value= Do_nothing_reconstruction_of_line_value;
+Reconstruction_forG0_3D_of_point_value g0reconstruction_3D_of_point_value= Do_nothing_reconstruction_of_point_value;
+
+void Reconstruction_within_cell(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Fluid3d *fluids, Block3d block)
+{
+#pragma omp parallel  for
+	for (int i = block.ghost - 2; i < block.nx - block.ghost + 2; i++)
+	{
+		for (int j = block.ghost - 2; j < block.ny - block.ghost + 2; j++)
+		{
+			for (int k = block.ghost - 2; k < block.nz - block.ghost + 2; k++)
+			{
+				int index = i*(block.ny)*(block.nz) + j*(block.nz) + k;
+				int index_face = i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k;
+				int facex = index_face + (block.ny + 1)*(block.nz + 1);
+				int facey = index_face + (block.nz + 1);
+				int facez = index_face + 1;
+				cellreconstruction_3D_of_face_value
+				(xinterfaces[index_face], xinterfaces[facex],
+					yinterfaces[index_face], yinterfaces[facey],
+					zinterfaces[index_face], zinterfaces[facez], &fluids[index], block);
+			}
+		}
+	}
+#pragma omp parallel  for
+	for (int i = block.ghost - 2; i < block.nx - block.ghost + 2; i++)
+	{
+		for (int j = block.ghost - 2; j < block.ny - block.ghost + 2; j++)
+		{
+			for (int k = block.ghost - 2; k < block.nz - block.ghost + 2; k++)
+			{
+				int index = i * (block.ny)*(block.nz) + j * (block.nz) + k;
+				int index_face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				int facex = index_face + (block.ny + 1)*(block.nz + 1);
+				int facey = index_face + (block.nz + 1);
+				int facez = index_face + 1;
+				cellreconstruction_3D_of_line_value
+				(&xinterfaces[facex], &yinterfaces[facey], &zinterfaces[facez], block);
+			}
+		}
+	}
+#pragma omp parallel  for
+	for (int i = block.ghost - 1; i < block.nx - block.ghost + 1; i++)
+	{
+		for (int j = block.ghost - 1; j < block.ny - block.ghost + 1; j++)
+		{
+			for (int k = block.ghost - 1; k < block.nz - block.ghost + 1; k++)
+			{
+				int index = i * (block.ny)*(block.nz) + j * (block.nz) + k;
+				int index_face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				int facex = index_face + (block.ny + 1)*(block.nz + 1);
+				int facey = index_face + (block.nz + 1);
+				int facez = index_face + 1;
+				cellreconstruction_3D_of_point_value
+				(&xinterfaces[facex], &yinterfaces[facey], &zinterfaces[facez], block);
+			}
+		}
+	}
+}
+
+void Check_Order_Reduce_by_Lambda_3D(bool &order_reduce, double *convar)
+	{
+
+		order_reduce = false;
+		double lambda;
+		lambda = Lambda(convar[0],
+			convar[1] / convar[0],
+			convar[2] / convar[0],
+			convar[3] / convar[0],
+			convar[4]);
+
+		//if lambda <0, then reduce to the first order
+		if (lambda <= 0.0 ||isnan(lambda)==true)
+		{
+			order_reduce = true;
+		}
+	}
+
+// face reconstruction
+void WENO5_AO_splitting_3d(Interface3d &left, Interface3d &right, Interface3d &down, Interface3d &up, Interface3d &back, Interface3d &front, Fluid3d *fluids, Block3d block)
+{
+	//DoNothing(left.line.right, fluids[0].convar);
+	//DoNothing(right.line.left, fluids[0].convar);
+	int index = block.ny* block.nz;
+	if ((fluids[0].index[0] > block.ghost - 2) && (fluids[0].index[0] < block.nx - block.ghost + 1))
+	{
+		WENO5_AO(left.face.right, right.face.left,
+			fluids[-2 * index].convar, fluids[-index].convar, fluids[0].convar, fluids[index].convar, fluids[2 * index].convar
+			, block.dx);
+	}
+
+
+	index = block.nz;
+	double wn2tmp[5], wn1tmp[5], wtmp[5], wp1tmp[5], wp2tmp[5];
+	if ((fluids[0].index[1] > block.ghost - 2) && (fluids[0].index[1] < block.ny - block.ghost + 1))
+	{
+		Ydirection(wn1tmp, fluids[-index].convar); Ydirection(wtmp, fluids[0].convar); Ydirection(wp1tmp, fluids[index].convar);
+		Ydirection(wn2tmp, fluids[-2 * index].convar); Ydirection(wp2tmp, fluids[2 * index].convar);
+		WENO5_AO(down.face.right, up.face.left, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, block.dy);
+	}
+	if ((fluids[0].index[2] > block.ghost - 2) && (fluids[0].index[2] < block.nz - block.ghost + 1))
+	{
+		Zdirection(wn1tmp, fluids[-1].convar); Zdirection(wtmp, fluids[0].convar); Zdirection(wp1tmp, fluids[1].convar);
+		Zdirection(wn2tmp, fluids[-2].convar); Zdirection(wp2tmp, fluids[2].convar);
+		WENO5_AO(back.face.right, front.face.left, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, block.dz);
+	}
+}
+
+void WENO5_AO(Point3d &left, Point3d &right, double * wn2, double * wn1, double * w, double * wp1, double * wp2, double h)
+	{
+		//we denote that   |left...cell-center...right|
+		double ren2[5], ren1[5], re0[5], rep1[5], rep2[5];
+		double var[5], der1[5],der2[5];
+
+		double base_left[5];
+		double base_right[5];
+		double wn1_primvar[5], w_primvar[5], wp1_primvar[5];
+		Convar_to_primvar_3D(wn1_primvar, wn1);
+		Convar_to_primvar_3D(w_primvar, w);
+		Convar_to_primvar_3D(wp1_primvar, wp1);
+
+		for (int i = 0; i < 5; i++)
+		{
+			base_left[i] = 0.5*(wn1_primvar[i] + w_primvar[i]);
+			base_right[i] = 0.5*(wp1_primvar[i] + w_primvar[i]);
+		}
+
+		if (reconstruction_variable == conservative)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				ren2[i] = wn2[i];
+				ren1[i] = wn1[i];
+				re0[i] = w[i];
+				rep1[i] = wp1[i];
+				rep2[i] = wp2[i];
+			}
+		}
+		else
+		{
+			double s[25];
+			Char_base_3D(s, base_left);
+			Convar_to_char_3D(ren2, s, wn2);
+			Convar_to_char_3D(ren1, s, wn1);
+			Convar_to_char_3D(re0, s, w);
+			Convar_to_char_3D(rep1, s, wp1);
+			Convar_to_char_3D(rep2, s, wp2);
+		}
+		for (int i = 0; i < 5; i++)
+		{
+			weno_5th_ao_left(var[i],der1[i],der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h);
+		}
+
+		if (reconstruction_variable == conservative)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				left.convar[i] = var[i];
+				left.der1x[i] = der1[i];
+			}
+		}
+		else
+		{
+			Char_to_convar_3D(left.convar, base_left, var);
+			Char_to_convar_3D(left.der1x, base_left, der1);
+		}
+
+		// cell right
+		if (reconstruction_variable == conservative)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				ren2[i] = wn2[i];
+				ren1[i] = wn1[i];
+				re0[i] = w[i];
+				rep1[i] = wp1[i];
+				rep2[i] = wp2[i];
+			}
+		}
+		else
+		{
+			double s[25];
+			Char_base_3D(s, base_right);
+			Convar_to_char_3D(ren2, s, wn2);
+			Convar_to_char_3D(ren1, s, wn1);
+			Convar_to_char_3D(re0, s, w);
+			Convar_to_char_3D(rep1, s, wp1);
+			Convar_to_char_3D(rep2, s, wp2);
+		}
+
+		for (int i = 0; i < 5; i++)
+		{
+			weno_5th_ao_right(var[i], der1[i], der2[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h);
+		}
+
+		if (reconstruction_variable == conservative)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				right.convar[i] = var[i];
+				right.der1x[i] = der1[i];
+			}
+		}
+		else
+		{
+			Char_to_convar_3D(right.convar, base_right, var);
+			Char_to_convar_3D(right.der1x, base_right, der1);
+		}
+
+		bool reduce_order_left, reduce_order_right;
+		Check_Order_Reduce_by_Lambda_3D(reduce_order_left, right.convar);
+		Check_Order_Reduce_by_Lambda_3D(reduce_order_right, left.convar);
+		if (reduce_order_left == true || reduce_order_right == true)
+		{
+			if (is_reduce_order_warning == true)
+			{
+				cout << "WENO-AO-cell-splitting order reduce" << endl;
+			}	
+			
+			for (int m = 0; m < 5; m++)
+			{
+				left.convar[m] = w[m];
+				right.convar[m] = w[m];
+				left.der1x[m] = 0.0;
+				right.der1x[m] = 0.0;
+			}
+		}
+	}
+
+// line reconstruction
+void WENO5_AO_of_line_value(Interface3d *right, Interface3d *up, Interface3d *front, Block3d block)
+{
+	// for y-z plane
+	int index = block.nz + 1;
+	if ((right[0].index[1] > block.ghost - 1) && (right[0].index[1] < block.ny - block.ghost)&&
+		(right[0].index[0] > block.ghost - 1) && (right[0].index[0] < block.nx - block.ghost + 1))
+	{
+		WENO5_AO_for_line_value(right[0].line, right[-2 * index].face, right[-index].face,
+			right[0].face, right[index].face, right[2 * index].face, block.dy);
+	}
+
+	if ((up[0].index[0] > block.ghost - 1) && (up[0].index[0] < block.nx - block.ghost)&&
+		(up[0].index[1] > block.ghost - 1) && (up[0].index[1] < block.ny - block.ghost + 1))
+	{
+		// x-z plane
+		index = -(block.nz + 1)*(block.ny + 1);
+		WENO5_AO_for_line_value(up[0].line, up[-2 * index].face, up[-index].face,
+			up[0].face, up[index].face, up[2 * index].face, block.dx);
+	}
+
+	if ((front[0].index[1] > block.ghost - 1) && (front[0].index[1] < block.ny - block.ghost)&&
+		(front[0].index[2] > block.ghost - 1) && (front[0].index[2] < block.nz - block.ghost + 1))
+	{
+		// x-y plane
+		index = block.nz + 1;
+		WENO5_AO_for_line_value(front[0].line, front[-2 * index].face, front[-index].face,
+			front[0].face, front[index].face, front[2 * index].face, block.dy);
+	}
+}
+
+void WENO5_AO_for_line_value(Recon3d *line, Recon3d& wn2, Recon3d& wn1, Recon3d& w0, Recon3d& wp1, Recon3d& wp2, double h)
+{
+	int sqrtgausspoint = sqrt(gausspoint);
+	//we first reconstruction the left value;
+	double tmp;
+	double ren2[5], ren1[5], re0[5], rep1[5], rep2[5];
+	double var[5], der1[5];
+	double left[5], right[5];
+	double base_left[5];
+	double base_right[5];
+	double wn1_primvar[5], w_primvar[5], wp1_primvar[5];
+	Convar_to_primvar_3D(w_primvar, w0.left.convar);
+
+	for (int i = 0; i < 5; i++)
+	{
+		base_left[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+
+		for (int i = 0; i < 5; i++)
+		{
+			if (sqrtgausspoint == 2)
+			{
+				weno_5th_ao_2gauss(line[0].left.convar[i], line[0].left.der1y[i], tmp,
+					line[1].left.convar[i], line[1].left.der1y[i], tmp,
+					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], h,1);
+				weno_5th_ao_2gauss(line[0].left.der1x[i], tmp, tmp,
+					line[1].left.der1x[i], tmp, tmp,
+					wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], h,0);
+			}
+		}
+	}
+	else
+	{
+		double s[25];
+		Char_base_3D(s, base_left);
+		Convar_to_char_3D(ren2, s, wn2.left.convar);
+		Convar_to_char_3D(ren1, s, wn1.left.convar);
+		Convar_to_char_3D(re0, s, w0.left.convar);
+		Convar_to_char_3D(rep1, s, wp1.left.convar);
+		Convar_to_char_3D(rep2, s, wp2.left.convar);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], der1[0][i], tmp,
+					var[1][i], der1[1][i], tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,1);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(line[igauss].left.convar, base_left, var[igauss]);
+				Char_to_convar_3D(line[igauss].left.der1y, base_left, der1[igauss]);
+			}
+		}
+
+		Convar_to_char_3D(ren2, s, wn2.left.der1x);
+		Convar_to_char_3D(ren1, s, wn1.left.der1x);
+		Convar_to_char_3D(re0, s, w0.left.der1x);
+		Convar_to_char_3D(rep1, s, wp1.left.der1x);
+		Convar_to_char_3D(rep2, s, wp2.left.der1x);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], tmp, tmp,
+					var[1][i], tmp, tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,0);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(line[igauss].left.der1x, base_left, var[igauss]);
+			}
+		}
+
+
+	}
+
+	Convar_to_primvar_3D(w_primvar, w0.right.convar);
+
+	for (int i = 0; i < 5; i++)
+	{
+		base_right[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+
+		for (int i = 0; i < 5; i++)
+		{
+			if (sqrtgausspoint == 2)
+			{
+				weno_5th_ao_2gauss(line[0].right.convar[i], line[0].right.der1y[i], tmp,
+					line[1].right.convar[i], line[1].right.der1y[i], tmp,
+					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], h,1);
+				weno_5th_ao_2gauss(line[0].right.der1x[i], tmp, tmp,
+					line[1].right.der1x[i], tmp, tmp,
+					wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], h,0);
+			}
+		}
+	}
+	else
+	{
+		double s[25];
+		Char_base_3D(s, base_right);
+		Convar_to_char_3D(ren2, s, wn2.right.convar);
+		Convar_to_char_3D(ren1, s, wn1.right.convar);
+		Convar_to_char_3D(re0, s, w0.right.convar);
+		Convar_to_char_3D(rep1, s, wp1.right.convar);
+		Convar_to_char_3D(rep2, s, wp2.right.convar);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], der1[0][i], tmp,
+					var[1][i], der1[1][i], tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,1);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(line[igauss].right.convar, base_right, var[igauss]);
+				Char_to_convar_3D(line[igauss].right.der1y, base_right, der1[igauss]);
+			}
+		}
+
+		Convar_to_char_3D(ren2, s, wn2.right.der1x);
+		Convar_to_char_3D(ren1, s, wn1.right.der1x);
+		Convar_to_char_3D(re0, s, w0.right.der1x);
+		Convar_to_char_3D(rep1, s, wp1.right.der1x);
+		Convar_to_char_3D(rep2, s, wp2.right.der1x);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], tmp, tmp,
+					var[1][i], tmp, tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,0);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(line[igauss].right.der1x, base_right, var[igauss]);
+			}
+		}
+	}
+
+	bool reduce_order_left[3];
+	bool reduce_order_right[3];
+	bool reduce_order=false;
+
+	for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+	{
+		Check_Order_Reduce_by_Lambda_3D(reduce_order_left[igauss], line[igauss].left.convar);
+		Check_Order_Reduce_by_Lambda_3D(reduce_order_right[igauss], line[igauss].right.convar);
+		if (reduce_order_left[igauss] == true|| reduce_order_right[igauss] == true)
+		{
+			reduce_order = true;
+		}
+	}
+
+	if (reduce_order==true||line[0].order_reduce==true)
+	{
+		//if (is_reduce_order_warning == true)
+		//{
+		//	cout << "WENO-AO-face-spiltting order reduce" << endl;
+		//}
+		for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+		{
+			line[igauss].order_reduce = true;
+			for (int m = 0; m < 5; m++)
+			{
+				line[igauss].left.convar[m] = w0.left.convar[m];
+				line[igauss].right.convar[m] = w0.right.convar[m];
+				line[igauss].left.der1x[m] = w0.left.der1x[m];
+				line[igauss].right.der1x[m] = w0.right.der1x[m];
+				line[igauss].left.der1y[m] = 0.0;
+				line[igauss].right.der1y[m] = 0.0;
+			}
+		}
+	}
+}
+
+// point reconstruction
+void WENO5_AO_of_point_value(Interface3d *right, Interface3d *up, Interface3d *front, Block3d block)
+{
+	int sqrtgausspoint = sqrt(gausspoint);
+	// for y-z plane
+	for (int i = 0; i < sqrtgausspoint; i++)
+	{
+		WENO5_AO_for_point_value(&right[0].gauss[i*sqrtgausspoint], right[-2].line[i], right[-1].line[i],
+			right[0].line[i], right[1].line[i], right[2].line[i], block.dz);
+		WENO5_AO_for_point_value(&up[0].gauss[i*sqrtgausspoint], up[-2].line[i], up[-1].line[i],
+			up[0].line[i], up[1].line[i], up[2].line[i], block.dz);
+		int index = -(block.nz + 1)*(block.ny + 1);
+		WENO5_AO_for_point_value(&front[0].gauss[i*sqrtgausspoint], front[-2 * index].line[i], front[-index].line[i],
+			front[0].line[i], front[index].line[i], front[2 * index].line[i], block.dx);
+	}
+}
+
+void WENO5_AO_for_point_value(Recon3d *point, Recon3d& wn2, Recon3d& wn1, Recon3d& w0, Recon3d& wp1, Recon3d& wp2, double h)
+{
+	int sqrtgausspoint = sqrt(gausspoint);
+	//if (sqrtgausspoint != 2) { cout << "problem here" << endl; }
+	//we first reconstruction the left value;
+	double tmp;
+	double ren2[5], ren1[5], re0[5], rep1[5], rep2[5];
+	double var[5], der1[5];
+	double left[5], right[5];
+	double base_left[5];
+	double base_right[5];
+	double wn1_primvar[5], w_primvar[5], wp1_primvar[5];
+	Convar_to_primvar_3D(w_primvar, w0.left.convar);
+
+	for (int i = 0; i < 5; i++)
+	{
+		base_left[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+
+		for (int i = 0; i < 5; i++)
+		{
+			if (sqrtgausspoint == 2)
+			{
+				weno_5th_ao_2gauss(point[0].left.convar[i], point[0].left.der1z[i], tmp,
+					point[1].left.convar[i], point[1].left.der1z[i], tmp,
+					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], h,1);
+				weno_5th_ao_2gauss(point[0].left.der1x[i], tmp, tmp,
+					point[1].left.der1x[i], tmp, tmp,
+					wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], h,0);
+				weno_5th_ao_2gauss(point[0].left.der1y[i], tmp, tmp,
+					point[1].left.der1y[i], tmp, tmp,
+					wn2.left.der1y[i], wn1.left.der1y[i], w0.left.der1y[i], wp1.left.der1y[i], wp2.left.der1y[i], h,0);
+			}
+		}
+	}
+	else
+	{
+		double s[25];
+		Char_base_3D(s, base_left);
+		Convar_to_char_3D(ren2, s, wn2.left.convar);
+		Convar_to_char_3D(ren1, s, wn1.left.convar);
+		Convar_to_char_3D(re0, s, w0.left.convar);
+		Convar_to_char_3D(rep1, s, wp1.left.convar);
+		Convar_to_char_3D(rep2, s, wp2.left.convar);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], der1[0][i], tmp,
+					var[1][i], der1[1][i], tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,1);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(point[igauss].left.convar, base_left, var[igauss]);
+				Char_to_convar_3D(point[igauss].left.der1z, base_left, der1[igauss]);
+			}
+		}
+
+		Convar_to_char_3D(ren2, s, wn2.left.der1x);
+		Convar_to_char_3D(ren1, s, wn1.left.der1x);
+		Convar_to_char_3D(re0, s, w0.left.der1x);
+		Convar_to_char_3D(rep1, s, wp1.left.der1x);
+		Convar_to_char_3D(rep2, s, wp2.left.der1x);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], tmp, tmp,
+					var[1][i], tmp, tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,0);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(point[igauss].left.der1x, base_left, var[igauss]);
+			}
+		}
+
+		Convar_to_char_3D(ren2, s, wn2.left.der1y);
+		Convar_to_char_3D(ren1, s, wn1.left.der1y);
+		Convar_to_char_3D(re0, s, w0.left.der1y);
+		Convar_to_char_3D(rep1, s, wp1.left.der1y);
+		Convar_to_char_3D(rep2, s, wp2.left.der1y);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], tmp, tmp,
+					var[1][i], tmp, tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,0);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(point[igauss].left.der1y, base_left, var[igauss]);
+			}
+		}
+
+	}
+
+	Convar_to_primvar_3D(w_primvar, w0.right.convar);
+
+	for (int i = 0; i < 5; i++)
+	{
+		base_right[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+
+		for (int i = 0; i < 5; i++)
+		{
+			if (sqrtgausspoint == 2)
+			{
+				weno_5th_ao_2gauss(point[0].right.convar[i], point[0].right.der1z[i], tmp,
+					point[1].right.convar[i], point[1].right.der1z[i], tmp,
+					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], h,1);
+				weno_5th_ao_2gauss(point[0].right.der1x[i], tmp, tmp,
+					point[1].right.der1x[i], tmp, tmp,
+					wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], h,0);
+				weno_5th_ao_2gauss(point[0].right.der1y[i], tmp, tmp,
+					point[1].right.der1y[i], tmp, tmp,
+					wn2.right.der1y[i], wn1.right.der1y[i], w0.right.der1y[i], wp1.right.der1y[i], wp2.right.der1y[i], h,0);
+			}
+		}
+	}
+	else
+	{
+		double s[25];
+		Char_base_3D(s, base_right);
+		Convar_to_char_3D(ren2, s, wn2.right.convar);
+		Convar_to_char_3D(ren1, s, wn1.right.convar);
+		Convar_to_char_3D(re0, s, w0.right.convar);
+		Convar_to_char_3D(rep1, s, wp1.right.convar);
+		Convar_to_char_3D(rep2, s, wp2.right.convar);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], der1[0][i], tmp,
+					var[1][i], der1[1][i], tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,1);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(point[igauss].right.convar, base_right, var[igauss]);
+				Char_to_convar_3D(point[igauss].right.der1z, base_right, der1[igauss]);
+			}
+		}
+
+		Convar_to_char_3D(ren2, s, wn2.right.der1x);
+		Convar_to_char_3D(ren1, s, wn1.right.der1x);
+		Convar_to_char_3D(re0, s, w0.right.der1x);
+		Convar_to_char_3D(rep1, s, wp1.right.der1x);
+		Convar_to_char_3D(rep2, s, wp2.right.der1x);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], tmp, tmp,
+					var[1][i], tmp, tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,0);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(point[igauss].right.der1x, base_right, var[igauss]);
+			}
+		}
+
+		Convar_to_char_3D(ren2, s, wn2.right.der1y);
+		Convar_to_char_3D(ren1, s, wn1.right.der1y);
+		Convar_to_char_3D(re0, s, w0.right.der1y);
+		Convar_to_char_3D(rep1, s, wp1.right.der1y);
+		Convar_to_char_3D(rep2, s, wp2.right.der1y);
+
+		if (sqrtgausspoint == 2)
+		{
+			double var[2][5], der1[2][5];
+			for (int i = 0; i < 5; i++)
+			{
+				weno_5th_ao_2gauss(var[0][i], tmp, tmp,
+					var[1][i], tmp, tmp,
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], h,0);
+			}
+			for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+			{
+				Char_to_convar_3D(point[igauss].right.der1y, base_right, var[igauss]);
+			}
+		}
+
+	}
+
+	bool reduce_order_left[3];
+	bool reduce_order_right[3];
+	bool reduce_order = false;
+	//cout << line[0].left.convar[3];
+	//Check_Order_Reduce_by_Lambda_3D(reduce_order, line[0].left.convar);
+
+	for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+	{
+		Check_Order_Reduce_by_Lambda_3D(reduce_order_left[igauss], point[igauss].left.convar);
+		Check_Order_Reduce_by_Lambda_3D(reduce_order_right[igauss], point[igauss].right.convar);
+		if (reduce_order_left[igauss] == true || reduce_order_right[igauss] == true)
+		{
+			reduce_order = true;
+		}
+	}
+
+	if (reduce_order == true || point[0].order_reduce == true)
+	{		
+		for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
+		{
+			point[igauss].order_reduce = true;
+			for (int m = 0; m < 5; m++)
+			{
+				point[igauss].left.convar[m] = w0.left.convar[m];
+				point[igauss].right.convar[m] = w0.right.convar[m];
+				point[igauss].left.der1x[m] = w0.left.der1x[m];
+				point[igauss].right.der1x[m] = w0.right.der1x[m];
+				point[igauss].left.der1y[m] = w0.left.der1y[m];
+				point[igauss].right.der1y[m] = w0.right.der1y[m];
+				point[igauss].left.der1z[m] = 0.0;
+				point[igauss].right.der1z[m] = 0.0;
+			}
+		}
+	}
+}
+
+// center reconstruction
+void Do_nothing_splitting_3d(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, 
+	Fluid3d *fluids, Block3d block)
+{
+    // nothing need to do
+}
+
+void Do_nothing_reconstruction_of_line_value
+	(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Block3d block)
+{
+	// nothing need to do
+}
+
+void Do_nothing_reconstruction_of_point_value
+	(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Block3d block) 
+{
+	// nothing need to do
 }
 
 

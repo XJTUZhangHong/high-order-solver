@@ -222,3 +222,124 @@ public:
 };
 
 void SetGuassPoint();
+
+// three-dimensional problem
+extern double **gauss_loc_3d;
+extern bool is_multi_dimensional;
+
+class Block3d
+{
+public:
+	bool uniform;
+	int ghost;
+	int nodex; int nodey; int nodez;
+	int nx; int ny; int nz;
+	double dx; double dy; double dz;
+	double overdx; double overdy; double overdz;
+	double xarea; double yarea; double zarea;
+	double left; double right;
+	double down; double up;
+	double front; double back;
+	int stages;
+	double timecoefficient[5][5][3];
+	double timecoefficient_hweno[5][5][3];
+	double t; //current simulation time
+	double CFL; //cfl number, actually just a amplitude factor
+	double dt;//current_global time size
+	double tstop;//stop time
+	int step; //start from which step
+	double xcell_begin; double xcell_end; double ycell_begin; double ycell_end; double zcell_begin; double zcell_end;
+	double xinterface_begin_n; double xinterface_end_n; double xinterface_begin_t; double xinterface_end_t;
+	double yinterface_begin_n; double yinterface_end_n; double yinterface_begin_t; double yinterface_end_t;
+	double zinterface_begin_n; double zinterface_end_n; double zinterface_begin_t; double zinterface_end_t;
+	int index;
+	int outputstep_fluid;
+	int outputstep_res;
+	int outputstep_wall_info;
+	int outputstep_continue_file;
+	int output_time_step;
+	int outputstep_extract_point_data;
+};
+
+class Fluid3d
+{
+public:
+	double primvar[6];
+	double convar[6];
+	double convar_old[6];
+	int index[3];
+	double loc[3];
+	double base[10]; //high-order reconstruction base1 2 3 is location for uns mesh
+	double *geo;
+	double node[24];
+	double vol;
+	double avg_derx[6];
+	double avg_dery[6];
+	double avg_derz[6];
+	double* beta;
+	double R_c;
+	double* dt;
+	double* Res;
+	double* C;
+	double* DW;
+	double slope_compress;
+	double vec_lambda[2];
+	double *weno_weight;
+	double wall_dis;
+	double* source;
+};
+
+class Point3d
+{
+public:
+	double convar[6];
+	double der1x[6];
+	double der1y[6];
+	double der1z[6];
+};
+
+class Recon3d
+{
+public:
+	Point3d left;
+	Point3d center;
+	Point3d right;
+	bool order_reduce;
+};
+
+class Recon3d_lr
+{
+public:
+	Point3d left;
+	Point3d right;
+	bool order_reduce;
+};
+
+class Interface3d
+{
+public:
+
+	Recon3d face;
+	Recon3d *line;
+	Recon3d *gauss;
+	double loc[12];
+	double weight[4];
+	double normal[12];
+	int index[3];
+	double length[2];
+	double area;
+	int bc_type;
+};
+
+class Flux3d
+{
+public:
+	double x[6];
+	double f[6];
+	double derf[6];
+	double d[30];
+	double w[30];
+	double derw[30];
+};
+
+void SetGuassPoint_3D();

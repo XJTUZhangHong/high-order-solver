@@ -240,3 +240,131 @@ void RT_boundary(Fluid2d* fluids, Block2d block)
 		}
 	}
 }
+
+// three-dimensional problem
+void free_boundary_xleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
+{
+#pragma omp parallel for
+	for (int j = 0; j < block.ny; j++)
+	{
+		for (int i = block.ghost - 1; i >= 0; i--)
+		{
+			for (int k = 0; k < block.nz; k++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				int ref = block.ghost*(block.ny*block.nz) + j*block.nz + k;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar[var] = fluids[ref].convar[var];
+				}
+			}
+		}
+	}
+}
+
+void free_boundary_xright(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
+{
+#pragma omp parallel for
+	for (int j = 0; j < block.ny; j++)
+	{
+		for (int i = block.nx - block.ghost; i < block.nx; i++)
+		{
+			for (int k = 0; k < block.nz; k++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				int ref = (block.nx - block.ghost-1)*(block.ny*block.nz) + j*block.nz + k;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar[var] = fluids[ref].convar[var];
+				}
+
+			}
+		}
+
+	}
+}
+
+void free_boundary_yleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
+{
+#pragma omp parallel for
+	for (int i = 0; i < block.nx; i++)
+	{
+		for (int k = 0; k < block.nz; k++)
+		{
+			for (int j = block.ghost - 1; j >= 0; j--)
+			{
+
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				int ref = i*(block.ny*block.nz) + (block.ghost)*block.nz + k;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar[var] = fluids[ref].convar[var];
+				}
+			}
+
+		}
+	}
+}
+
+void free_boundary_yright(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
+{
+#pragma omp parallel for
+	for (int i = 0; i < block.nx; i++)
+	{
+		for (int k = 0; k < block.nz; k++)
+		{
+			for (int j = block.ny - block.ghost; j < block.ny; j++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				int ref = i*(block.ny*block.nz) + (block.ny - block.ghost-1)*block.nz + k;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar[var] = fluids[ref].convar[var];
+				}
+			}
+
+		}
+	}
+}
+
+void free_boundary_zleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
+{
+#pragma omp parallel for
+	for (int j = 0; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			for (int k = block.ghost - 1; k >= 0; k--)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				int ref = i*(block.ny*block.nz) + j*block.nz + block.ghost;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar[var] = fluids[ref].convar[var];
+				}
+			}
+
+		}
+	}
+}
+
+void free_boundary_zright(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
+{
+#pragma omp parallel for
+	for (int j = 0; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			for (int k = block.nz - block.ghost; k < block.nz; k++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				int ref = i*(block.ny*block.nz) + j*block.nz + block.nz - block.ghost -1;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar[var] = fluids[ref].convar[var];
+				}
+			}
+		}
+
+	}
+}

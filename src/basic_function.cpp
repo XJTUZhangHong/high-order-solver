@@ -99,15 +99,15 @@ void MMDF1d::calcualte_MMDF1d()
 }
 
 //moments of the maxwellian distribution function
-MMDF::MMDF() { u = 1.0; v = 1.0; lambda = 1.0; };
-MMDF::MMDF(double u_in, double v_in, double lambda_in)
+MMDF2d::MMDF2d() { u = 1.0; v = 1.0; lambda = 1.0; };
+MMDF2d::MMDF2d(double u_in, double v_in, double lambda_in)
 {
 	u = u_in;
 	v = v_in;
 	lambda = lambda_in;
 	calcualte_MMDF();
 }
-void MMDF::calcualte_MMDF()
+void MMDF2d::calcualte_MMDF()
 {
 	//the moment of u in whole domain
 	uwhole[0] = 1;
@@ -186,6 +186,338 @@ void MMDF::calcualte_MMDF()
 	}
 }
 
+MMDF3d_left::MMDF3d_left() { u = 1.0; v = 1.0; w = 1.0, lambda = 1.0; };
+MMDF3d_left::MMDF3d_left(double u_in, double v_in, double w_in, double lambda_in)
+{
+	u = u_in;
+	v = v_in;
+	w = w_in;
+	lambda = lambda_in;
+}
+void MMDF3d_left::calcualte_MMDF()
+{
+	uwhole[0] = 1;
+	uwhole[1] = u;
+	double overlambda = 1.0 / lambda;
+	uplus[0] = 0.5*Alpha(lambda, -u);
+	uplus[1] = u*uplus[0] + 0.5*Beta(lambda, u);
+	for (int i = 2; i <= 6; i++)
+	{
+		uwhole[i] = u*uwhole[i - 1] + 0.5*(i - 1) * overlambda*uwhole[i - 2];
+	}
+	for (int i = 2; i <= 6; i++)
+	{
+		uplus[i] = u*uplus[i - 1] + 0.5*(i - 1) * overlambda*uplus[i - 2];
+	}
+	vwhole[0] = 1;
+	vwhole[1] = v;
+	wwhole[0] = 1;
+	wwhole[1] = w;
+	for (int i = 2; i <= 5; i++)
+	{
+		vwhole[i] = v*vwhole[i - 1] + 0.5*(i - 1) * overlambda*vwhole[i - 2];
+		wwhole[i] = w*wwhole[i - 1] + 0.5*(i - 1) * overlambda*wwhole[i - 2];
+	}
+
+	
+	xi2 = 0.5*K * overlambda;
+	xi4 = 0.25*(K*K + 2 * K) * overlambda* overlambda;
+	xi[0] = 1.0; xi[1] = xi2; xi[2] = xi4;
+	for (int i = 0; i<7; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			for (int k = 0; k < 6; k++)
+			{
+				for (int m = 0; m < 3; m++)
+				{
+					if ((i + j + k + 2 * m) <= 6)
+					{
+						if (m == 0)
+						{
+							upvwxi[i][j][k][m] = uplus[i] * vwhole[j] * wwhole[k];
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k];
+						}
+						if (m == 1)
+						{
+							upvwxi[i][j][k][m] = uplus[i] * vwhole[j] * wwhole[k] * xi2;
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k] * xi2;
+						}
+						if (m == 2)
+						{
+							upvwxi[i][j][k][m] = uplus[i] * vwhole[j] * wwhole[k] * xi4;
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k] * xi4;
+						}
+
+					}
+				}
+			}
+		}
+	}
+}
+
+MMDF3d_right::MMDF3d_right() { u = 1.0; v = 1.0; w = 1.0, lambda = 1.0; };
+MMDF3d_right::MMDF3d_right(double u_in, double v_in, double w_in, double lambda_in)
+{
+	u = u_in;
+	v = v_in;
+	w = w_in;
+	lambda = lambda_in;
+}
+void MMDF3d_right::calcualte_MMDF()
+{
+	uwhole[0] = 1;
+	uwhole[1] = u;
+	double overlambda = 1.0 / lambda;
+	uminus[0] = 0.5*Alpha(lambda, u);
+	uminus[1] = u*uminus[0] - 0.5*Beta(lambda, u);
+	for (int i = 2; i <= 6; i++)
+	{
+		uwhole[i] = u*uwhole[i - 1] + 0.5*(i - 1) * overlambda*uwhole[i - 2];
+	}
+	for (int i = 2; i <= 6; i++)
+	{
+		uminus[i] = u*uminus[i - 1] + 0.5*(i - 1) * overlambda*uminus[i - 2];
+	}
+	vwhole[0] = 1;
+	vwhole[1] = v;
+	wwhole[0] = 1;
+	wwhole[1] = w;
+	for (int i = 2; i <= 5; i++)
+	{
+		vwhole[i] = v*vwhole[i - 1] + 0.5*(i - 1) * overlambda*vwhole[i - 2];
+		wwhole[i] = w*wwhole[i - 1] + 0.5*(i - 1) * overlambda*wwhole[i - 2];
+	}
+
+	xi2 = 0.5*K * overlambda;
+	xi4 = 0.25*(K*K + 2 * K) * overlambda* overlambda;
+	xi[0] = 1.0; xi[1] = xi2; xi[2] = xi4;
+	for (int i = 0; i<7; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			for (int k = 0; k < 6; k++)
+			{
+				for (int m = 0; m < 3; m++)
+				{
+					if ((i + j + k + 2 * m) <= 6)
+					{
+						if (m == 0)
+						{
+							unvwxi[i][j][k][m] = uminus[i] * vwhole[j] * wwhole[k];
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k];
+						}
+						if (m == 1)
+						{
+							unvwxi[i][j][k][m] = uminus[i] * vwhole[j] * wwhole[k] * xi2;
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k] * xi2;
+						}
+						if (m == 2)
+						{
+							unvwxi[i][j][k][m] = uminus[i] * vwhole[j] * wwhole[k] * xi4;
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k] * xi4;
+						}
+
+					}
+				}
+			}
+		}
+	}
+}
+
+MMDF3d::MMDF3d(){ u = 1.0; v = 1.0; w = 1.0, lambda = 1.0; };
+MMDF3d::MMDF3d(double u_in, double v_in, double w_in, double lambda_in)
+{
+	u = u_in;
+	v = v_in;
+	w = w_in;
+	lambda = lambda_in;
+	calcualte_MMDF();
+}
+void MMDF3d::calcualte_MMDF()
+{
+	uwhole[0] = 1;
+	uwhole[1] = u;
+	uplus[0] = 0.5*Alpha(lambda, -u);
+	uminus[0] = 0.5*Alpha(lambda, u);
+	uplus[1] = u*uplus[0] + 0.5*Beta(lambda, u);
+	uminus[1] = u*uminus[0] - 0.5*Beta(lambda, u);
+	for (int i = 2; i <= 6; i++)
+	{
+		uwhole[i] = u*uwhole[i - 1] + 0.5*(i - 1) / lambda*uwhole[i - 2];
+	}
+	for (int i = 2; i <= 6; i++)
+	{
+		uplus[i] = u*uplus[i - 1] + 0.5*(i - 1) / lambda*uplus[i - 2];
+		uminus[i] = u*uminus[i - 1] + 0.5*(i - 1) / lambda*uminus[i - 2];
+	}
+	vwhole[0] = 1;
+	vwhole[1] = v;
+	wwhole[0] = 1;
+	wwhole[1] = w;
+	for (int i = 2; i <= 5; i++)
+	{
+		vwhole[i] = v*vwhole[i - 1] + 0.5*(i - 1) / lambda*vwhole[i - 2];
+		wwhole[i] = w*wwhole[i - 1] + 0.5*(i - 1) / lambda*wwhole[i - 2];
+	}
+
+	xi2 = 0.5*K / lambda;
+	xi4 = 0.25*(K*K + 2 * K) / (lambda * lambda);
+
+	for (int i = 0; i<7; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			for (int k = 0; k < 6; k++)
+			{
+				for (int m = 0; m < 3; m++)
+				{
+					if ((i + j +k+ 2 * m) <= 6)
+					{
+						if (m == 0)
+						{
+							upvwxi[i][j][k][m] = uplus[i] * vwhole[j]*wwhole[k];
+							unvwxi[i][j][k][m] = uminus[i] * vwhole[j] * wwhole[k];
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k];
+						}
+						if (m == 1)
+						{
+							upvwxi[i][j][k][m] = uplus[i] * vwhole[j] * wwhole[k] * xi2;
+							unvwxi[i][j][k][m] = uminus[i] * vwhole[j] * wwhole[k] * xi2;
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k] * xi2;
+						}
+						if (m == 2)
+						{
+							upvwxi[i][j][k][m] = uplus[i] * vwhole[j] * wwhole[k] * xi4;
+							unvwxi[i][j][k][m] = uminus[i] * vwhole[j] * wwhole[k] * xi4;
+							uvwxi[i][j][k][m] = uwhole[i] * vwhole[j] * wwhole[k] * xi4;
+						}
+
+					}
+				}
+			}
+		}
+	}
+}
+
+MMDF3d_left_speed::MMDF3d_left_speed() { u = 1.0; v = 1.0; w = 1.0, lambda = 1.0; };
+MMDF3d_left_speed::MMDF3d_left_speed(double u_in, double v_in, double w_in, double lambda_in)
+{
+	u = u_in;
+	v = v_in;
+	w = w_in;
+	lambda = lambda_in;
+}
+void MMDF3d_left_speed::calcualte_MMDF()
+{
+	uwhole[0] = 1;
+	uwhole[1] = u;
+	double overlambda = 1.0 / lambda;
+	uplus[0] = 0.5*Alpha(lambda, -u);
+	uplus[1] = u * uplus[0] + 0.5*Beta(lambda, u);
+	for (int i = 2; i <= 6; i++)
+	{
+		uwhole[i] = u * uwhole[i - 1] + 0.5*(i - 1) * overlambda*uwhole[i - 2];
+	}
+	for (int i = 2; i <= 6; i++)
+	{
+		uplus[i] = u * uplus[i - 1] + 0.5*(i - 1) * overlambda*uplus[i - 2];
+	}
+	vwhole[0] = 1;
+	vwhole[1] = v;
+	wwhole[0] = 1;
+	wwhole[1] = w;
+	for (int i = 2; i <= 5; i++)
+	{
+		vwhole[i] = v * vwhole[i - 1] + 0.5*(i - 1) * overlambda*vwhole[i - 2];
+		wwhole[i] = w * wwhole[i - 1] + 0.5*(i - 1) * overlambda*wwhole[i - 2];
+	}
+
+	xi[0] = 1.0;
+	xi[1] = 0.5*K * overlambda;
+	xi[2] = 0.25*(K*K + 2 * K) * overlambda* overlambda;
+
+}
+
+MMDF3d_right_speed::MMDF3d_right_speed() { u = 1.0; v = 1.0; w = 1.0, lambda = 1.0; };
+MMDF3d_right_speed::MMDF3d_right_speed(double u_in, double v_in, double w_in, double lambda_in)
+{
+	u = u_in;
+	v = v_in;
+	w = w_in;
+	lambda = lambda_in;
+}
+void MMDF3d_right_speed::calcualte_MMDF()
+{
+	uwhole[0] = 1;
+	uwhole[1] = u;
+	double overlambda = 1.0 / lambda;
+	uminus[0] = 0.5*Alpha(lambda, u);
+	uminus[1] = u * uminus[0] - 0.5*Beta(lambda, u);
+	for (int i = 2; i <= 6; i++)
+	{
+		uwhole[i] = u * uwhole[i - 1] + 0.5*(i - 1) * overlambda*uwhole[i - 2];
+	}
+	for (int i = 2; i <= 6; i++)
+	{
+		uminus[i] = u * uminus[i - 1] + 0.5*(i - 1) * overlambda*uminus[i - 2];
+	}
+	vwhole[0] = 1;
+	vwhole[1] = v;
+	wwhole[0] = 1;
+	wwhole[1] = w;
+	for (int i = 2; i <= 5; i++)
+	{
+		vwhole[i] = v * vwhole[i - 1] + 0.5*(i - 1) * overlambda*vwhole[i - 2];
+		wwhole[i] = w * wwhole[i - 1] + 0.5*(i - 1) * overlambda*wwhole[i - 2];
+	}
+
+	xi[0] = 1.0;
+	xi[1] = 0.5*K * overlambda;
+	xi[2] = 0.25*(K*K + 2 * K) * overlambda* overlambda;
+
+}
+
+MMDF3d_speed::MMDF3d_speed() { u = 1.0; v = 1.0; w = 1.0, lambda = 1.0; };
+MMDF3d_speed::MMDF3d_speed(double u_in, double v_in, double w_in, double lambda_in)
+{
+	u = u_in;
+	v = v_in;
+	w = w_in;
+	lambda = lambda_in;
+}
+void MMDF3d_speed::calcualte_MMDF()
+{
+	uwhole[0] = 1;
+	uwhole[1] = u;
+	double overlambda = 1.0 / lambda;
+	uplus[0] = 0.5 * Alpha(lambda, -u);
+	uplus[1] = u * uplus[0] + 0.5 * Beta(lambda, u);
+	uminus[0] = 1.0 - uplus[0];
+	uminus[1] = uwhole[1] - uplus[1];
+	for (int i = 2; i <= 6; i++)
+	{
+		uwhole[i] = u * uwhole[i - 1] + 0.5 * (i - 1) * overlambda * uwhole[i - 2];
+	}
+	for (int i = 2; i <= 6; i++)
+	{
+		uplus[i] = u * uplus[i - 1] + 0.5 * (i - 1) * overlambda * uplus[i - 2];
+		uminus[i] = uwhole[i] - uplus[i];
+	}
+	vwhole[0] = 1;
+	vwhole[1] = v;
+	wwhole[0] = 1;
+	wwhole[1] = w;
+	for (int i = 2; i <= 5; i++)
+	{
+		vwhole[i] = v * vwhole[i - 1] + 0.5 * (i - 1) * overlambda * vwhole[i - 2];
+		wwhole[i] = w * wwhole[i - 1] + 0.5 * (i - 1) * overlambda * wwhole[i - 2];
+	}
+
+	xi[0] = 1.0;
+	xi[1] = 0.5 * K * overlambda;
+	xi[2] = 0.25 * (K * K + 2 * K) * overlambda * overlambda;
+}
 //a general G function
 void G(int no_u, int no_xi, double* psi, double a[3], MMDF1d m)
 {
@@ -226,7 +558,7 @@ void Microslope(double* a, double der[3], double prim[3])
 	a[0] = der[0] / prim[0] - prim[1] * a[1] - 0.5 * a[2] * (prim[1] * prim[1] + 0.5 * (K + 1) / prim[2]);
 }
 
-void Collision(double* w0, double left, double right, MMDF& m2, MMDF& m3)
+void Collision(double* w0, double left, double right, MMDF2d& m2, MMDF2d& m3)
 {
 	// get the equilibrium variables by collision
 	w0[0] = left * m2.uplus[0] + right * m3.uminus[0];
@@ -250,7 +582,25 @@ void A(double* a, double der[4], double prim[4])
 	a[0] = der[0] * overden - prim[1] * a[1] - prim[2] * a[2] - 0.5 * a[3] * (prim[1] * prim[1] + prim[2] * prim[2] + 0.5 * (K + 2) / prim[3]);
 }
 
-void GL_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m)
+void A(double *a, double der[5], double density, double u, double v,double w, double lambda)
+{
+	double A, B, C,D;
+	double overden = 1.0 / density;
+	double overlambda = 1.0 / lambda;
+
+	A = 2 * der[4] * overden - (u*u + v*v + w*w + 0.5*(K + 3) * overlambda)*der[0] * overden;
+	B = (der[1] - u*der[0]) * overden;
+	C = (der[2] - v*der[0]) * overden;
+	D = (der[3] - w*der[0]) * overden;
+
+	a[4] = 4 * lambda*lambda / (K + 3)*(A - 2 * u*B - 2 * v*C - 2 * w*D);
+	a[3] = 2 * lambda*D - w*a[4];
+	a[2] = 2 * lambda*C - v*a[4];
+	a[1] = 2 * lambda*B - u*a[4];
+	a[0] = der[0] * overden - u*a[1] - v*a[2] - w*a[3] - 0.5*a[4] * (u*u + v*v + w*w + 0.5*(K + 3) * overlambda);
+}
+
+void GL_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF2d& m)
 {
 	psi[0] = a[0] * m.upvxi[no_u][no_v][no_xi] + a[1] * m.upvxi[no_u + 1][no_v][no_xi] + a[2] * m.upvxi[no_u][no_v + 1][no_xi] + a[3] * 0.5 * (m.upvxi[no_u + 2][no_v][no_xi] + m.upvxi[no_u][no_v + 2][no_xi] + m.upvxi[no_u][no_v][no_xi + 1]);
 	psi[1] = a[0] * m.upvxi[no_u + 1][no_v][no_xi] + a[1] * m.upvxi[no_u + 2][no_v][no_xi] + a[2] * m.upvxi[no_u + 1][no_v + 1][no_xi] + a[3] * 0.5 * (m.upvxi[no_u + 3][no_v][no_xi] + m.upvxi[no_u + 1][no_v + 2][no_xi] + m.upvxi[no_u + 1][no_v][no_xi + 1]);
@@ -261,7 +611,7 @@ void GL_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m
 		a[3] * 0.5 * (m.upvxi[no_u + 4][no_v][no_xi] + m.upvxi[no_u][no_v + 4][no_xi] + m.upvxi[no_u][no_v][no_xi + 2] + 2 * m.upvxi[no_u + 2][no_v + 2][no_xi] + 2 * m.upvxi[no_u + 2][no_v][no_xi + 1] + 2 * m.upvxi[no_u][no_v + 2][no_xi + 1]));
 }
 
-void GR_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m)
+void GR_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF2d& m)
 {
 	// Similar to the GL_address
 	psi[0] = a[0] * m.unvxi[no_u][no_v][no_xi] + a[1] * m.unvxi[no_u + 1][no_v][no_xi] + a[2] * m.unvxi[no_u][no_v + 1][no_xi] + a[3] * 0.5 * (m.unvxi[no_u + 2][no_v][no_xi] + m.unvxi[no_u][no_v + 2][no_xi] + m.unvxi[no_u][no_v][no_xi + 1]);
@@ -273,7 +623,7 @@ void GR_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m
 		a[3] * 0.5 * (m.unvxi[no_u + 4][no_v][no_xi] + m.unvxi[no_u][no_v + 4][no_xi] + m.unvxi[no_u][no_v][no_xi + 2] + 2 * m.unvxi[no_u + 2][no_v + 2][no_xi] + 2 * m.unvxi[no_u + 2][no_v][no_xi + 1] + 2 * m.unvxi[no_u][no_v + 2][no_xi + 1]));
 }
 
-void G_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF& m)
+void G_address(int no_u, int no_v, int no_xi, double* psi, double a[4], MMDF2d& m)
 {
 
 	psi[0] = a[0] * m.uvxi[no_u][no_v][no_xi] + a[1] * m.uvxi[no_u + 1][no_v][no_xi] + a[2] * m.uvxi[no_u][no_v + 1][no_xi] + a[3] * 0.5 * (m.uvxi[no_u + 2][no_v][no_xi] + m.uvxi[no_u][no_v + 2][no_xi] + m.uvxi[no_u][no_v][no_xi + 1]);
@@ -438,6 +788,15 @@ void Convar_to_primvar_2D(double *primvar, double convar[4])
 	primvar[3] = Pressure(convar[0], convar[1], convar[2], convar[3]);
 }
 
+void Convar_to_primvar_3D(double *primvar, double convar[5])
+{
+	primvar[0] = convar[0];
+	primvar[1] = U(convar[0], convar[1]);
+	primvar[2] = V(convar[0], convar[2]);
+	primvar[3] = W(convar[0], convar[3]);
+	primvar[4] = Pressure(convar[0], convar[1], convar[2], convar[3], convar[4]);
+}
+
 void Convar_to_ULambda_1d(double* primvar, double convar[3])
 {
 	primvar[0] = convar[0];
@@ -595,6 +954,109 @@ void Char_to_convar(double *convar, double *primvar, double character[4])
 	}
 }
 
+void Char_base_3D(double *s, double *primvar)
+{
+	double c = sqrt(Gamma*primvar[4] / primvar[0]);
+	double overc = 1.0 / c;
+	double	alfa = (Gamma - 1.)*0.5*overc*overc;
+	double u = primvar[1];
+	double v = primvar[2];
+	double w = primvar[3];
+	double r_over = 1/(Gamma - 1);
+	double H = 0.5*(u*u + v*v + w*w) + 0.5 / alfa;
+	s[0] = H+c*r_over*(u-c);
+	s[1] = -(u+c*r_over);
+	s[2] = -v;
+	s[3] = -w;
+	s[4] = 1;
+	s[5] = -2*H+4*r_over*c*c;
+	s[6] = 2*u;
+	s[7] = 2*v;
+	s[8] = 2*w;
+	s[9] = -2;
+	s[10] = -2*v*c*c*r_over;
+	s[11] = 0;
+	s[12] = 2*c*c*r_over;
+	s[13] = 0;
+	s[14] = 0;
+
+	s[15] = -2*w*c*c*r_over;
+	s[16] = 0;
+	s[17] = 0;
+	s[18] = 2 * c*c*r_over;
+	s[19] = 0;
+	s[20] = H - c*r_over*(u + c);
+	s[21] = -u + c*r_over;
+	s[22] = -v;
+	s[23] = -w;
+	s[24] = 1;
+
+	for (int i = 0; i < 25; i++)
+	{
+			s[i]=s[i]*alfa;
+	}
+}
+
+void Convar_to_char_3D(double *character, double *s, double *convar)
+{
+	for (int i = 0; i < 5; i++)
+	{
+		character[i] = 0.0;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			character[i] = character[i] + s[i * 5 + j] * convar[j];
+		}
+	}
+}
+
+void Char_to_convar_3D(double *convar, double *primvar, double character[5])
+{
+	double c = sqrt(Gamma*primvar[4] / primvar[0]);
+	double	alfa = (Gamma - 1.) / (2.0*c*c);
+	
+	double u = primvar[1];
+	double v = primvar[2];
+	double w = primvar[3];
+	double H = 0.5*(u*u + v*v + w*w) + 0.5 / alfa;
+	double s[5][5];
+	s[0][0] = 1.;
+	s[0][1] = 1.0;
+	s[0][2] = 0.0;
+	s[0][3] = 0.0;
+	s[0][4] = 1.0;
+	s[1][0] = u-c;
+	s[1][1] = u;
+	s[1][2] = 0;
+	s[1][3] = 0;
+	s[1][4] = u+c;
+	s[2][0] = v;
+	s[2][1] = v;
+	s[2][2] = 1;
+	s[2][3] = 0;
+	s[2][4] = v;
+	s[3][0] =w;
+	s[3][1] = w;
+	s[3][2] = 0;
+	s[3][3] = 1;
+	s[3][4] = w;
+	s[4][0] = H-u*c;
+	s[4][1] = 0.5*(u*u+v*v+w*w);
+	s[4][2] = v;
+	s[4][3] = w;
+	s[4][4] = H+u*c;
+	for (int i = 0; i < 5; i++)
+	{
+		convar[i] = 0;
+		for (int j = 0; j < 5; j++)
+		{
+			convar[i] = convar[i] + s[i][j] * character[j];
+		}
+	}
+}
+
 double DensityU(double density, double u)
 {
 	return density * u;
@@ -603,11 +1065,6 @@ double DensityU(double density, double u)
 double DensityE(double density, double u, double pressure)
 {
 	return density * (pressure / density / (Gamma - 1) + 0.5 * (u * u));
-}
-
-double Pressure(double density, double densityu, double densityE)
-{
-	return (Gamma - 1) * (densityE - 0.5 * densityu * densityu / density);
 }
 
 double Q_densityu(double density, double u)
@@ -638,9 +1095,26 @@ double V(double density, double q_densityv)
 	return q_densityv / density;
 }
 
+double W(double density, double q_densityw)
+{
+	return q_densityw / density;
+}
+
+double Pressure(double density, double densityu, double densityE)
+{
+	return (Gamma - 1.0) * (densityE - 0.5 * densityu * densityu / density);
+}
+
 double Pressure(double density, double q_densityu, double q_densityv, double q_densityE)
 {
 	return (Gamma - 1.0)*(q_densityE - 0.5*q_densityu*q_densityu / density - 0.5*q_densityv*q_densityv / density);
+}
+
+double Pressure(double density, double q_densityu, double q_densityv, double q_densityw, double q_densityE)
+{
+	return (Gamma - 1.0) * (q_densityE - 0.5 * q_densityu * q_densityu / density 
+			                        - 0.5 * q_densityv * q_densityv / density 
+			                        - 0.5 * q_densityw * q_densityw / density);
 }
 
 double Lambda(double density, double u, double densityE)
@@ -651,6 +1125,11 @@ double Lambda(double density, double u, double densityE)
 double Lambda(double density, double u, double v, double densityE)
 {
 	return (K + 2.0) * 0.25 * (density / (densityE - 0.5 * density * (u * u + v * v)));
+}
+
+double Lambda(double density, double u, double v, double w, double densityE)
+{
+	return (K + 3.0) * 0.25 * (density / (densityE - 0.5 * density * (u * u + v * v + w * w)));
 }
 
 void Copy_Array(double* target, double* origin, int dim)
@@ -675,6 +1154,24 @@ void XchangetoY(double* fluidtmp, double* fluid)
 	fluidtmp[1] = -fluid[2];
 	fluidtmp[2] = fluid[1];
 	fluidtmp[3] = fluid[3];
+}
+
+void Ydirection(double *change, double *origin)
+{
+	change[0] = origin[0];
+	change[1] = origin[2];
+	change[2] = -origin[1];
+	change[3] = origin[3];
+	change[4] = origin[4];
+}
+
+void Zdirection(double *change, double *origin)
+{
+	change[0] = origin[0];
+	change[1] = origin[3];
+	change[2] = origin[2];
+	change[3] = -origin[1];
+	change[4] = origin[4];
 }
 
 void Local_to_Global(double *change,double *normal)

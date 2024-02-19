@@ -1,5 +1,6 @@
 #include "1Dproblem.h"
 #include "2Dproblem.h"
+#include "3Dproblem.h"
 
 int main()
 {
@@ -15,5 +16,7 @@ int main()
     //PlanarShock();
     //PlanarSheer();
     High_mach_astrophusical_jet();
+    // 3-D problem
+    //CubicTube();
     return 0;
 }

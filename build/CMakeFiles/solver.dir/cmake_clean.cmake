@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/solver.dir/src/1Dproblem.cpp.obj.d"
   "CMakeFiles/solver.dir/src/2Dproblem.cpp.obj"
   "CMakeFiles/solver.dir/src/2Dproblem.cpp.obj.d"
+  "CMakeFiles/solver.dir/src/3Dproblem.cpp.obj"
+  "CMakeFiles/solver.dir/src/3Dproblem.cpp.obj.d"
   "CMakeFiles/solver.dir/src/basic_function.cpp.obj"
   "CMakeFiles/solver.dir/src/basic_function.cpp.obj.d"
   "CMakeFiles/solver.dir/src/boundary_condition.cpp.obj"

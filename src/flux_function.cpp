@@ -363,8 +363,8 @@ void GKS2D(Flux2d& flux, Recon2d& interface, double dt)
 	Convar_to_ULambda_2d(prim_right, convar_right);
 
 	//prim_left[1], prim_left[2], prim_left[3], means U, V, Lambda
-	MMDF ml(prim_left[1], prim_left[2], prim_left[3]);
-	MMDF mr(prim_right[1], prim_right[2], prim_right[3]);
+	MMDF2d ml(prim_left[1], prim_left[2], prim_left[3]);
+	MMDF2d mr(prim_right[1], prim_right[2], prim_right[3]);
 	
 	if (g0reconstruction_2D_tangent == Center_all_collision_multi)
 	{
@@ -471,7 +471,7 @@ void GKS2D(Flux2d& flux, Recon2d& interface, double dt)
 	// kfvs1st part ended
 
 	//now the equ part added, m0 term added, gks1st part begin
-	MMDF m0(prim0[1], prim0[2], prim0[3]);
+	MMDF2d m0(prim0[1], prim0[2], prim0[3]);
 
 	double g0u[4];
 	G_address(1, 0, 0, g0u, unit, m0);
@@ -751,4 +751,747 @@ void NS_by_central_difference_prim_2D(Flux2d& flux, Recon2d& interface, double d
 	flux.f[1] += tau_xx * dt;
 	flux.f[2] += tau_xy * dt;
 	flux.f[3] += q * dt;
+}
+
+// three-dimensional problem
+GKS3d_type gks3dsolver = gks2nd_3d;
+Flux_function_3d flux_function_3d = GKS3D;
+
+void GKS3D(Flux3d &flux, Recon3d& interface, double area, double dt)
+{
+	if (gks3dsolver == nothing_3d)
+	{
+		cout << "no gks solver specify" << endl;
+		exit(0);
+	}
+	double Flux[2][5];
+	//change conservative variables to rho u lambda
+	double convar_left[5], convar_right[5], convar0[5];
+
+	for (int i = 0; i < 5; i++)
+	{
+		convar_left[i] = interface.left.convar[i];
+		convar_right[i] = interface.right.convar[i];
+	}
+
+	//cout << endl;
+	double prim_left[5], prim_right[5], prim0[5];
+	Convar_to_primvar_3D(prim_left, convar_left);
+	Convar_to_primvar_3D(prim_right, convar_right);
+
+	MMDF3d_left ml(prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	MMDF3d_right mr(prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+
+	ml.calcualte_MMDF();
+	mr.calcualte_MMDF();
+	double unit[5] = { 1, 0.0, 0.0, 0.0,0.0 };
+
+	if (g0type == all_collisionn)
+	{
+		Collision(interface.center.convar, prim_left[0], prim_right[0], ml, mr);
+
+		double a0[5] = { 1.0, 0.0, 0.0, 0.0,0.0 };
+		double alx[5], arx[5];
+		//w_x
+		A(alx, interface.left.der1x, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+		A(arx, interface.right.der1x, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+		double al0x[5];
+		double ar0x[5];
+		GL_address(0, 0, 0, 0, al0x, alx, ml);
+		GR_address(0, 0, 0, 0, ar0x, arx, mr);
+
+		//w_y
+		double aly[5], ary[5];
+		A(aly, interface.left.der1y, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+		A(ary, interface.right.der1y, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+		double al0y[5];
+		double ar0y[5];
+		GL_address(0, 0, 0, 0, al0y, aly, ml);
+		GR_address(0, 0, 0, 0, ar0y, ary, mr);
+
+		//w_z
+		double alz[5], arz[5];
+		A(alz, interface.left.der1z, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+		A(arz, interface.right.der1z, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+		double al0z[5];
+		double ar0z[5];
+		GL_address(0, 0, 0, 0, al0z, alz, ml);
+		GR_address(0, 0, 0, 0, ar0z, arz, mr);
+
+
+		for (int var = 0; var < 5; var++)
+		{
+			interface.center.der1x[var] = prim_left[0] * al0x[var] + prim_right[0] * ar0x[var];
+			interface.center.der1y[var] = prim_left[0] * al0y[var] + prim_right[0] * ar0y[var];
+			interface.center.der1z[var] = prim_left[0] * al0z[var] + prim_right[0] * ar0z[var];
+		}
+	}
+
+	for (int i = 0; i < 5; i++)
+	{
+		convar0[i] = interface.center.convar[i];
+		//cout << convar_left[i] << " " << convar_right[i] << " " << convar0[i] << " ";
+	}
+	Convar_to_primvar_3D(prim0, convar0);
+
+	//then lets get the coefficient of time intergation factors
+
+	double tau;
+	double tau_num;
+	tau = Get_Tau_NS(prim0[0], prim0[4]);
+	tau_num = Get_Tau(prim_left[0], prim_right[0], prim0[0], prim_left[4], prim_right[4], prim0[4], dt);
+	//cout << tau << " " << tau_num << endl;
+	double eta = exp(-dt / tau_num);
+	double t[10];
+	//t[0] = dt;
+	//t[1] = dt;
+	// non equ part time coefficient for gks_2nd algorithm
+	t[0] = tau_num*(1 - eta); // this refers glu, gru part
+	t[1] = tau_num*(eta*(dt + tau_num) - tau_num) + tau*tau_num*(eta - 1); //this refers aluu, aruu part
+
+	t[2] = tau*tau_num*(eta - 1); //this refers Alu, Aru part
+								  // then, equ part time coefficient for gks 2nd
+	t[3] = tau_num*eta + dt - tau_num; //this refers g0u part
+	t[4] = tau_num*(tau_num - eta*(dt + tau_num) - tau*(eta - 1)) - dt*tau; //this refers a0uu part
+	t[5] = 0.5*dt*dt - tau*tau_num*(eta - 1) - tau*dt; //this refers A0u part
+
+	if (gks3dsolver == kfvs1st_3d)
+	{
+		t[0] = dt;
+		for (int i = 1; i < 6; i++)
+		{
+			t[i] = 0.0;
+		}
+		//do nothing, kfvs1st only use t[0]=dt part;
+	}
+	else if (gks3dsolver == kfvs2nd_3d)
+	{
+		t[0] = dt;
+		t[1] = -0.5*dt*dt;
+		for (int i = 2; i < 6; i++)
+		{
+			t[i] = 0.0;
+		}
+	}
+
+	double glu[5], gru[5];
+
+	GL_address(1, 0, 0,0, glu, unit, ml);
+	GR_address(1, 0, 0, 0,gru, unit, mr);
+
+	//only one part, the kfvs1st part
+	for (int i = 0; i < 5; i++)
+	{
+		Flux[0][i] = prim_left[0] * t[0] * glu[i] + prim_right[0] * t[0] * gru[i];
+	}
+	if (gks3dsolver == kfvs1st_3d)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+			//cout << flux.f[i] << " ";
+		}
+		//cout << endl;
+		//cout << "flux here" << endl;
+		return;
+	}
+	// kfvs1st part ended
+	MMDF3d m0(prim0[1], prim0[2], prim0[3], prim0[4]);
+	double g0u[5];
+	G_address(1, 0, 0, 0, g0u, unit, m0);
+
+	//the equ g0u part, the gks1st part
+	for (int i = 0; i < 5; i++)
+	{
+		Flux[0][i] = Flux[0][i] + prim0[0] * t[3] * g0u[i];
+	}
+
+	if (gks3dsolver == gks1st_3d)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+		}
+		return;
+	}
+	// gks1d solver ended
+
+	double alx[5], arx[5], aly[5], ary[5], alz[5], arz[5];
+	A(alx, interface.left.der1x, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(arx, interface.right.der1x, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+	A(aly, interface.left.der1y, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(ary, interface.right.der1y, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+	A(alz, interface.left.der1z, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(arz, interface.right.der1z, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+
+	double alxuul[5];
+	GL_address(2, 0, 0, 0, alxuul, alx, ml);
+	double arxuur[5];
+	GR_address(2, 0, 0, 0, arxuur, arx, mr);
+	double alyuvl[5];
+	GL_address(1, 1, 0, 0, alyuvl, aly, ml);
+	double aryuvr[5];
+	GR_address(1, 1, 0, 0, aryuvr, ary, mr);
+	double alzuwl[5];
+	GL_address(1, 0, 1, 0, alzuwl, alz, ml);
+	double arzuwr[5];
+	GR_address(1, 0, 1, 0, arzuwr, arz, mr);
+
+	for (int i = 0; i < 5; i++)
+	{	// t1 part
+		Flux[0][i] = Flux[0][i] + t[1] * 
+			(prim_left[0] * (alxuul[i] + alyuvl[i] + alzuwl[i]) + prim_right[0] * (arxuur[i] + aryuvr[i] + arzuwr[i]));
+	}
+	if (gks3dsolver == kfvs2nd_3d)
+	{
+		for (int i = 0; i <5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+		}
+		return;
+	}
+	// the kfvs2nd part ended
+
+	// then we still need t[2], t[4] t[5] part for gks 2nd
+
+	//for t[2] Aru,Alu part
+
+	double alxu[5];		double alyv[5]; double alzw[5];
+	double arxu[5];		double aryv[5]; double arzw[5];
+
+	//take <u> moment for al, ar
+	G_address(1, 0, 0, 0, alxu, alx, ml);
+	G_address(1, 0, 0, 0, arxu, arx, mr);
+	G_address(0, 1, 0, 0, alyv, aly, ml);
+	G_address(0, 1, 0, 0, aryv, ary, mr);
+	G_address(0, 0, 1, 0, alzw, alz, ml);
+	G_address(0, 0, 1, 0, arzw, arz, mr);
+
+	double Al[5], Ar[5];
+	double der_AL[5], der_AR[5];
+
+	//using compatability condition to get the time derivative
+	for (int i = 0; i < 5; i++)
+	{
+		der_AL[i] = -prim_left[0] * (alxu[i] + alyv[i] + alzw[i]);
+		der_AR[i] = -prim_right[0] * (arxu[i] + aryv[i] + arzw[i]); // this bug is corrected in 20210415
+	}
+	// solve the coefficient martix b=ma
+	A(Al, der_AL, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(Ar, der_AR, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+
+	//to obtain the Alu and Aru
+	double Alul[5];
+	double Arur[5];
+	GL_address(1, 0, 0, 0, Alul, Al, ml);
+	GR_address(1, 0, 0, 0, Arur, Ar, mr);
+
+	for (int i = 0; i < 5; i++)
+	{	// t2 part
+		Flux[0][i] = Flux[0][i] + t[2] * (prim_left[0] * Alul[i] + prim_right[0] * Arur[i]);
+	}
+
+	// for t[4] a0xuu part
+
+	double a0x[5];
+	double der1[5];
+	for (int i = 0; i < 5; i++)
+	{
+		der1[i] = interface.center.der1x[i];
+	}
+	//solve the microslope
+	A(a0x, der1, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	//a0x <u> moment
+	double a0xu[5];
+	G_address(1, 0, 0, 0, a0xu, a0x, m0);
+	//a0x <u^2> moment
+	double a0xuu[5];
+	G_address(2, 0, 0, 0, a0xuu, a0x, m0);
+
+	double a0y[5];
+	double dery[5];
+	for (int i = 0; i < 5; i++)
+	{
+		dery[i] = interface.center.der1y[i];
+	}
+	A(a0y, dery, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	double a0yv[5];
+	G_address(0, 1, 0, 0, a0yv, a0y, m0);
+	//a0x <u^2> moment
+	double a0yuv[5];
+	G_address(1, 1, 0, 0, a0yuv, a0y, m0);
+
+	double a0z[5];
+	double derz[5];
+	for (int i = 0; i < 5; i++)
+	{
+		derz[i] = interface.center.der1z[i];
+	}
+	A(a0z, derz, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	double a0zw[5];
+	G_address(0, 0, 1, 0, a0zw, a0z, m0);
+	//a0x <u^2> moment
+	double a0zuw[5];
+	G_address(1, 0, 1, 0, a0zuw, a0z, m0);
+
+	for (int i = 0; i < 5; i++)
+	{	// t4 part
+		Flux[0][i] = Flux[0][i] + prim0[0] * t[4] * (a0xuu[i] + a0yuv[i] + a0zuw[i]);
+	}
+
+
+	// for t[5] A0u part
+	double derA0[5];
+
+	for (int i = 0; i < 5; i++)
+	{
+		derA0[i] = -prim0[0] * (a0xu[i] + a0yv[i] + a0zw[i]);
+	}
+	double A0[5];
+	A(A0, derA0, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	double A0u[5];
+	G_address(1, 0, 0, 0, A0u, A0, m0);
+	for (int i = 0; i < 5; i++)
+	{	// t5 part
+		Flux[0][i] = Flux[0][i] + prim0[0] * t[5] * (A0u[i]);
+	}
+	if (gks3dsolver == gks2nd_3d&&(timecoe_list_3d !=S2O4_3D))
+	{
+		//cout << "hey there" << endl;
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+		}
+		return;
+	}
+
+	if (gks3dsolver == gks2nd_3d && (timecoe_list_3d == S2O4_3D || timecoe_list_3d == S1O2_3D))
+	{
+		double dt2 = 0.5*dt;
+		tau_num = Get_Tau(prim_left[0], prim_right[0], prim0[0], prim_left[4], prim_right[4], prim0[4], dt2);
+		eta = exp(-dt2 / tau_num);
+		// non equ part time coefficient for gks_2nd algorithm
+		t[0] = tau_num*(1 - eta); // this refers glu, gru part
+		t[1] = tau_num*(eta*(dt2 + tau_num) - tau_num) + tau*tau_num*(eta - 1); //this refers aluu, aruu part
+		t[2] = tau*tau_num*(eta - 1); //this refers Alu, Aru part
+									  // then, equ part time coefficient for gks 2nd
+		t[3] = tau_num*eta + dt2 - tau_num; //this refers g0u part
+		t[4] = tau_num*(tau_num - eta*(dt2 + tau_num) - tau*(eta - 1)) - dt2*tau; //this refers a0uu part
+		t[5] = 0.5*dt2*dt2 - tau*tau_num*(eta - 1) - tau*dt2; //this refers A0u part
+		
+		for (int i = 0; i < 5; i++)
+		{
+			// t0 part
+			Flux[1][i] = t[0] * (prim_left[0] * glu[i] + prim_right[0] * gru[i]);
+			// t1 part
+			Flux[1][i] = Flux[1][i] + t[1] * (prim_left[0] * (alxuul[i] + alyuvl[i] + alzuwl[i]) + prim_right[0] * (arxuur[i] + aryuvr[i] + arzuwr[i]));
+			// t2 part
+			Flux[1][i] = Flux[1][i] + t[2] * (prim_left[0] * Alul[i] + prim_right[0] * Arur[i]);
+			// t3 part
+			Flux[1][i] = Flux[1][i] + prim0[0] * t[3] * g0u[i];
+			// t4 part
+			Flux[1][i] = Flux[1][i] + prim0[0] * t[4] * (a0xuu[i] + a0yuv[i] + a0zuw[i]);
+			// t5 part
+			Flux[1][i] = Flux[1][i] + prim0[0] * t[5] * (A0u[i]);
+		}
+
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = (4.0*Flux[1][i] - Flux[0][i]);
+			flux.derf[i] = 4.0*(Flux[0][i] - 2.0*Flux[1][i]);
+		}
+		return;
+	}
+	else
+	{
+		cout << "no valid solver specify" << endl;
+		exit(0);
+	}
+}
+
+void GKS3D_speed(Flux3d &flux, Recon3d& interface, double area, double dt)
+{
+	if (gks3dsolver == nothing_3d)
+	{
+		cout << "no gks solver specify" << endl;
+		exit(0);
+	}
+	double Flux[2][5];
+	//change conservative variables to rho u lambda
+	double convar_left[5], convar_right[5], convar0[5];
+
+
+	for (int i = 0; i < 5; i++)
+	{
+		convar_left[i] = interface.left.convar[i];
+		convar_right[i] = interface.right.convar[i];
+	}
+
+	//cout << endl;
+	double prim_left[5], prim_right[5], prim0[5];
+	Convar_to_primvar_3D(prim_left, convar_left);
+	Convar_to_primvar_3D(prim_right, convar_right);
+
+	MMDF3d_left_speed ml(prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	MMDF3d_right_speed mr(prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+
+	ml.calcualte_MMDF();
+	mr.calcualte_MMDF();
+	double unit[5] = { 1, 0.0, 0.0, 0.0,0.0 };
+
+	if (g0type == all_collisionn)
+	{
+		Collision(interface.center.convar, prim_left[0], prim_right[0], ml, mr);
+		double a0[5] = { 1.0, 0.0, 0.0, 0.0,0.0 };
+		double alx[5], arx[5];
+		//w_x
+		A(alx, interface.left.der1x, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+		A(arx, interface.right.der1x, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+		double al0x[5];
+		double ar0x[5];
+		GL_speed(0, 0, 0, 0, al0x, alx, ml);
+		GR_speed(0, 0, 0, 0, ar0x, arx, mr);
+
+		//w_y
+		double aly[5], ary[5];
+		A(aly, interface.left.der1y, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+		A(ary, interface.right.der1y, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+		double al0y[5];
+		double ar0y[5];
+		GL_speed(0, 0, 0, 0, al0y, aly, ml);
+		GR_speed(0, 0, 0, 0, ar0y, ary, mr);
+
+		//w_z
+		double alz[5], arz[5];
+		A(alz, interface.left.der1z, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+		A(arz, interface.right.der1z, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+		double al0z[5];
+		double ar0z[5];
+		GL_speed(0, 0, 0, 0, al0z, alz, ml);
+		GR_speed(0, 0, 0, 0, ar0z, arz, mr);
+
+
+		for (int var = 0; var < 5; var++)
+		{
+			interface.center.der1x[var] = prim_left[0] * al0x[var] + prim_right[0] * ar0x[var];
+			interface.center.der1y[var] = prim_left[0] * al0y[var] + prim_right[0] * ar0y[var];
+			interface.center.der1z[var] = prim_left[0] * al0z[var] + prim_right[0] * ar0z[var];
+		}
+	}
+
+	for (int i = 0; i < 5; i++)
+	{
+		convar0[i] = interface.center.convar[i];
+	}
+	Convar_to_primvar_3D(prim0, convar0);
+
+	//then lets get the coefficient of time intergation factors
+
+	double tau;
+	double tau_num;
+	tau = Get_Tau_NS(prim0[0], prim0[4]);
+	tau_num = Get_Tau
+	(prim_left[0], prim_right[0], prim0[0], prim_left[4], prim_right[4], prim0[4], dt);
+
+	double dif=0;
+	double ep = 1e-6;
+
+	double p_diff[5];
+	for (int var = 0; var < 5; var++)
+	{
+		double tmp = (std::abs(prim_left[var] - prim_right[var])
+			/ (std::abs(prim_left[var]) + std::abs(prim_right[var]) + ep));
+		dif += tmp;
+		p_diff[var] = tmp / (1.0 - tmp + 1e-10);
+	}
+
+	dif *= dt;
+	tau_num += dif;
+
+
+	if (c2_euler < 0)
+	{
+		tau_num = 0.0;
+	}
+	else
+	{
+		tau_num *= c2_euler;
+	}
+	if (tau_type==Euler)
+	{
+		tau_num += c1_euler * dt;
+	}
+	
+	double eta = exp(-dt / tau_num);
+	double t[10];
+
+	// non equ part time coefficient for gks_2nd algorithm
+	t[0] = tau_num * (1 - eta); // this refers glu, gru part
+	t[1] = tau_num * (eta*(dt + tau_num) - tau_num) + tau * tau_num*(eta - 1); //this refers aluu, aruu part
+
+	t[2] = tau * tau_num*(eta - 1); //this refers Alu, Aru part
+									// then, equ part time coefficient for gks 2nd
+	t[3] = tau_num * eta + dt - tau_num; //this refers g0u part
+	t[4] = tau_num * (tau_num - eta * (dt + tau_num) - tau * (eta - 1)) - dt * tau; //this refers a0uu part
+	t[5] = 0.5*dt*dt - tau * tau_num*(eta - 1) - tau * dt; //this refers A0u part
+
+	if (gks3dsolver == kfvs1st_3d)
+	{
+		t[0] = dt;
+		for (int i = 1; i < 6; i++)
+		{
+			t[i] = 0.0;
+		}
+		//do nothing, kfvs1st only use t[0]=dt part;
+	}
+	else if (gks3dsolver == kfvs2nd_3d)
+	{
+		t[0] = dt;
+		t[1] = -0.5*dt*dt;
+		for (int i = 2; i < 6; i++)
+		{
+			t[i] = 0.0;
+		}
+	}
+
+	double glu[5], gru[5];
+	GL_speed(1, 0, 0, 0, glu, unit, ml);
+	GR_speed(1, 0, 0, 0, gru, unit, mr);
+
+	//only one part, the kfvs1st part
+	for (int i = 0; i < 5; i++)
+	{
+		Flux[0][i] = prim_left[0] * t[0] * glu[i] + prim_right[0] * t[0] * gru[i];
+	}
+	if (gks3dsolver == kfvs1st_3d)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+			flux.derf[i] = 0.0;
+			//cout << flux.f[i] << " ";
+		}
+		//cout << endl;
+		//cout << "flux here" << endl;
+		return;
+	}
+	// kfvs1st part ended
+	MMDF3d_speed m0(prim0[1], prim0[2], prim0[3], prim0[4]);
+	double g0u[5];
+	G_speed(1, 0, 0, 0, g0u, unit, m0);
+
+	//output_to_screen_array(5, prim0);
+	//cinhere();
+	//the equ g0u part, the gks1st part
+	for (int i = 0; i < 5; i++)
+	{
+		Flux[0][i] = Flux[0][i] + prim0[0] * t[3] * g0u[i];
+	}
+
+	if (gks3dsolver == gks1st_3d)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+		}
+		return;
+	}
+	// gks1d solver ended
+
+	//for kfvs2nd part
+	double alx[5], arx[5], aly[5], ary[5], alz[5], arz[5];
+	A(alx, interface.left.der1x, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(arx, interface.right.der1x, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+	A(aly, interface.left.der1y, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(ary, interface.right.der1y, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+	A(alz, interface.left.der1z, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(arz, interface.right.der1z, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+
+	double alxuul[5];
+	GL_speed(2, 0, 0, 0, alxuul, alx, ml);
+	double arxuur[5];
+	GR_speed(2, 0, 0, 0, arxuur, arx, mr);
+	double alyuvl[5];
+	GL_speed(1, 1, 0, 0, alyuvl, aly, ml);
+	double aryuvr[5];
+	GR_speed(1, 1, 0, 0, aryuvr, ary, mr);
+	double alzuwl[5];
+	GL_speed(1, 0, 1, 0, alzuwl, alz, ml);
+	double arzuwr[5];
+	GR_speed(1, 0, 1, 0, arzuwr, arz, mr);
+
+	for (int i = 0; i < 5; i++)
+	{	// t1 part
+		Flux[0][i] = Flux[0][i] + t[1] *
+			(prim_left[0] * (alxuul[i] + alyuvl[i] + alzuwl[i]) + prim_right[0] * (arxuur[i] + aryuvr[i] + arzuwr[i]));
+	}
+	if (gks3dsolver == kfvs2nd_3d)
+	{
+		for (int i = 0; i <5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+			flux.derf[i] = 0.0;
+		}
+
+
+		return;
+	}
+	// the kfvs2nd part ended
+
+	// then we still need t[2], t[4] t[5] part for gks 2nd
+
+	//for t[2] Aru,Alu part
+
+	double alxu[5];		double alyv[5]; double alzw[5];
+	double arxu[5];		double aryv[5]; double arzw[5];
+
+	//take <u> moment for al, ar
+	G_speed(1, 0, 0, 0, alxu, alx, ml);
+	G_speed(1, 0, 0, 0, arxu, arx, mr);
+	G_speed(0, 1, 0, 0, alyv, aly, ml);
+	G_speed(0, 1, 0, 0, aryv, ary, mr);
+	G_speed(0, 0, 1, 0, alzw, alz, ml);
+	G_speed(0, 0, 1, 0, arzw, arz, mr);
+
+	double Al[5], Ar[5];
+	double der_AL[5], der_AR[5];
+
+	//using compatability condition to get the time derivative
+	for (int i = 0; i < 5; i++)
+	{
+		der_AL[i] = -prim_left[0] * (alxu[i] + alyv[i] + alzw[i]);
+		der_AR[i] = -prim_right[0] * (arxu[i] + aryv[i] + arzw[i]);  // this bug is corrected in 20210415
+	}
+	// solve the coefficient martix b=ma
+	A(Al, der_AL, prim_left[0], prim_left[1], prim_left[2], prim_left[3], prim_left[4]);
+	A(Ar, der_AR, prim_right[0], prim_right[1], prim_right[2], prim_right[3], prim_right[4]);
+
+	//to obtain the Alu and Aru
+	double Alul[5];
+	double Arur[5];
+	GL_speed(1, 0, 0, 0, Alul, Al, ml);
+	GR_speed(1, 0, 0, 0, Arur, Ar, mr);
+
+	for (int i = 0; i < 5; i++)
+	{	// t2 part
+		Flux[0][i] = Flux[0][i] + t[2] * (prim_left[0] * Alul[i] + prim_right[0] * Arur[i]);
+	}
+
+	// for t[4] a0xuu part
+
+	double a0x[5];
+	double der1[5];
+	for (int i = 0; i < 5; i++)
+	{
+		der1[i] = interface.center.der1x[i];
+	}
+	//solve the microslope
+	A(a0x, der1, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	//a0x <u> moment
+	double a0xu[5];
+	G_speed(1, 0, 0, 0, a0xu, a0x, m0);
+	//a0x <u^2> moment
+	double a0xuu[5];
+	G_speed(2, 0, 0, 0, a0xuu, a0x, m0);
+
+	double a0y[5];
+	double dery[5];
+	for (int i = 0; i < 5; i++)
+	{
+		dery[i] = interface.center.der1y[i];
+	}
+	A(a0y, dery, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	double a0yv[5];
+	G_speed(0, 1, 0, 0, a0yv, a0y, m0);
+	//a0x <u^2> moment
+	double a0yuv[5];
+	G_speed(1, 1, 0, 0, a0yuv, a0y, m0);
+
+	double a0z[5];
+	double derz[5];
+	for (int i = 0; i < 5; i++)
+	{
+		derz[i] = interface.center.der1z[i];
+	}
+	A(a0z, derz, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	double a0zw[5];
+	G_speed(0, 0, 1, 0, a0zw, a0z, m0);
+	//a0x <u^2> moment
+	double a0zuw[5];
+	G_speed(1, 0, 1, 0, a0zuw, a0z, m0);
+
+	for (int i = 0; i < 5; i++)
+	{	// t4 part
+		Flux[0][i] = Flux[0][i] + prim0[0] * t[4] * (a0xuu[i] + a0yuv[i] + a0zuw[i]);
+	}
+
+	// for t[5] A0u part
+	double derA0[5];
+
+	for (int i = 0; i < 5; i++)
+	{
+		derA0[i] = -prim0[0] * (a0xu[i] + a0yv[i] + a0zw[i]);
+	}
+	double A0[5];
+	A(A0, derA0, prim0[0], prim0[1], prim0[2], prim0[3], prim0[4]);
+	double A0u[5];
+	G_speed(1, 0, 0, 0, A0u, A0, m0);
+	for (int i = 0; i < 5; i++)
+	{	// t5 part
+		Flux[0][i] = Flux[0][i] + prim0[0] * t[5] * (A0u[i]);
+	}
+
+	if (gks3dsolver == gks2nd_3d && (timecoe_list_3d == S1O1_3D))
+	{
+		//cout << "hey there" << endl;
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = Flux[0][i];
+		}
+		return;
+	}
+	if (gks3dsolver == gks2nd_3d)
+	{
+		double dt2 = 0.5*dt;
+		tau_num = Get_Tau(prim_left[0], prim_right[0], prim0[0], prim_left[4], prim_right[4], prim0[4], dt2);
+		eta = exp(-dt2 / tau_num);
+		// non equ part time coefficient for gks_2nd algorithm
+		t[0] = tau_num * (1 - eta); // this refers glu, gru part
+		t[1] = tau_num * (eta*(dt2 + tau_num) - tau_num) + tau * tau_num*(eta - 1); //this refers aluu, aruu part
+		t[2] = tau * tau_num*(eta - 1); //this refers Alu, Aru part
+										// then, equ part time coefficient for gks 2nd
+		t[3] = tau_num * eta + dt2 - tau_num; //this refers g0u part
+		t[4] = tau_num * (tau_num - eta * (dt2 + tau_num) - tau * (eta - 1)) - dt2 * tau; //this refers a0uu part
+		t[5] = 0.5*dt2*dt2 - tau * tau_num*(eta - 1) - tau * dt2; //this refers A0u part
+
+		for (int i = 0; i < 5; i++)
+		{
+			// t0 part
+			Flux[1][i] = t[0] * (prim_left[0] * glu[i] + prim_right[0] * gru[i]);
+			// t1 part
+			Flux[1][i] = Flux[1][i] + t[1] * (prim_left[0] * (alxuul[i] + alyuvl[i] + alzuwl[i]) + prim_right[0] * (arxuur[i] + aryuvr[i] + arzuwr[i]));
+			// t2 part
+			Flux[1][i] = Flux[1][i] + t[2] * (prim_left[0] * Alul[i] + prim_right[0] * Arur[i]);
+			// t3 part
+			Flux[1][i] = Flux[1][i] + prim0[0] * t[3] * g0u[i];
+			// t4 part
+			Flux[1][i] = Flux[1][i] + prim0[0] * t[4] * (a0xuu[i] + a0yuv[i] + a0zuw[i]);
+			// t5 part
+			Flux[1][i] = Flux[1][i] + prim0[0] * t[5] * (A0u[i]);
+		}
+
+		for (int i = 0; i < 5; i++)
+		{
+			flux.f[i] = (4.0*Flux[1][i] - Flux[0][i]);
+			flux.derf[i] = 4.0*(Flux[0][i] - 2.0*Flux[1][i]);
+			//flux.f[i] = Flux[0][i]/dt;
+			//flux.derf[i] = 0.0;
+		}
+		return;
+	}
+	else
+	{
+		cout << "no valid solver specify" << endl;
+		exit(0);
+	}
 }

@@ -42,3 +42,15 @@ void Update_with_gauss(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** y
 void Update_with_gauss_RK3(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
 
 void Update_RT(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
+
+// three-dimensional problem
+typedef void(*TimeMarchingCoefficient_3d)(Block3d &block);
+extern TimeMarchingCoefficient_3d timecoe_list_3d;
+
+void S1O1_3D(Block3d &block);
+void S1O2_3D(Block3d &block);
+void S1O3_3D(Block3d &block);
+void S2O4_3D(Block3d &block);
+void RK2_3D(Block3d &block);
+void RK3_3D(Block3d& block);
+void RK4_3D(Block3d &block);

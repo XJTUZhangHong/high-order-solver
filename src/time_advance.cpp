@@ -644,3 +644,73 @@ void Update_RT(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, 
 	}
 }
 
+// three-dimensional problem
+TimeMarchingCoefficient_3d timecoe_list_3d = S1O1_3D;
+
+void S1O1_3D(Block3d &block)
+{
+	block.stages = 1;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient_hweno[0][0][0] = 1.0;
+}
+
+void S1O2_3D(Block3d &block)
+{
+	block.stages = 1;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient[0][0][1] = 0.5;
+	block.timecoefficient_hweno[0][0][0] = 1.0;
+}
+
+void S1O3_3D(Block3d &block)
+{
+	block.stages = 1;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient[0][0][1] = 0.5;
+	block.timecoefficient[0][0][2] = 1.0 / 6.0;
+}
+
+void S2O4_3D(Block3d &block)
+{
+	block.stages = 2;
+	block.timecoefficient[0][0][0] = 0.5;
+	block.timecoefficient[0][0][1] = 1.0 / 8.0;
+	block.timecoefficient[1][0][0] = 1.0;
+	block.timecoefficient[1][1][0] = 0.0;
+	block.timecoefficient[1][0][1] = 1.0 / 6.0;
+	block.timecoefficient[1][1][1] = 1.0 / 3.0;
+
+	block.timecoefficient_hweno[0][0][0] = 0.5;
+	block.timecoefficient_hweno[1][0][0] = 0.0;
+	block.timecoefficient_hweno[1][1][0] = 1.0;
+}
+
+void RK2_3D(Block3d &block)
+{
+	block.stages = 2;
+	block.timecoefficient[0][0][0] = 0.5;
+	block.timecoefficient[1][1][0] = 1.0;
+}
+
+void RK3_3D(Block3d& block)
+{
+	block.stages = 3;
+	block.timecoefficient[0][0][0] = 1.0;
+	block.timecoefficient[1][0][0] = 0.25;
+	block.timecoefficient[1][1][0] = 0.25;
+	block.timecoefficient[2][0][0] = 1.0 / 6.0;
+	block.timecoefficient[2][1][0] = 1.0 / 6.0;
+	block.timecoefficient[2][2][0] = 2.0 / 3.0;
+}
+
+void RK4_3D(Block3d &block)
+{
+	block.stages = 4;
+	block.timecoefficient[0][0][0] = 0.5;
+	block.timecoefficient[1][1][0] = 0.5;
+	block.timecoefficient[2][2][0] = 1.0;
+	block.timecoefficient[3][0][0] = 1.0 / 6.0;
+	block.timecoefficient[3][1][0] = 1.0 / 3.0;
+	block.timecoefficient[3][2][0] = 1.0 / 3.0;
+	block.timecoefficient[3][3][0] = 1.0 / 6.0;
+}

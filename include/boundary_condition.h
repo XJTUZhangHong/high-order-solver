@@ -20,4 +20,12 @@ void periodic_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void RT_boundary(Fluid2d* fluids, Block2d block);
+// three-dimensional problem
+typedef void(*BoundaryCondition3d) (Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
+void free_boundary_xleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
+void free_boundary_xright(Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
+void free_boundary_yleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
+void free_boundary_yright(Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
+void free_boundary_zleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
+void free_boundary_zright(Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
 
