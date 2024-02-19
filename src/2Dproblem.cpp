@@ -46,11 +46,11 @@ void PlanarShock()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 
@@ -158,6 +158,7 @@ void PlanarShock()
 			}
 			block.step++;
 			block.t = block.t + block.dt;
+			if (block.step % 100 == 0) { output2d(fluids, block); }
 		}
 		output2d(fluids, block);
 	}

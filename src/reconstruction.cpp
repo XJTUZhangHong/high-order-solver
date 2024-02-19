@@ -366,8 +366,6 @@ double Calculate_alpha_k_1d(double* prim_left, double* prim_right)
 
 	A = abs(prim_left[2] - prim_right[2]) / prim_left[2] + abs(prim_left[2] - prim_right[2]) / prim_right[2];
 	A = A + pow(Ma_left_normal - Ma_right_normal, 2);
-	// if (A < 1.0) { return 1.0; }
-	// else { return 1.0 / (1.0 + (A - 1.0) * (A - 1.0)); }
 	return A;
 }
 
