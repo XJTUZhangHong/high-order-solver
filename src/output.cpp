@@ -78,3 +78,29 @@ void output2d(Fluid2d* fluids, Block2d block)
 	}
 	ofs.close();
 }
+
+void output3d(Fluid3d* fluids, Block3d block)
+{
+	ofstream ofs;
+	ofs.open("../data/R3d.txt", ios::trunc);
+
+	for (int k = block.ghost; k < block.ghost + block.nodez; k++)
+	{
+		for (int j = block.ghost; j < block.ghost + block.nodey; j++)
+		{
+			for (int i = block.ghost; i < block.ghost + block.nodex; i++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+
+				ofs << fluids[index].convar[0] << endl;
+			}
+		}
+	}
+	ofs.close();
+}
+
+
+
+
+
+

@@ -730,3 +730,212 @@ void Initial_stages(Block3d &block)
 	}
 	timecoe_list_3d(block);
 }
+
+double Get_CFL(Block3d &block, Fluid3d *fluids, double tstop)
+{
+	//double dt = block.dx;
+	double dt = fluids[block.ghost * block.ny * block.nz
+		+ block.ghost * block.nz + block.ghost].R_c;
+
+#pragma omp parallel
+		{
+			double dtPerThread = dt;
+#pragma omp for 
+			for (int i = block.ghost; i < block.nx - block.ghost; i++)
+			{
+				for (int j = block.ghost; j < block.ny - block.ghost; j++)
+				{
+					for (int k = block.ghost; k < block.nz - block.ghost; k++)
+					{
+						int index = i * (block.ny * block.nz) + j * block.nz + k;
+						dtPerThread = Dtx_3d(dtPerThread, fluids[index].R_c, block.CFL, fluids[index].primvar[0], fluids[index].primvar[1], fluids[index].primvar[2], fluids[index].primvar[3], fluids[index].primvar[4]);
+					}
+				}
+			}
+#pragma omp critical 
+			{
+				if (dtPerThread < dt) {
+					dt = dtPerThread;
+				}
+			}
+		}
+
+	if (block.t + dt>tstop)
+	{
+		dt = tstop - block.t + 1e-16;
+	}
+	//print time step information
+	cout << "step = " << block.step
+		<< "time size is " << dt
+		<< " time = " << block.t << endl;
+	return dt;
+}
+
+double Dtx_3d(double dtx, double dx, double CFL, double density, double u, double v,double w, double pressure)
+{
+	double overden =1.0/ density;
+	double tmp;
+	tmp = sqrt(u*u + v*v+w*w) + sqrt(Gamma*pressure* overden);
+	if (tmp>CFL*dx / dtx)
+	{
+		dtx = CFL*dx / tmp;
+	}
+
+	if (dtx > 0.33*CFL*dx*dx * density / Mu &&tau_type !=Euler&&Mu>0)
+	{
+		dtx = 0.33*CFL*dx*dx * density / Mu;
+	}
+	return dtx;
+}
+
+void Update_gauss(Fluid3d *fluids, Flux3d_gauss** xfluxes, Flux3d_gauss** yfluxes, Flux3d_gauss** zfluxes, Block3d block, int stage)
+{
+	if (stage > block.stages)
+	{
+		cout << "wrong middle stage ,pls check the time marching setting" << endl;
+		exit(0);
+	}
+
+	double dt = block.dt;
+	bool is_gausspoint = true;
+
+	if (gausspoint == 0)
+	{
+		gausspoint = 1; is_gausspoint = false;
+	}
+
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost + 1; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					
+					for (int var = 0; var < 5; var++)
+					{
+						double Flux = 0.0;
+						for (int current_stage = 0; current_stage < stage + 1; current_stage++)
+						{
+							Flux = Flux +
+								(block.timecoefficient[stage][current_stage][0] * xfluxes[index][current_stage].gauss[num_gauss].f[var]
+									+ block.timecoefficient[stage][current_stage][1] * xfluxes[index][current_stage].gauss[num_gauss].derf[var]);
+
+						}
+						xfluxes[index][stage].gauss[num_gauss].x[var] = Flux;
+					}
+				}
+			}
+		}
+	}
+
+
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost + 1; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					for (int var = 0; var < 5; var++)
+					{
+						double Flux = 0.0;
+						for (int current_stage = 0; current_stage < stage + 1; current_stage++)
+						{
+							Flux = Flux +
+								(block.timecoefficient[stage][current_stage][0] * yfluxes[index][current_stage].gauss[num_gauss].f[var]
+									+ block.timecoefficient[stage][current_stage][1] * yfluxes[index][current_stage].gauss[num_gauss].derf[var]);
+
+						}
+						yfluxes[index][stage].gauss[num_gauss].x[var] = Flux;
+					}
+				}
+			}
+		}
+	}
+
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost + 1; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					for (int var = 0; var < 5; var++)
+					{
+						double Flux = 0.0;
+						for (int current_stage = 0; current_stage < stage + 1; current_stage++)
+						{
+							Flux = Flux +
+								(block.timecoefficient[stage][current_stage][0] * zfluxes[index][current_stage].gauss[num_gauss].f[var]
+									+ block.timecoefficient[stage][current_stage][1] * zfluxes[index][current_stage].gauss[num_gauss].derf[var]);
+						}
+						zfluxes[index][stage].gauss[num_gauss].x[var] = Flux;
+					}
+				}
+			}
+		}
+	}
+
+
+
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost; k++)
+			{
+				int cell = i * (block.ny*block.nz) + j * block.nz + k;
+				int face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				int facex = face + (block.ny + 1)*(block.nz + 1);
+				int facey = face + (block.nz + 1);
+				int facez = face + 1;
+
+				double total_flux[5];
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[cell].convar[var] = fluids[cell].convar_old[var];
+					total_flux[var] = 0.0;
+				}
+
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					double weight = gauss_weight[num_gauss];
+					total_flux[0] += weight * block.overdz*(zfluxes[face][stage].gauss[num_gauss].x[0] - zfluxes[facez][stage].gauss[num_gauss].x[0]);
+					total_flux[1] += weight * block.overdz*(-zfluxes[face][stage].gauss[num_gauss].x[3] + zfluxes[facez][stage].gauss[num_gauss].x[3]);
+					total_flux[2] += weight * block.overdz*(zfluxes[face][stage].gauss[num_gauss].x[2] - zfluxes[facez][stage].gauss[num_gauss].x[2]);
+					total_flux[3] += weight * block.overdz*(zfluxes[face][stage].gauss[num_gauss].x[1] - zfluxes[facez][stage].gauss[num_gauss].x[1]);
+					total_flux[4] += weight * block.overdz*(zfluxes[face][stage].gauss[num_gauss].x[4] - zfluxes[facez][stage].gauss[num_gauss].x[4]);
+
+					////int overdy = gauss_weight[0] / block.dy;
+					total_flux[0] += weight * block.overdy*(yfluxes[face][stage].gauss[num_gauss].x[0] - yfluxes[facey][stage].gauss[num_gauss].x[0]);
+					total_flux[1] += weight * block.overdy*(-yfluxes[face][stage].gauss[num_gauss].x[2] + yfluxes[facey][stage].gauss[num_gauss].x[2]);
+					total_flux[2] += weight * block.overdy*(yfluxes[face][stage].gauss[num_gauss].x[1] - yfluxes[facey][stage].gauss[num_gauss].x[1]);
+					total_flux[3] += weight * block.overdy*(yfluxes[face][stage].gauss[num_gauss].x[3] - yfluxes[facey][stage].gauss[num_gauss].x[3]);
+					total_flux[4] += weight * block.overdy*(yfluxes[face][stage].gauss[num_gauss].x[4] - yfluxes[facey][stage].gauss[num_gauss].x[4]);
+
+					//int overdx = gauss_weight[0] / block.dx;
+					for (int var = 0; var < 5; var++)
+					{
+						total_flux[var] +=
+							weight * block.overdx*(xfluxes[face][stage].gauss[num_gauss].x[var] - xfluxes[facex][stage].gauss[num_gauss].x[var]);
+					}
+				}
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[cell].convar[var] += total_flux[var];
+				}
+			}
+		}
+	}
+}

@@ -582,6 +582,8 @@ bool negative_density_or_pressure(double* primvar);
 
 void Convar_to_Primvar(Fluid2d* fluids, Block2d block);
 
+void Convar_to_primvar(Fluid3d *fluids, Block3d& block);
+
 void Convar_to_primvar_1D(double* primvar, double convar[3]);
 
 void Convar_to_primvar_2D(double *primvar, double convar[4]);
@@ -681,6 +683,8 @@ void Set_Gauss_Intergation_Location_y(Point2d& ygauss, int index, double h);
 void CopyFluid_new_to_old(Fluid1d* fluids, Block1d block);
 
 void CopyFluid_new_to_old(Fluid2d* fluids, Block2d block);
+
+void CopyFluid_new_to_old(Fluid3d *fluids, Block3d block);
 
 Fluid3d *Setfluid_array(Block3d &block);
 

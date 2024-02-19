@@ -55,3 +55,9 @@ void RK2_3D(Block3d &block);
 void RK3_3D(Block3d& block);
 void RK4_3D(Block3d &block);
 void Initial_stages(Block3d &block);
+
+double Get_CFL(Block3d &block, Fluid3d *fluids, double tstop);
+
+double Dtx_3d(double dtx, double dx, double CFL, double density, double u, double v,double w, double pressure);
+
+void Update_gauss(Fluid3d *fluids, Flux3d_gauss** xfluxes, Flux3d_gauss** yfluxes, Flux3d_gauss** zfluxes, Block3d block, int stage);

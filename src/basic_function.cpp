@@ -772,6 +772,34 @@ void Convar_to_Primvar(Fluid2d* fluids, Block2d block)
 	}
 }
 
+void Convar_to_primvar(Fluid3d *fluids, Block3d& block)
+{
+	bool all_positive = true;
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nx - block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.ny - block.ghost; j++)
+		{
+			for (int k = block.ghost; k < block.nz - block.ghost; k++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				Convar_to_primvar_3D(fluids[index].primvar, fluids[index].convar);
+				if ( isnan(fluids[index].primvar[0])==true || isnan(fluids[index].primvar[4]) == true||
+					fluids[index].primvar[0]<0|| fluids[index].primvar[4] < 0)
+				{
+					all_positive = false;
+				}
+			}
+		}
+	}
+
+	if (all_positive == false)
+	{
+		cout << "the program blows up! at t= " << block.t << endl;
+		exit(0);
+	}
+}
+
 void Convar_to_primvar_1D(double* primvar, double convar[3])
 {
 	primvar[0] = convar[0];
@@ -1520,6 +1548,25 @@ void CopyFluid_new_to_old(Fluid2d* fluids, Block2d block)
 			for (int var = 0; var < 4; var++)
 			{
 				fluids[i * block.ny + j].convar_old[var] = fluids[i * block.ny + j].convar[var];
+			}
+		}
+	}
+}
+
+void CopyFluid_new_to_old(Fluid3d *fluids, Block3d block)
+{
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.ghost + block.nodex; i++)
+	{
+		for (int j = block.ghost; j < block.ghost + block.nodey; j++)
+		{
+			for (int k = block.ghost; k < block.ghost + block.nodez; k++)
+			{
+				int index = i*(block.ny*block.nz) + j*block.nz + k;
+				for (int var = 0; var < 5; var++)
+				{
+					fluids[index].convar_old[var] = fluids[index].convar[var];
+				}
 			}
 		}
 	}

@@ -34,5 +34,8 @@ extern GKS3d_type gks3dsolver;
 
 typedef void(*Flux_function_3d)(Flux3d &flux, Recon3d & re, double area, double dt);
 extern Flux_function_3d flux_function_3d;
+void Calculate_flux(Flux3d_gauss** xfluxes, Flux3d_gauss** yfluxes, Flux3d_gauss** zfluxes,
+	Interface3d* xinterfaces, Interface3d* yinterfaces, Interface3d* zinterfaces,
+	Block3d block, int stage);
 void GKS3D(Flux3d &flux, Recon3d& interface, double area, double dt);
 void GKS3D_speed(Flux3d &flux, Recon3d& interface, double area, double dt);

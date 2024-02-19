@@ -2816,8 +2816,6 @@ void WENO5_AO_for_point_value(Recon3d *point, Recon3d& wn2, Recon3d& wn1, Recon3
 	bool reduce_order_left[3];
 	bool reduce_order_right[3];
 	bool reduce_order = false;
-	//cout << line[0].left.convar[3];
-	//Check_Order_Reduce_by_Lambda_3D(reduce_order, line[0].left.convar);
 
 	for (int igauss = 0; igauss < sqrtgausspoint; igauss++)
 	{
@@ -2850,6 +2848,57 @@ void WENO5_AO_for_point_value(Recon3d *point, Recon3d& wn2, Recon3d& wn1, Recon3
 }
 
 // center reconstruction
+void Reconstruction_forg0(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Fluid3d *fluids, Block3d block)
+{
+	//go-through to obtain the avg value first
+#pragma omp parallel  for
+	for (int i = block.ghost - 2; i < block.nx - block.ghost + 2; i++)
+	{
+		for (int j = block.ghost - 2; j < block.ny - block.ghost + 2; j++)
+		{
+				for (int k = block.ghost - 2; k < block.nz - block.ghost + 2; k++)
+				{
+					int index_cell = i*(block.ny)*(block.nz) + j*(block.nz) + k;
+					int index_face= i*(block.ny+1)*(block.nz + 1) + j*(block.nz + 1) + k;
+					
+					g0reconstruction_3D_of_face_value
+					(&xinterfaces[index_face], &yinterfaces[index_face], &zinterfaces[index_face], &fluids[index_cell], block);
+				}
+			}
+		}
+
+#pragma omp parallel  for
+	for (int i = block.ghost-2; i < block.nx - block.ghost + 2; i++)
+	{
+		for (int j = block.ghost-2; j < block.ny - block.ghost + 2; j++)
+		{
+			for (int k = block.ghost-2; k < block.nz - block.ghost + 2; k++)
+			{
+				int index_cell = i * (block.ny)*(block.nz) + j * (block.nz) + k;
+				int index_face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+
+				g0reconstruction_3D_of_line_value
+				(&xinterfaces[index_face], &yinterfaces[index_face], &zinterfaces[index_face], block);
+			}
+		}
+	}
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nx - block.ghost + 1; i++)
+	{
+		for (int j = block.ghost; j < block.ny - block.ghost + 1; j++)
+		{
+			for (int k = block.ghost; k < block.nz - block.ghost + 1; k++)
+			{
+				int index_cell = i * (block.ny)*(block.nz) + j * (block.nz) + k;
+				int index_face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+
+				g0reconstruction_3D_of_point_value
+				(&xinterfaces[index_face], &yinterfaces[index_face], &zinterfaces[index_face], block);
+			}
+		}
+	}
+}
+
 void Do_nothing_splitting_3d(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, 
 	Fluid3d *fluids, Block3d block)
 {

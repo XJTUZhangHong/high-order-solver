@@ -15,8 +15,8 @@ int main()
     //RT_instability();
     //PlanarShock();
     //PlanarSheer();
-    High_mach_astrophusical_jet();
+    //High_mach_astrophusical_jet();
     // 3-D problem
-    //CubicTube();
+    CubicTube();
     return 0;
 }

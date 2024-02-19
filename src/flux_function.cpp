@@ -757,6 +757,59 @@ void NS_by_central_difference_prim_2D(Flux2d& flux, Recon2d& interface, double d
 GKS3d_type gks3dsolver = gks2nd_3d;
 Flux_function_3d flux_function_3d = GKS3D;
 
+void Calculate_flux(Flux3d_gauss** xfluxes, Flux3d_gauss** yfluxes, Flux3d_gauss** zfluxes,
+	Interface3d* xinterfaces, Interface3d* yinterfaces, Interface3d* zinterfaces,
+	Block3d block, int stage)
+{
+#pragma omp parallel  for 
+	for (int i = block.ghost; i < block.nodex + block.ghost + 1; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					flux_function_3d(xfluxes[index][stage].gauss[num_gauss], xinterfaces[index].gauss[num_gauss], block.xarea, block.dt);
+				}
+			}
+		}
+
+	}
+#pragma omp parallel  for 
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost + 1; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					flux_function_3d(yfluxes[index][stage].gauss[num_gauss], yinterfaces[index].gauss[num_gauss], block.yarea, block.dt);
+				}
+			}
+		}
+	}
+
+#pragma omp parallel  for 
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost; j++)
+		{
+			for (int k = block.ghost; k < block.nodez + block.ghost + 1; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+				{
+					flux_function_3d(zfluxes[index][stage].gauss[num_gauss], zinterfaces[index].gauss[num_gauss], block.zarea, block.dt);
+				}
+			}
+		}
+	}
+}
+
 void GKS3D(Flux3d &flux, Recon3d& interface, double area, double dt)
 {
 	if (gks3dsolver == nothing_3d)

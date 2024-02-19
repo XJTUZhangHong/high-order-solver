@@ -7,9 +7,9 @@ void CubicTube()
 
     Block3d block;
     block.uniform = true;
-	block.nodex = 50;
-	block.nodey = 50;
-	block.nodez = 50;
+	block.nodex = 20;
+	block.nodey = 20;
+	block.nodez = 20;
 	block.ghost = 3;
 
 	double tstop = 0.2;
@@ -106,7 +106,69 @@ void CubicTube()
 
 	int inputstep = 1;//input a certain step,
 					  //initialize inputstep=1, to avoid a 0 result
-	
+	while (block.t < tstop)
+	{
+		// assume you are using command window,
+		// you can specify a running step conveniently
+		if (block.step%inputstep == 0)
+		{
+			cout << "pls cin interation step, if input is 0, then the program will exit " << endl;
+			cin >> inputstep;
+			if (inputstep == 0)
+			{
+				output3d(fluids, block);
+				break;
+			}
+		}
+		if (runtime.start_compute == 0.0)
+		{
+			runtime.start_compute = omp_get_wtime();
+			cout << "runtime-start " << endl;
+		}
+		//Copy the fluid vales to fluid old
+		//and install primvar for it
+		CopyFluid_new_to_old(fluids, block);
+
+		//determine the cfl condtion
+		block.dt = Get_CFL(block, fluids, tstop);
+
+		for (int i = 0; i < block.stages; i++)
+		{
+			//after determine the cfl condition, let's implement boundary condtion
+			leftboundary(fluids, block, bcvalue[0]);
+			rightboundary(fluids, block, bcvalue[1]);
+			downboundary(fluids, block, bcvalue[2]);
+			upboundary(fluids, block, bcvalue[3]);
+			backboundary(fluids, block, bcvalue[4]);
+			frontboundary(fluids, block, bcvalue[5]);
+
+			Convar_to_primvar(fluids, block);
+			//then is reconstruction part, which we separate the left or right reconstrction
+			//and the center reconstruction
+			Reconstruction_within_cell(xinterfaces, yinterfaces, zinterfaces, fluids, block);
+		
+			Reconstruction_forg0(xinterfaces, yinterfaces, zinterfaces, fluids, block);
+			//then is solver part
+			Calculate_flux(xfluxes, yfluxes, zfluxes, xinterfaces, yinterfaces, zinterfaces, block, i);
+			//then is update flux part
+			Update_gauss(fluids, xfluxes, yfluxes, zfluxes, block, i);
+		}
+		block.step++;
+		block.t = block.t + block.dt;
+		if ((block.t - tstop) > 0)
+		{
+			output3d(fluids, block);
+		}
+		if (block.step % 100 == 0)
+		{
+			output3d(fluids, block);
+		}
+	}
+	runtime.finish_compute = omp_get_wtime();
+	cout << "the total run time is " << (double)(runtime.finish_compute - runtime.start_initial) / CLOCKS_PER_SEC << " second !" << endl;
+	cout << "initializing time is" << (double)(runtime.finish_initial - runtime.start_initial) / CLOCKS_PER_SEC << " second !" << endl;
+	cout << "the pure computational time is" << (double)(runtime.finish_compute - runtime.start_compute) / CLOCKS_PER_SEC << " second !" << endl;
+
 }
 
 void ICfor_cubic_sod(Fluid3d *fluids, double * zone1, double * zone2, Block3d block)

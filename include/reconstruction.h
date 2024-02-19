@@ -93,6 +93,8 @@ void Center_all_collision_2d_multi(Recon2d &gauss);
 enum G0_construct_type { collisionn, collisionnless,all_collisionn };
 extern G0_construct_type g0type;
 
+void Reconstruction_within_cell(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Fluid3d *fluids, Block3d block);
+
 typedef void(*Reconstruction_within_Cell_3D_of_face_value)
 (Interface3d &left, Interface3d &right, Interface3d &down, Interface3d &up, Interface3d &back, Interface3d &front, Fluid3d *fluids, Block3d block);
 extern Reconstruction_within_Cell_3D_of_face_value cellreconstruction_3D_of_face_value;
@@ -110,6 +112,8 @@ typedef void(*Reconstruction_within_Cell_3D_of_point_value)
 extern Reconstruction_within_Cell_3D_of_point_value cellreconstruction_3D_of_point_value;
 void WENO5_AO_of_point_value(Interface3d *right, Interface3d *up, Interface3d *front, Block3d block);
 void WENO5_AO_for_point_value(Recon3d *point, Recon3d& wn2, Recon3d& wn1, Recon3d& w0, Recon3d& wp1, Recon3d& wp2, double h);
+
+void Reconstruction_forg0(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Fluid3d *fluids, Block3d block);
 
 typedef void(*Reconstruction_forG0_3D_of_face_value)(Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces, Fluid3d *fluids, Block3d block);
 extern Reconstruction_forG0_3D_of_face_value g0reconstruction_3D_of_face_value;
