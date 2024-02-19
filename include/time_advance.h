@@ -54,3 +54,4 @@ void S2O4_3D(Block3d &block);
 void RK2_3D(Block3d &block);
 void RK3_3D(Block3d& block);
 void RK4_3D(Block3d &block);
+void Initial_stages(Block3d &block);

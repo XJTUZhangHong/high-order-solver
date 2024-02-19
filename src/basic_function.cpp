@@ -828,6 +828,15 @@ void Primvar_to_convar_2D(double *convar, double primvar[4])
     convar[3] = Q_densityE(primvar[0], primvar[1], primvar[2], primvar[3]);
 }
 
+void Primvar_to_convar_3D(double *convar, double* primvar)
+{
+	convar[0] = primvar[0];
+	convar[1] = Q_densityu(primvar[0], primvar[1]);
+	convar[2] = Q_densityv(primvar[0], primvar[2]);
+	convar[3] = Q_densityw(primvar[0], primvar[3]);
+	convar[4] = Q_densityE(primvar[0], primvar[1], primvar[2], primvar[3], primvar[4]);
+}
+
 void Convar_to_char1D(double* character, double primvar[3], double convar[3])
 {
 	double c = sqrt(Gamma * primvar[2] / primvar[0]);
@@ -1079,9 +1088,21 @@ double Q_densityv(double density, double v)
 	return q_densityv;
 }
 
+double Q_densityw(double density, double w)
+{
+	double q_densityw = density*w;
+	return q_densityw;
+}
+
 double Q_densityE(double density, double u, double v, double pressure)
 {
 	double q_densityE = density*(pressure / density / (Gamma - 1) + 0.5*(u*u + v*v));
+	return q_densityE;
+}
+
+double Q_densityE(double density, double u, double v,double w, double pressure)
+{
+	double q_densityE = density*(pressure / density / (Gamma - 1) + 0.5*(u*u + v*v + w*w));
 	return q_densityE;
 }
 
@@ -1504,3 +1525,303 @@ void CopyFluid_new_to_old(Fluid2d* fluids, Block2d block)
 	}
 }
 
+Fluid3d *Setfluid_array(Block3d &block)
+{
+	Fluid3d *var = new Fluid3d[block.nx*block.ny*block.nz];
+	if (var == 0)
+	{
+		cout << "allocate memory fail"; exit(0);
+	}
+	for (int i = 0; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			for (int k = 0; k < block.nz; k++)
+			{
+				var[i*(block.ny*block.nz) + j*block.nz + k].index[0] = i;
+				var[i*(block.ny*block.nz) + j*block.nz + k].index[1] = j;
+				var[i*(block.ny*block.nz) + j*block.nz + k].index[2] = k;
+			}
+		}
+	}
+	cout << "fluid memory allocate done" << endl;
+	return var;
+}
+
+Interface3d *Setinterface_array(Block3d& block)
+{
+	Interface3d *variable = new Interface3d[(block.nx + 1)*(block.ny + 1)*(block.nz + 1)];
+	if (variable == 0)
+	{
+		cout << "allocate memory fail";
+		exit(0);
+	}
+	for (int i = 0; i < block.nx + 1; i++)
+	{
+		for (int j = 0; j < block.ny + 1; j++)
+		{
+			for (int k = 0; k < block.nz + 1; k++)
+			{
+				int index_face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				variable[index_face].index[0] = i;
+				variable[index_face].index[1] = j;
+				variable[index_face].index[2] = k;
+				for (int var = 0; var < 5; var++)
+				{
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.left.der1x[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.left.der1y[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.left.der1z[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.right.der1x[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.right.der1y[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.right.der1z[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.center.der1x[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.center.der1y[var] = 0.0;
+					variable[i*(block.ny + 1)*(block.nz + 1) + j*(block.nz + 1) + k].face.center.der1z[var] = 0.0;
+				}
+			}
+		}
+	}
+	cout << "interface variable allocate done..." << endl;
+	return variable;
+}
+
+Flux3d_gauss** Setflux_gauss_array(Block3d& block)
+{
+	Flux3d_gauss **variable = new Flux3d_gauss*[(block.nx + 1)*(block.ny + 1)*(block.nz + 1)];
+	for (int i = 0; i < block.nx + 1; i++)
+	{
+		for (int j = 0; j < block.ny + 1; j++)
+		{
+			for (int k = 0; k < block.nz + 1; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				variable[index] = new Flux3d_gauss[block.stages];
+			}
+		}
+	}
+
+	for (int i = 0; i < block.nx + 1; i++)
+	{
+		for (int j = 0; j < block.ny + 1; j++)
+		{
+			for (int k = 0; k < block.nz + 1; k++)
+			{
+				int index = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				for (int l = 0; l < block.stages; l++)
+				{
+					if (gausspoint == 0)
+					{
+						variable[index][l].gauss = new Flux3d[1];
+						for (int m = 0; m < 5; m++)
+						{
+							variable[index][l].gauss[0].f[m] = 0.0;
+							variable[index][l].gauss[0].derf[m] = 0.0;
+						}
+					}
+					else
+					{
+						variable[index][l].gauss = new Flux3d[gausspoint];
+						for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+						{				
+							for (int m = 0; m < 5; m++)
+							{
+								variable[index][l].gauss[num_gauss].f[m] = 0.0;
+								variable[index][l].gauss[num_gauss].derf[m] = 0.0;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (variable == 0)
+	{
+		cout << "";
+		return NULL;
+	}
+	cout << "flux with gausspoint variable allocate done..." << endl;
+	return variable;
+}
+
+void SetUniformMesh
+(Block3d block, Fluid3d* fluids,
+	Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces)
+{
+	if (gausspoint == 0)
+	{
+		cout << "you are using the FV framework with gauss point, the number of gauss point must be >0" << endl;
+		exit(0);
+	}
+	//cell avg information
+#pragma omp parallel for
+	for (int i = 0; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			for (int k = 0; k < block.nz; k++)
+			{
+				int index = i * (block.ny*block.nz) + j * block.nz + k;
+				int cindex = index;
+				fluids[index].loc[0] = block.left + (i + 0.5 - block.ghost)*block.dx; //cell center location
+				fluids[index].loc[1] = block.down + (j + 0.5 - block.ghost)*block.dy; //cell center location
+				fluids[index].loc[2] = block.back + (k + 0.5 - block.ghost)*block.dz; //cell center location
+				Set_node_for_a_cube(fluids[index], block);
+				fluids[index].vol = block.dx*block.dy*block.dz;
+				fluids[index].R_c = block.dx; 
+				if (block.dy < fluids[index].R_c){ fluids[index].R_c = block.dy; }
+				if (block.dz < fluids[index].R_c){ fluids[index].R_c = block.dz; }
+				int ileft = i * (block.ny+1) * (block.nz+1) + j * (block.nz+1) + k;
+				Set_Gauss_loc_for_a_rectangular(xinterfaces[ileft].loc,
+					&fluids[index].node[0 * 3], &fluids[index].node[3*3],
+					&fluids[index].node[4 * 3], &fluids[index].node[7 * 3]);
+				int iright = (i+1) * (block.ny + 1) * (block.nz + 1) + j * (block.nz + 1) + k;
+				Set_Gauss_loc_for_a_rectangular(xinterfaces[iright].loc,
+					&fluids[index].node[1 * 3], &fluids[index].node[2 * 3],
+					&fluids[index].node[5 * 3], &fluids[index].node[6 * 3]);
+				int idown = i * (block.ny + 1) * (block.nz + 1) + j * (block.nz + 1) + k;
+				Set_Gauss_loc_for_a_rectangular(yinterfaces[idown].loc,
+					&fluids[index].node[0 * 3], &fluids[index].node[1 * 3],
+					&fluids[index].node[4 * 3], &fluids[index].node[5 * 3]);
+				int iup = i * (block.ny + 1) * (block.nz + 1) + (j+1) * (block.nz + 1) + k;
+				Set_Gauss_loc_for_a_rectangular(yinterfaces[iup].loc,
+					&fluids[index].node[3 * 3], &fluids[index].node[2 * 3],
+					&fluids[index].node[7 * 3], &fluids[index].node[6 * 3]);
+				int iback = i * (block.ny + 1) * (block.nz + 1) + j * (block.nz + 1) + k;
+				Set_Gauss_loc_for_a_rectangular(zinterfaces[iback].loc,
+					&fluids[index].node[0 * 3], &fluids[index].node[1 * 3],
+					&fluids[index].node[3 * 3], &fluids[index].node[2 * 3]);
+				int ifront = i * (block.ny + 1) * (block.nz + 1) + j * (block.nz + 1) + k+1;
+				Set_Gauss_loc_for_a_rectangular(zinterfaces[ifront].loc,
+					&fluids[index].node[4 * 3], &fluids[index].node[5 * 3],
+					&fluids[index].node[7 * 3], &fluids[index].node[6 * 3]);
+				
+			}
+		}
+	}
+	int line_num = sqrt(gausspoint);
+	//cout << "line_num " <<line_num<< endl;
+	// interface information
+#pragma omp parallel for
+	for (int i = 0; i <= block.nx; i++)
+	{
+		for (int j = 0; j <= block.ny; j++)
+		{
+			for (int k = 0; k <= block.nz; k++)
+			{
+				int index_face = i * (block.ny + 1)*(block.nz + 1) + j * (block.nz + 1) + k;
+				Allocate_reconstruction_variable_along_interface(xinterfaces[index_face]);
+				Allocate_reconstruction_variable_along_interface(yinterfaces[index_face]);
+				Allocate_reconstruction_variable_along_interface(zinterfaces[index_face]);
+
+
+				xinterfaces[index_face].face.order_reduce = false;
+				yinterfaces[index_face].face.order_reduce = false;
+				zinterfaces[index_face].face.order_reduce = false;
+				xinterfaces[index_face].area = block.xarea;
+				yinterfaces[index_face].area = block.yarea;
+				zinterfaces[index_face].area = block.zarea;
+				xinterfaces[index_face].bc_type = 0;
+				yinterfaces[index_face].bc_type = 0;
+				zinterfaces[index_face].bc_type = 0;
+				for (int igauss = 0; igauss < gausspoint; igauss++)
+				{
+					xinterfaces[index_face].normal[igauss * 3] = 1.0;
+					xinterfaces[index_face].normal[igauss * 3 + 1] = 0.0;
+					xinterfaces[index_face].normal[igauss * 3 + 2] = 0.0;
+					yinterfaces[index_face].normal[igauss * 3] = 0.0;
+					yinterfaces[index_face].normal[igauss * 3 + 1] = 1.0;
+					yinterfaces[index_face].normal[igauss * 3 + 2] = 0.0;
+					zinterfaces[index_face].normal[igauss * 3] = 0.0;
+					zinterfaces[index_face].normal[igauss * 3 + 1] = 0.0;
+					zinterfaces[index_face].normal[igauss * 3 + 2] = 1.0;
+					xinterfaces[index_face].weight[igauss] = gauss_weight[igauss];
+					yinterfaces[index_face].weight[igauss] = gauss_weight[igauss];
+					zinterfaces[index_face].weight[igauss] = gauss_weight[igauss];
+				}
+
+			}
+		}
+	}
+	cout << "set uniform information done..." << endl;
+}
+
+void Set_node_for_a_cube(Fluid3d& fluid, Block3d block)
+{
+	int i = fluid.index[0]; int j = fluid.index[1]; int k = fluid.index[2];
+	fluid.loc[0] = block.left + (i + 0.5 - block.ghost) * block.dx; //cell center location
+	fluid.loc[1] = block.down + (j + 0.5 - block.ghost) * block.dy; //cell center location
+	fluid.loc[2] = block.back + (k + 0.5 - block.ghost) * block.dz; //cell center location
+	//from node0 to node 7
+	// i,j,k;       
+	fluid.node[0] = fluid.loc[0] - 0.5 * block.dx; 
+	fluid.node[1] = fluid.loc[1] - 0.5 * block.dy;
+	fluid.node[2] = fluid.loc[2] - 0.5 * block.dz;
+	//i + 1, j, k;
+	fluid.node[3] = fluid.loc[0] + 0.5 * block.dx;
+	fluid.node[4] = fluid.loc[1] - 0.5 * block.dy;
+	fluid.node[5] = fluid.node[2];
+	//i + 1, j + 1, k;
+	fluid.node[6] = fluid.loc[0] + 0.5 * block.dx;
+	fluid.node[7] = fluid.loc[1] + 0.5 * block.dy;
+	fluid.node[8] = fluid.node[2];
+	//i, j+1, k;
+	fluid.node[9] = fluid.loc[0] - 0.5 * block.dx;
+	fluid.node[10] = fluid.loc[1] + 0.5 * block.dy;
+	fluid.node[11] = fluid.node[2];
+	//i,j,k+1;
+	//i+1,j,k+1;
+	//i+1, j+1, k+1;
+	//i, j+1, k+1;
+	for (int inode = 4; inode < 8; inode++)
+	{
+		for (int idim = 0; idim < 3; idim++)
+		{
+			int index = inode * 3 + idim;
+			if (idim == 2)
+			{
+				fluid.node[index] = fluid.loc[2] + 0.5 * block.dz;
+			}
+			else
+			{
+				fluid.node[index] = fluid.node[index - 12];
+			}
+		}
+	}
+}
+
+void Set_Gauss_loc_for_a_rectangular(double *loc, 
+	double *node0, double *node1, double *node2, double *node3)
+{
+	double center[3];
+	center[0] = 0.25 * (node0[0]+ node1[0]+node2[0] + node3[0]);
+	center[1] = 0.25 * (node0[1] + node1[1] + node2[1] + node3[1]);
+	center[2] = 0.25 * (node0[2] + node1[2] + node2[2] + node3[2]);
+
+	double dir[2][3];
+	for (int idim = 0; idim < 3; idim++)
+	{
+		dir[0][idim] = node1[idim] - node0[idim];
+		dir[1][idim] = node2[idim] - node0[idim];
+	}
+
+	for (int igauss = 0; igauss < gausspoint; igauss++)
+	{
+		for (int idim = 0; idim < 3; idim++)
+		{
+			int index = idim + igauss * 3;
+		loc[index] =
+				center[idim] + 0.5 * dir[0][idim] * gauss_loc_3d[igauss][0]
+			                + 0.5 * dir[1][idim] * gauss_loc_3d[igauss][1];
+		}
+	}
+}
+
+void Allocate_reconstruction_variable_along_interface(Interface3d & interface)
+{
+	int line_num = sqrt(gausspoint);
+	interface.line = new Recon3d[line_num];
+	for (int igauss = 0; igauss < line_num; igauss++)
+	{
+		interface.line[igauss].order_reduce = false;
+	}
+}

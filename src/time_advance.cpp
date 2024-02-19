@@ -714,3 +714,19 @@ void RK4_3D(Block3d &block)
 	block.timecoefficient[3][2][0] = 1.0 / 3.0;
 	block.timecoefficient[3][3][0] = 1.0 / 6.0;
 }
+
+void Initial_stages(Block3d &block)
+{
+	for (int i = 0; i < 5; i++) //refers the n stage
+	{
+		for (int j = 0; j < 5; j++) //refers the nth coefficient at n stage 
+		{
+			for (int k = 0; k < 3; k++) //refers f, derf, der2f
+			{
+				block.timecoefficient[i][j][k] = 0.0;
+				block.timecoefficient_hweno[i][j][k] = 0.0;
+			}
+		}
+	}
+	timecoe_list_3d(block);
+}

@@ -342,4 +342,10 @@ public:
 	double derw[30];
 };
 
+class Flux3d_gauss
+{
+public:
+	Flux3d * gauss;
+};
+
 void SetGuassPoint_3D();

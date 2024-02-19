@@ -596,6 +596,8 @@ void Primvar_to_convar_1D(double* convar, double primvar[3]);
 
 void Primvar_to_convar_2D(double *convar, double primvar[4]);
 
+void Primvar_to_convar_3D(double *convar, double* primvar);
+
 void Convar_to_char1D(double* character, double primvar[3], double convar[3]);
 
 void Char_to_convar1D(double* convar, double primvar[3], double charvar[3]);
@@ -620,7 +622,11 @@ double Q_densityu(double density, double u);
 
 double Q_densityv(double density, double v);
 
+double Q_densityw(double density, double w);
+
 double Q_densityE(double density, double u, double v, double pressure);
+
+double Q_densityE(double density, double u, double v,double w, double pressure);
 
 double U(double density, double q_densityu);
 
@@ -675,3 +681,20 @@ void Set_Gauss_Intergation_Location_y(Point2d& ygauss, int index, double h);
 void CopyFluid_new_to_old(Fluid1d* fluids, Block1d block);
 
 void CopyFluid_new_to_old(Fluid2d* fluids, Block2d block);
+
+Fluid3d *Setfluid_array(Block3d &block);
+
+Interface3d *Setinterface_array(Block3d& block);
+
+Flux3d_gauss** Setflux_gauss_array(Block3d& block);
+
+void SetUniformMesh
+(Block3d block, Fluid3d* fluids,
+	Interface3d *xinterfaces, Interface3d *yinterfaces, Interface3d *zinterfaces);
+
+void Set_node_for_a_cube(Fluid3d& fluid, Block3d block);
+
+void Set_Gauss_loc_for_a_rectangular(double *loc, 
+	double *node0, double *node1, double *node2, double *node3);
+
+void Allocate_reconstruction_variable_along_interface(Interface3d & interface);
