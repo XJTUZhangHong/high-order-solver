@@ -21,10 +21,10 @@ file(REMOVE_RECURSE
   "CMakeFiles/solver.dir/src/reconstruction.cpp.obj.d"
   "CMakeFiles/solver.dir/src/time_advance.cpp.obj"
   "CMakeFiles/solver.dir/src/time_advance.cpp.obj.d"
-  "D:/Research/Arbitrary high-order reconstruction based on DF/solver/libsolver.dll.a"
-  "D:/Research/Arbitrary high-order reconstruction based on DF/solver/solver.exe"
-  "D:/Research/Arbitrary high-order reconstruction based on DF/solver/solver.exe.manifest"
-  "D:/Research/Arbitrary high-order reconstruction based on DF/solver/solver.pdb"
+  "I:/solver/libsolver.dll.a"
+  "I:/solver/solver.exe"
+  "I:/solver/solver.exe.manifest"
+  "I:/solver/solver.pdb"
 )
 
 # Per-language clean rules from dependency scanning.

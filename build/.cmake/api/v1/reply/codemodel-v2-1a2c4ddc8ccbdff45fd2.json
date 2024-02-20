@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "solver::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-solver-Release-fc282b9032a11d09a17f.json",
+					"jsonFile" : "target-solver-Release-b7d39ad0fc482e168d26.json",
 					"name" : "solver",
 					"projectIndex" : 0
 				}
@@ -49,12 +49,12 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "D:/Research/Arbitrary high-order reconstruction based on DF/solver/build",
-		"source" : "D:/Research/Arbitrary high-order reconstruction based on DF/solver"
+		"build" : "I:/solver/build",
+		"source" : "I:/solver"
 	},
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 6
+		"minor" : 7
 	}
 }
