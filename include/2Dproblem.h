@@ -21,5 +21,10 @@ void RT_instability();
 
 void IC_for_RT_instability(Fluid2d* fluid, Block2d block);
 
+void doubleMach();
+
+void ICforDoubleMach(Fluid2d* fluid, Block2d block);
+
+void boundaryforDoubleMach(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 
 

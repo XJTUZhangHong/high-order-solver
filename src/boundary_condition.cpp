@@ -241,6 +241,52 @@ void RT_boundary(Fluid2d* fluids, Block2d block)
 	}
 }
 
+void inflow_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int i = block.ghost - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].primvar[var] = bcvalue.primvar[var];
+			}
+
+			Primvar_to_convar_2D(fluids[i * block.ny + j].convar, fluids[i * block.ny + j].primvar);
+		}
+	}
+}
+
+void inflow_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int i = block.nx - block.ghost; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].primvar[var] = bcvalue.primvar[var];
+			}
+			Primvar_to_convar_2D(fluids[i * block.ny + j].convar, fluids[i * block.ny + j].primvar);
+		}
+	}
+}
+
+void inflow_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	for (int j = block.ny - block.ghost; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				fluids[i * block.ny + j].primvar[var] = bcvalue.primvar[var];
+			}
+			Primvar_to_convar_2D(fluids[i * block.ny + j].convar, fluids[i * block.ny + j].primvar);
+		}
+	}
+}
+
 // three-dimensional problem
 void free_boundary_xleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
 {

@@ -19,6 +19,9 @@ void periodic_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void periodic_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
+void inflow_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
+void inflow_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
+void inflow_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 void RT_boundary(Fluid2d* fluids, Block2d block);
 // three-dimensional problem
 typedef void(*BoundaryCondition3d) (Fluid3d *fluids, Block3d block, Fluid3d bcvalue);
