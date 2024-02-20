@@ -287,6 +287,160 @@ void inflow_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
 	}
 }
 
+void noslip_adiabatic_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+	for (int i = order - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			int index = i * block.ny + j;
+			int ref = (2 * order - 1 - i) * block.ny + j;
+			fluids[index].convar[0] = fluids[ref].convar[0];
+			fluids[index].convar[1] = 2 * fluids[index].convar[0] * bcvalue.primvar[1] - fluids[ref].convar[1];
+			fluids[index].convar[2] = 2 * fluids[index].convar[0] * bcvalue.primvar[2] - fluids[ref].convar[2];
+			fluids[index].convar[3] = fluids[ref].convar[3];
+
+		}
+	}
+
+}
+
+void noslip_adiabatic_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+
+	for (int i = block.nx - order; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			int index = i * block.ny + j;
+			int ref = (2 * block.nx - 2 * order - 1 - i) * block.ny + j;
+			int face_index = (2 * block.nx - 2 * order - 1 - i) * (block.ny + 1) + j;
+			fluids[index].convar[0] = fluids[ref].convar[0];
+			fluids[index].convar[1] = 2 * fluids[index].convar[0] * bcvalue.primvar[1] - fluids[ref].convar[1];
+			fluids[index].convar[2] = 2 * fluids[index].convar[0] * bcvalue.primvar[2] - fluids[ref].convar[2];
+			fluids[index].convar[3] = fluids[ref].convar[3];
+		}
+	}
+}
+
+void noslip_adiabatic_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+
+	for (int j = order - 1; j >= 0; j--)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			int index = i * block.ny + j;
+			int ref = (i)*block.ny + 2 * order - 1 - j;
+			fluids[index].convar[0] = fluids[ref].convar[0];
+			fluids[index].convar[1] = 2 * fluids[index].convar[0] * bcvalue.primvar[1] - fluids[ref].convar[1];
+			fluids[index].convar[2] = 2 * fluids[index].convar[0] * bcvalue.primvar[2] - fluids[ref].convar[2];
+			fluids[index].convar[3] = fluids[ref].convar[3];
+
+		}
+	}
+
+}
+
+void noslip_adiabatic_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+
+	for (int j = block.ny - order; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			int index = i * block.ny + j;
+			int ref = (i)*block.ny + 2 * block.ny - 2 * order - 1 - j;
+			fluids[index].convar[0] = fluids[ref].convar[0];
+			fluids[index].convar[1] = 2 * fluids[index].convar[0] * bcvalue.primvar[1] - fluids[ref].convar[1];
+			fluids[index].convar[2] = 2 * fluids[index].convar[0] * bcvalue.primvar[2] - fluids[ref].convar[2];
+			fluids[index].convar[3] = fluids[ref].convar[3];
+		}
+	}
+
+}
+
+void reflection_boundary_up(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+	for (int j = block.ny - order; j < block.ny; j++)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			int index = i * block.ny + j;
+			int ref = (i)*block.ny + 2 * block.ny - 2 * order - 1 - j;
+
+			fluids[index].convar[0] = fluids[ref].convar[0];
+			fluids[index].convar[1] = fluids[ref].convar[1];
+			fluids[index].convar[2] = -fluids[ref].convar[2];
+			fluids[index].convar[3] = fluids[ref].convar[3];
+
+		}
+
+	}
+}
+
+void reflection_boundary_down(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+
+	for (int j = order - 1; j >= 0; j--)
+	{
+		for (int i = 0; i < block.nx; i++)
+		{
+			int index = i * block.ny + j;
+			int ref = (i)*block.ny + 2 * order - 1 - j;
+
+			fluids[index].convar[0] = fluids[ref].convar[0];
+			fluids[index].convar[1] = fluids[ref].convar[1];
+			fluids[index].convar[2] = -fluids[ref].convar[2];
+			fluids[index].convar[3] = fluids[ref].convar[3];
+
+		}
+	}
+}
+
+void reflection_boundary_right(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+
+	for (int i = block.nx - order; i < block.nx; i++)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			int index = i * block.ny + j;
+			int ref = (2 * block.nx - 2 * order - 1 - i) * block.ny + j;
+			for (int k = 0; k < 4; k++)
+			{
+				fluids[index].convar[k] = fluids[ref].convar[k];
+			}
+			fluids[index].convar[1] = -fluids[ref].convar[1];
+		}
+	}
+}
+
+void reflection_boundary_left(Fluid2d* fluids, Block2d block, Fluid2d bcvalue)
+{
+	int order = block.ghost;
+	for (int i = order - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < block.ny; j++)
+		{
+			int index = i * block.ny + j;
+			int ref = (2 * order - 1 - i) * block.ny + j;
+			for (int k = 0; k < 4; k++)
+			{
+				fluids[index].convar[k] = fluids[ref].convar[k];
+			}
+			fluids[index].convar[1] = -fluids[ref].convar[1];
+		}
+	}
+}
+
 // three-dimensional problem
 void free_boundary_xleft(Fluid3d *fluids, Block3d block, Fluid3d bcvalue)
 {

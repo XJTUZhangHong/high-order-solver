@@ -27,4 +27,8 @@ void ICforDoubleMach(Fluid2d* fluid, Block2d block);
 
 void boundaryforDoubleMach(Fluid2d* fluids, Block2d block, Fluid2d bcvalue);
 
+void viscous_sod_shock_problem();
+
+void IC_for_vishocktube(int order, Fluid2d* fluid, Block2d block);
+
 

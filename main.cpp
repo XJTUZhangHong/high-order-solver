@@ -16,7 +16,8 @@ int main()
     //PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
-    doubleMach();
+    //doubleMach();
+    viscous_sod_shock_problem();
     // 3-D problem
     //CubicTube();
     return 0;

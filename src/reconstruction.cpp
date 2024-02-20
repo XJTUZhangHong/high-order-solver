@@ -390,7 +390,7 @@ void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
 		}
 		else
 		{
-			fluids[i].alpha = 2.0 / (1.0 + (alpha_left + alpha_right));
+			fluids[i].alpha = 2.0 / (1.0 + (alpha_left + alpha_right) * (alpha_left + alpha_right));
 		}
 	}
 }
@@ -1070,7 +1070,7 @@ void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, I
 	}
 	else
 	{
-		fluids.alpha_x = 2.0 / (1.0 + sum_alpha_x);
+		fluids.alpha_x = 2.0 / (1.0 + sum_alpha_x * sum_alpha_x);
 	}
 	if (sum_alpha_y < 1.0)
 	{
@@ -1078,7 +1078,7 @@ void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, I
 	}
 	else
 	{
-		fluids.alpha_y = 2.0 / (1.0 + sum_alpha_y);
+		fluids.alpha_y = 2.0 / (1.0 + sum_alpha_y * sum_alpha_y);
 	}
 }
 
@@ -1398,8 +1398,6 @@ void WENO5_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn2,
 
 	if (left.is_reduce_order == true || right.is_reduce_order == true)
 	{
-		//if (is_reduce_order_warning == true)
-			//cout << " WENO5-cell-splitting order reduce" << endl;
 		for (int m = 0; m < 4; m++)
 		{
 			right.convar[m] = w[m];
@@ -1901,7 +1899,6 @@ void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Rec
 		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].left.is_reduce_order, re[num_gauss].left.convar);
 		if (re[num_gauss].left.is_reduce_order == true)
 		{
-			//cout << " WENO5-cell-multi-left order reduce" << endl;
 			for (int var = 0; var < 4; var++)
 			{
 				re[num_gauss].left.convar[var] = w0.left.convar[var];
@@ -1916,7 +1913,6 @@ void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Rec
 		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].right.is_reduce_order, re[num_gauss].right.convar);
 		if (re[num_gauss].right.is_reduce_order == true)
 		{
-			//cout << " WENO5-cell-multi-right order reduce" << endl;
 			for (int var = 0; var < 4; var++)
 			{
 				re[num_gauss].right.convar[var] = w0.right.convar[var];
