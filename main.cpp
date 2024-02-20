@@ -4,7 +4,7 @@
 
 int main()
 {
-    omp_set_num_threads(6);
+    omp_set_num_threads(32);
     is_using_df_factor = true;
     // 1-D problem
     //SodTubeProblem();
@@ -13,10 +13,10 @@ int main()
     //ShuOsher();
     // 2-D problem
     //RT_instability();
-    PlanarShock();
+    //PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
     // 3-D problem
-    //CubicTube();
+    CubicTube();
     return 0;
 }
