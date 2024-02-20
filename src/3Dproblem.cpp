@@ -145,13 +145,13 @@ void CubicTube()
 			Convar_to_primvar(fluids, block);
 			//then is reconstruction part, which we separate the left or right reconstrction
 			//and the center reconstruction
-			Reconstruction_within_cell(xinterfaces, yinterfaces, zinterfaces, fluids, block);
+			//Reconstruction_within_cell(xinterfaces, yinterfaces, zinterfaces, fluids, block);
 		
-			Reconstruction_forg0(xinterfaces, yinterfaces, zinterfaces, fluids, block);
+			//Reconstruction_forg0(xinterfaces, yinterfaces, zinterfaces, fluids, block);
 			//then is solver part
-			Calculate_flux(xfluxes, yfluxes, zfluxes, xinterfaces, yinterfaces, zinterfaces, block, i);
+			//Calculate_flux(xfluxes, yfluxes, zfluxes, xinterfaces, yinterfaces, zinterfaces, block, i);
 			//then is update flux part
-			Update_gauss(fluids, xfluxes, yfluxes, zfluxes, block, i);
+			//Update_gauss(fluids, xfluxes, yfluxes, zfluxes, block, i);
 		}
 		block.step++;
 		block.t = block.t + block.dt;

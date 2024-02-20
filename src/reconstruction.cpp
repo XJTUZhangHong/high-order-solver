@@ -2622,7 +2622,6 @@ void WENO5_AO_for_point_value(Recon3d *point, Recon3d& wn2, Recon3d& wn1, Recon3
 	double base_right[5];
 	double wn1_primvar[5], w_primvar[5], wp1_primvar[5];
 	Convar_to_primvar_3D(w_primvar, w0.left.convar);
-
 	for (int i = 0; i < 5; i++)
 	{
 		base_left[i] = (w_primvar[i]);
