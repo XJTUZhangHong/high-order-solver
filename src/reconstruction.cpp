@@ -739,7 +739,7 @@ void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 {
 	double dhi = 0.85;
 	double dlo = 0.85;
-	double davg= 0.5;
+	double davg= 0.85;
 	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
 	double beta[5], d[5], ww[5], alpha[5];
@@ -847,7 +847,7 @@ void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double w
 {
 	double dhi = 0.85;
 	double dlo = 0.85;
-	double davg= 0.5;
+	double davg= 0.85;
 	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
 	double beta[5], d[5], ww[5], alpha[5];
@@ -1414,6 +1414,167 @@ void WENO5_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn2,
 
 	}
 
+	
+	Check_Order_Reduce_by_Lambda_2D(right.is_reduce_order, right.convar);
+	Check_Order_Reduce_by_Lambda_2D(left.is_reduce_order, left.convar);
+
+	if (left.is_reduce_order == true || right.is_reduce_order == true)
+	{
+		for (int m = 0; m < 4; m++)
+		{
+			right.convar[m] = w[m];
+			left.convar[m] = w[m];
+			right.der1x[m] = 0.0;
+			left.der1x[m] = 0.0;
+		}
+	}
+	
+}
+
+void WENO7_AO_with_df_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)
+{
+	if ((fluids[0].xindex > block.ghost - 2) && (fluids[0].xindex < block.nx - block.ghost + 1))
+	{
+		double alpha[7];
+		alpha[0] = fluids[-3 * block.ny].alpha_x;
+		alpha[1] = fluids[-2 * block.ny].alpha_x;
+		alpha[2] = fluids[-block.ny].alpha_x;
+		alpha[3] = fluids[0].alpha_x;
+		alpha[4] = fluids[block.ny].alpha_x;
+		alpha[5] = fluids[2 * block.ny].alpha_x;
+		alpha[6] = fluids[3 * block.ny].alpha_x;
+		WENO7_AO_with_df(left.line.right, right.line.left, alpha, fluids[-3 * block.ny].convar, fluids[-2 * block.ny].convar, fluids[-block.ny].convar, fluids[0].convar, fluids[block.ny].convar, fluids[2 * block.ny].convar, fluids[3 * block.ny].convar, fluids[0].dx);
+	}
+
+
+	if ((fluids[0].yindex > block.ghost - 2) && (fluids[0].yindex < block.ny - block.ghost + 1))
+	{
+		double wn3tmp[4], wn2tmp[4], wn1tmp[4], wtmp[4], wp1tmp[4], wp2tmp[4], wp3tmp[4];
+		YchangetoX(wn1tmp, fluids[-1].convar); YchangetoX(wtmp, fluids[0].convar); YchangetoX(wp1tmp, fluids[1].convar);
+		YchangetoX(wn2tmp, fluids[-2].convar); YchangetoX(wp2tmp, fluids[2].convar);
+		YchangetoX(wn3tmp, fluids[-3].convar); YchangetoX(wp3tmp, fluids[3].convar);
+
+		double alpha[5];
+		alpha[0] = fluids[-3].alpha_y;
+		alpha[1] = fluids[-2].alpha_y;
+		alpha[2] = fluids[-1].alpha_y;
+		alpha[3] = fluids[0].alpha_y;
+		alpha[4] = fluids[1].alpha_y;
+		alpha[5] = fluids[2].alpha_y;
+		alpha[6] = fluids[3].alpha_y;
+		WENO7_AO_with_df(down.line.right, up.line.left, alpha, wn3tmp, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, wp3tmp, fluids[0].dy);
+	}
+}
+
+void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3, double* wn2, double* wn1, double* w, double* wp1, double* wp2, double* wp3, double h)
+{
+	//we denote that   |left...cell-center...right|
+	double ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4];
+	double var[4], der1[4], der2[4];
+
+	double base_left[4];
+	double base_right[4];
+	double wn1_primvar[4], w_primvar[4], wp1_primvar[4];
+	Convar_to_primvar_2D(wn1_primvar, wn1);
+	Convar_to_primvar_2D(w_primvar, w);
+	Convar_to_primvar_2D(wp1_primvar, wp1);
+
+	for (int i = 0; i < 4; i++)
+	{
+		base_left[i] = 0.5 * (wn1_primvar[i] + w_primvar[i]);
+		base_right[i] = 0.5 * (wp1_primvar[i] + w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ren3[i] = wn3[i];
+			ren2[i] = wn2[i];
+			ren1[i] = wn1[i];
+			re0[i] = w[i];
+			rep1[i] = wp1[i];
+			rep2[i] = wp2[i];
+			rep3[i] = wp3[i];
+		}
+	}
+	else
+	{
+		Convar_to_char(ren3, base_left, wn3);
+		Convar_to_char(ren2, base_left, wn2);
+		Convar_to_char(ren1, base_left, wn1);
+		Convar_to_char(re0, base_left, w);
+		Convar_to_char(rep1, base_left, wp1);
+		Convar_to_char(rep2, base_left, wp2);
+		Convar_to_char(rep3, base_left, wp3);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		weno_7th_ao_with_df_left(var[i], der1[i], der2[i], ren3[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], alpha, h);
+
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			left.convar[i] = var[i];
+			left.der1x[i] = der1[i];
+
+		}
+	}
+	else
+	{
+		Char_to_convar(left.convar, base_left, var);
+		Char_to_convar(left.der1x, base_left, der1);
+
+	}
+
+	// cell right
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ren3[i] = wn3[i];
+			ren2[i] = wn2[i];
+			ren1[i] = wn1[i];
+			re0[i] = w[i];
+			rep1[i] = wp1[i];
+			rep2[i] = wp2[i];
+			rep3[i] = wp3[i];
+		}
+	}
+	else
+	{
+		Convar_to_char(ren3, base_right, wn3);
+		Convar_to_char(ren2, base_right, wn2);
+		Convar_to_char(ren1, base_right, wn1);
+		Convar_to_char(re0, base_right, w);
+		Convar_to_char(rep1, base_right, wp1);
+		Convar_to_char(rep2, base_right, wp2);
+		Convar_to_char(rep3, base_right, wp3);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		weno_7th_ao_with_df_right(var[i], der1[i], der2[i], ren3[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], alpha, h);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			right.convar[i] = var[i];
+			right.der1x[i] = der1[i];
+		}
+	}
+	else
+	{
+		Char_to_convar(right.convar, base_right, var);
+		Char_to_convar(right.der1x, base_right, der1);
+
+	}
 	
 	Check_Order_Reduce_by_Lambda_2D(right.is_reduce_order, right.convar);
 	Check_Order_Reduce_by_Lambda_2D(left.is_reduce_order, left.convar);
@@ -2069,6 +2230,350 @@ void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g
 	g2x = 0.0;
 
 	for (int k = 0; k < 4; k++)
+	{
+		g2 += final_weight[k] * p[k];
+		g2x += final_weight[k] * px[k];
+	}
+}
+
+void WENO7_AO_with_df_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
+{
+	// along x direction tangitial recontruction,
+	double alpha1[7], alpha2[7];
+	alpha1[0] = fluids[-3].alpha_x;
+	alpha1[1] = fluids[-2].alpha_x; alpha1[2] = fluids[-1].alpha_x;
+	alpha1[3] = fluids[0].alpha_x;  alpha1[4] = fluids[1].alpha_x;
+	alpha1[5] = fluids[2].alpha_x; alpha1[6] = fluids[3].alpha_x;
+	alpha2[0] = fluids[block.ny - 3].alpha_x; 
+	alpha2[1] = fluids[block.ny - 2].alpha_x; alpha2[2] = fluids[block.ny - 1].alpha_x;
+	alpha2[3] = fluids[block.ny].alpha_x;  alpha2[4] = fluids[block.ny + 1].alpha_x;
+	alpha2[5] = fluids[block.ny + 2].alpha_x; alpha2[6] = fluids[block.ny + 3].alpha_x;
+	weno_7th_ao_with_df_tangential(right[0].gauss, right[-3].line, 
+		right[-2].line, right[-1].line, right[0].line, right[1].line, right[2].line, right[3].line, alpha1, alpha2, right[0].length);
+
+	//since we already do the coordinate transform, along y, no transform needed.
+	alpha1[0] = fluids[3 * block.ny].alpha_y; 
+	alpha1[1] = fluids[2 * block.ny].alpha_y; alpha1[2] = fluids[block.ny].alpha_y;
+	alpha1[3] = fluids[0].alpha_y;  alpha1[4] = fluids[-block.ny].alpha_y;
+	alpha1[5] = fluids[-2 * block.ny].alpha_y; alpha1[6] = fluids[-3 * block.ny].alpha_y;
+	alpha2[0] = fluids[3 * block.ny + 1].alpha_y; 
+	alpha2[1] = fluids[2 * block.ny + 1].alpha_y; alpha2[2] = fluids[block.ny + 1].alpha_y;
+	alpha2[3] = fluids[1].alpha_y;  alpha2[4] = fluids[-block.ny + 1].alpha_y;
+	alpha2[5] = fluids[-2 * block.ny + 1].alpha_y; alpha2[6] = fluids[-3 * block.ny + 1].alpha_y;
+	weno_7th_ao_with_df_tangential(up[0].gauss, up[3 * (block.ny + 1)].line, up[2 * (block.ny + 1)].line, up[block.ny + 1].line,
+		up[0].line, up[-(block.ny + 1)].line, up[-2 * (block.ny + 1)].line, up[-3 * (block.ny + 1)].line, alpha1, alpha2, up[0].length);
+}
+
+void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, Recon2d& wp3, double* alpha1, double* alpha2, double h)
+{
+	//lets first reconstruction the left value
+
+	double ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4];
+	double base_left[4];
+	double base_right[4];
+	double wn1_primvar[4], w_primvar[4], wp1_primvar[4];
+	Convar_to_primvar_2D(w_primvar, w0.left.convar);
+
+	for (int i = 0; i < 4; i++)
+	{
+		base_left[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		double tmp[2];
+		for (int i = 0; i < 4; i++)
+		{
+			if (gausspoint == 2)
+			{
+				weno_7th_ao_with_df_2gauss(re[0].left.convar[i], re[0].left.der1y[i], tmp[0],
+					re[1].left.convar[i], re[1].left.der1y[i], tmp[1], alpha1, wn3.left.convar[i],
+					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], wp3.left.convar[i], h, 2);
+			}
+		}
+	}
+	else
+	{
+		Convar_to_char(ren3, base_left, wn3.left.convar);
+		Convar_to_char(ren2, base_left, wn2.left.convar);
+		Convar_to_char(ren1, base_left, wn1.left.convar);
+		Convar_to_char(re0, base_left, w0.left.convar);
+		Convar_to_char(rep1, base_left, wp1.left.convar);
+		Convar_to_char(rep2, base_left, wp2.left.convar);
+		Convar_to_char(rep3, base_left, wp3.left.convar);
+		if (gausspoint == 2)
+		{
+			double var[2][4], der1[2][4], der2[2][4];
+			for (int i = 0; i < 4; i++)
+			{
+				weno_7th_ao_with_df_2gauss(var[0][i], der1[0][i], der2[0][i],
+					var[1][i], der1[1][i], der2[1][i], alpha1, ren3[i],
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], h, 2);
+			}
+			for (int igauss = 0; igauss < gausspoint; igauss++)
+			{
+				Char_to_convar(re[igauss].left.convar, base_left, var[igauss]);
+				Char_to_convar(re[igauss].left.der1y, base_left, der1[igauss]);
+			}
+		}
+
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		double tmp[4];
+		if (gausspoint == 2)
+		{
+			weno_7th_ao_with_df_2gauss(re[0].left.der1x[i], tmp[0], tmp[1],
+				re[1].left.der1x[i], tmp[2], tmp[3], alpha1, wn3.left.der1x[i], 
+				wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], wp3.left.der1x[i], h, 1);
+		}
+	}
+
+	//then let's construct the right part....
+	Convar_to_primvar_2D(w_primvar, w0.right.convar);
+	for (int i = 0; i < 4; i++)
+	{
+		base_right[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		double tmp[2];
+		for (int i = 0; i < 4; i++)
+		{
+			if (gausspoint == 2)
+			{
+				weno_7th_ao_with_df_2gauss(re[0].right.convar[i], re[0].right.der1y[i], tmp[0],
+					re[1].right.convar[i], re[1].right.der1y[i], tmp[1], alpha2, wn3.right.convar[i], 
+					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], wp3.right.convar[i], h, 2);
+			}
+		}
+	}
+	else
+	{
+		Convar_to_char(ren3, base_right, wn3.right.convar);
+		Convar_to_char(ren2, base_right, wn2.right.convar);
+		Convar_to_char(ren1, base_right, wn1.right.convar);
+		Convar_to_char(re0, base_right, w0.right.convar);
+		Convar_to_char(rep1, base_right, wp1.right.convar);
+		Convar_to_char(rep2, base_right, wp2.right.convar);
+		Convar_to_char(rep3, base_right, wp3.right.convar);
+		if (gausspoint == 2)
+		{
+			double var[2][4], der1[2][4], der2[2][4];
+			for (int i = 0; i < 4; i++)
+			{
+				weno_7th_ao_with_df_2gauss(var[0][i], der1[0][i], der2[0][i],
+					var[1][i], der1[1][i], der2[1][i], alpha2, ren3[i],
+					ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], h, 2);
+			}
+			for (int igauss = 0; igauss < gausspoint; igauss++)
+			{
+				Char_to_convar(re[igauss].right.convar, base_right, var[igauss]);
+				Char_to_convar(re[igauss].right.der1y, base_right, der1[igauss]);
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		double tmp[4];
+		if (gausspoint == 2)
+		{
+			weno_7th_ao_with_df_2gauss(re[0].right.der1x[i], tmp[0], tmp[1],
+				re[1].right.der1x[i], tmp[2], tmp[3], alpha2, wn3.right.der1x[i], 
+				wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], wp3.right.der1x[i], h, 1);
+		}
+	}
+
+
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].left.is_reduce_order, re[num_gauss].left.convar);
+		if (re[num_gauss].left.is_reduce_order == true)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				re[num_gauss].left.convar[var] = w0.left.convar[var];
+				re[num_gauss].left.der1x[var] = w0.left.der1x[var];
+				re[num_gauss].left.der1y[var] = 0.0;
+			}
+		}
+	}
+
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].right.is_reduce_order, re[num_gauss].right.convar);
+		if (re[num_gauss].right.is_reduce_order == true)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				re[num_gauss].right.convar[var] = w0.right.convar[var];
+				re[num_gauss].right.der1x[var] = w0.right.der1x[var];
+				re[num_gauss].right.der1y[var] = 0.0;
+			}
+		}
+	}
+}
+
+void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* df, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double h, int order)
+{
+	//the parameter order constrols up to which order you want construct
+	// order from 0, 1, 2
+	if (order > 2 || order < 0)
+	{
+		cout << "invalid order input for the function " << __FUNCTION__ << endl;
+		exit(0);
+	}
+	double dhi = 0.85;
+	double dlo = 0.85;
+	double davg= 0.85;
+	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
+	//-- - parameter of WENO-- -
+	double beta[5], d[5], ww[5], alpha[5];
+	double epsilonW = 1e-10;
+	//-- - intermediate parameter-- -
+	double p[5], px[5], pxx[5], tempvar;
+	double sum_alpha;
+
+	//three 3rd-order stencil
+	d[0] = (1.0 - dhi) * (1.0 - dlo) * (1.0 - davg) / 2.0;
+	d[1] = (1.0 - dhi) * (1.0 - davg) * dlo;
+	d[2] = (1.0 - dhi) * (1.0 - dlo) * (1.0 - davg) / 2.0;
+	//one 5th-order stencil
+	d[3] = (1.0 - dhi) * davg;
+	//one 7th-order stencil
+	d[4] = dhi;
+
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+
+	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	// For 7th-order stencil, the smoothness indicator
+	double a1, a2, a3, a4, a5, a6;
+	a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
+	a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
+	a3 = (5 * wn3 - 38 * wn2 + 61 * wn1 - 61 * wp1 + 38 * wp2 - 5 * wp3) / 216.0;
+	a4 = (-13 * wn3 + 144 * wn2 - 459 * wn1 + 656 * w0 - 459 * wp1 + 144 * wp2 - 13 * wp3) / 1584.0;
+	a5 = (-wn3 + 4 * wn2 - 5 * wn1 + 5 * wp1 - 4 * wp2 + wp3) / 240.0;
+	a6 = (wn3 - 6 * wn2 + 15 * wn1 - 20 * w0 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
+	beta[4] = (a1 + a3 / 10.0 + a5 / 126.0) * (a1 + a3 / 10.0 + a5 / 126.0) + 13.0 / 3.0 * (a2 + 123 / 455 * a4 + 85 / 2002 * a6)* (a2 + 123 / 455 * a4 + 85 / 2002 * a6)
+			+ 781 / 20 * (a3 + 26045 / 49203 * a5) * (a3 + 26045 / 49203 * a5)
+			+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
+			+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
+
+	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
+
+	sum_alpha = 0.0;
+	for (int i = 0; i < 5; i++)
+	{
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		sum_alpha += alpha[i];
+	}
+
+	for (int k = 0; k < 5; k++)
+	{
+		ww[k] = alpha[k] / sum_alpha;
+	}
+	//-- - candidate polynomial-- -
+	double b2, c2, b4, c4, d4, e4, x;
+	// gauss point 1
+	x = -0.5 - sqrt(3) / 6.0;
+	// 3th order polynomial 1
+	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
+	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
+	p[0] = w0 + df[3] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[0] = df[3] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 2
+	b2 = wp1 - w0;
+	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
+	p[1] = w0 + df[3] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[1] = df[3] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 3
+	b2 = wp1 - w0;
+	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
+	p[2] = w0 + df[3] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[2] = df[3] * (b2 + 2.0 * c2 * x) / h;
+	// 5th order polynomial
+	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
+	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
+	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
+	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 +
+		df[3] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
+	px[3] = df[3] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+	// 7th order polynomial
+	double b6, c6, d6, e6, f6, g6;
+	b6 = (-245 * w0 + 25 * wn1 - 2 * wn2 + 245 * wp1 - 25 * wp2 + 2 * wp3) / 180.0;
+	c6 = (-230 * w0 + 210 * wn1 - 57 * wn2 + 7 * wn3 + 15 * wp1 + 63 * wp2 - 8 * wp3) / 240.0;
+	d6 = (28 * w0 - 11 * wn1 + wn2 - 28 * wp1 + 11 * wp2 - wp3) / 36.0;
+	e6 = (46 * w0 - 39 * wn1 + 15 * wn2 - 2 * wn3 - 24 * wp1 + 3 * wp2 + wp3) / 144.0;
+	f6 = (-10 * w0 + 5 * wn1 - wn2 + 10 * wp1 - 5 * wp2 + wp3) / 120.0;
+	g6 = (-20 * w0 + 15 * wn1 - 6 * wn2 + wn3 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
+	p[4] = w0 + df[3] * (b6 * (x + 1.0 / 2.0) + c6 * (x * x - 1.0 / 3.0) + d6 * (x * x * x + 1.0 / 4.0)
+	+ e6 * (x * x * x * x - 1.0 / 5.0) + f6 * (x * x * x * x * x + 1.0 / 6.0) +g6 * (x * x * x * x * x * x - 1.0 / 7.0));
+	px[4] = df[3] * (b6 + 2.0 * c6 * x + 3.0 * d6 * x * x
+	+ 4.0 * e6 * x * x * x + 5.0 * f6 * x * x * x * x + 6.0 * g6 * x * x * x * x * x) / h;
+	//-- - combination-- -
+	g1 = 0.0;
+	g1x = 0.0;
+	double final_weight[5];
+	final_weight[4] = ww[4] / d[4];
+	for (int k = 0; k < 4; k++)
+	{
+		final_weight[k] = ww[k] - ww[4] / d[4] * d[k];
+	}
+
+	for (int k = 0; k < 5; k++)
+	{
+		g1 += final_weight[k] * p[k];
+		g1x += final_weight[k] * px[k];
+	}
+	// gauss point 2
+	x = -0.5 + sqrt(3) / 6.0;
+	// 3th order polynomial 1
+	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
+	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
+	p[0] = w0 + df[3] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[0] = df[3] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 2
+	b2 = wp1 - w0;
+	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
+	p[1] = w0 + df[3] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[1] = df[3] * (b2 + 2.0 * c2 * x) / h;
+	// 3th order polynomial 3
+	b2 = wp1 - w0;
+	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
+	p[2] = w0 + df[3] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
+	px[2] = df[3] * (b2 + 2.0 * c2 * x) / h;
+	// 5th order polynomial
+	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
+	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
+	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 +
+		df[3] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
+	px[3] = df[3] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+	// 7th order polynomial
+	b6 = (-245 * w0 + 25 * wn1 - 2 * wn2 + 245 * wp1 - 25 * wp2 + 2 * wp3) / 180.0;
+	c6 = (-230 * w0 + 210 * wn1 - 57 * wn2 + 7 * wn3 + 15 * wp1 + 63 * wp2 - 8 * wp3) / 240.0;
+	d6 = (28 * w0 - 11 * wn1 + wn2 - 28 * wp1 + 11 * wp2 - wp3) / 36.0;
+	e6 = (46 * w0 - 39 * wn1 + 15 * wn2 - 2 * wn3 - 24 * wp1 + 3 * wp2 + wp3) / 144.0;
+	f6 = (-10 * w0 + 5 * wn1 - wn2 + 10 * wp1 - 5 * wp2 + wp3) / 120.0;
+	g6 = (-20 * w0 + 15 * wn1 - 6 * wn2 + wn3 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
+	p[4] = w0 + df[3] * (b6 * (x + 1.0 / 2.0) + c6 * (x * x - 1.0 / 3.0) + d6 * (x * x * x + 1.0 / 4.0)
+	+ e6 * (x * x * x * x - 1.0 / 5.0) + f6 * (x * x * x * x * x + 1.0 / 6.0) +g6 * (x * x * x * x * x * x - 1.0 / 7.0));
+	px[4] = df[3] * (b6 + 2.0 * c6 * x + 3.0 * d6 * x * x
+	+ 4.0 * e6 * x * x * x + 5.0 * f6 * x * x * x * x + 6.0 * g6 * x * x * x * x * x) / h;
+	//-- - combination-- -
+	g2 = 0.0;
+	g2x = 0.0;
+
+	for (int k = 0; k < 5; k++)
 	{
 		g2 += final_weight[k] * p[k];
 		g2x += final_weight[k] * px[k];

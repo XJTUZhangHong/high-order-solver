@@ -8,7 +8,7 @@ void PlanarShock()
 	block.uniform = true;
 	block.nodex = 500;
 	block.nodey = 500;
-	block.ghost = 3;
+	block.ghost = 4;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -131,8 +131,8 @@ void PlanarShock()
 
 			if (block.step > 0 && is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -1320,7 +1320,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	block.uniform = true;
 	block.nodex = mesh_number;
 	block.nodey = mesh_number;
-	block.ghost = 3; // 5th-order reconstruction, should 3 ghost cell
+	block.ghost = 4; // 5th-order reconstruction, should 3 ghost cell
 
 	double tstop = 2;
 	block.CFL = CFL;
@@ -1373,7 +1373,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	wenotype = wenoz; // Emumeration, choose reconstruction type
 
 	cellreconstruction_2D_normal = WENO5_AO_with_df_normal;  // reconstruction in normal directon
-	cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;  // reconstruction in tangential directon
+	cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;  // reconstruction in tangential directon
 	g0reconstruction_2D_normal = Center_do_nothing_normal;  // reconstruction for g0 in normal directon
 	g0reconstruction_2D_tangent = Center_all_collision_multi;  // reconstruction for g0 in tangential directon
 

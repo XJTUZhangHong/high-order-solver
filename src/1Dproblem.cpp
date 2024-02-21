@@ -6,8 +6,8 @@ void SodTubeProblem()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 200;
-	block.ghost = 3;
+	block.nodex = 100;
+	block.ghost = 4;
 
 	double tstop = 0.2;
 	block.CFL = 0.5;
@@ -102,7 +102,7 @@ void SodTubeProblem()
 
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO5_AO_with_DF;
+			cellreconstruction = WENO7_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)
@@ -276,7 +276,7 @@ void Blastwave()
 
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO5_AO_with_DF;
+			cellreconstruction = WENO7_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)
@@ -350,7 +350,7 @@ void ShuOsher()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 400;
+	block.nodex = 200;
 	block.ghost = 4;
 
 	double tstop = 1.8;
@@ -447,7 +447,7 @@ void ShuOsher()
 		
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO5_AO_with_DF;
+			cellreconstruction = WENO7_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)
