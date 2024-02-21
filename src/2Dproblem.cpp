@@ -214,11 +214,11 @@ void PlanarSheer()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 
@@ -1073,8 +1073,8 @@ void viscous_sod_shock_problem()
 	runtime.start_initial = omp_get_wtime();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 100;
-	block.nodey = 50;
+	block.nodex = 1000;
+	block.nodey = 500;
 	block.ghost = 3;
 
 
@@ -1239,13 +1239,9 @@ void viscous_sod_shock_problem()
 
 			block.step++;
 			block.t = block.t + block.dt;
-
-			if ((block.t - tstop[instant]) > 0)
-			{
-				output2d(fluids, block);
-			}
 		}
 	}
+	output2d(fluids, block);
 	runtime.finish_compute = omp_get_wtime();
 	cout << "the total run time is " << (double)(runtime.finish_compute - runtime.start_initial) / 1.0 << " second !" << endl;
 	cout << "initializing time is" << (double)(runtime.finish_initial - runtime.start_initial) / 1.0 << " second !" << endl;
