@@ -31,4 +31,11 @@ void viscous_sod_shock_problem();
 
 void IC_for_vishocktube(int order, Fluid2d* fluid, Block2d block);
 
+void accuracy_sinwave_2d();
+
+void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error);
+
+void ICfor_sinwave_2d(Fluid2d* fluids, Block2d block);
+
+void error_for_sinwave_2d(Fluid2d* fluids, Block2d block, double tstop, double* error);
 

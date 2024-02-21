@@ -1287,4 +1287,287 @@ void IC_for_vishocktube(int order, Fluid2d* fluid, Block2d block)
 	}
 }
 
+void accuracy_sinwave_2d()
+{
+	int mesh_set = 4;
+	int mesh_number_start = 10;
+	double length = 2.0;
+	double CFL = 0.1;
+	double dt_ratio = 1.0;
+
+	double mesh_size_start = length / mesh_number_start;
+	int* mesh_number = new int[mesh_set];
+	double* mesh_size = new double[mesh_set];
+	double** error = new double* [mesh_set];
+
+	for (int i = 0; i < mesh_set; ++i)
+	{
+		error[i] = new double[3];
+		mesh_size[i] = mesh_size_start / pow(2, i);
+		mesh_number[i] = mesh_number_start * pow(2, i);
+		sinwave_2d(CFL, dt_ratio, mesh_number[i], error[i]);
+	}
+
+	output_error_form(CFL, dt_ratio, mesh_set, mesh_number, error);
+}
+
+void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
+{
+
+	Runtime runtime;
+	runtime.start_initial = clock();
+	Block2d block; // Class, geometry variables
+	block.uniform = true;
+	block.nodex = mesh_number;
+	block.nodey = mesh_number;
+	block.ghost = 3; // 5th-order reconstruction, should 3 ghost cell
+
+	double tstop = 2;
+	block.CFL = CFL;
+
+
+	K = 3; // 1d K=4, 2d K=3, 3d K=2;
+	Gamma = 1.4; // diatomic gas, r=1.4
+
+	//this part should rewritten ad gks2dsolver blabla
+	gks2dsolver = gks2nd_2d; // Emumeration, choose solver type
+	// 2nd means spatical 2nd-order, the traditional GKS; 2d means two dimensions
+
+	tau_type = Euler; // Emumeration, choose collision time tau type
+	// for accuracy test case, the tau type should be Euler and more accurately ZERO
+	// for inviscid case, use Euler type tau; for viscous case, use NS type tau
+
+	c1_euler = 0.0; // first coefficient in Euler type tau calculation
+	c2_euler = 0.0; // second coefficient in Euler type tau calculation
+	// when Euler type, tau is always zero;
+	// if the c1 c2 were given, (c1, c2, should be given together), the tau_num is determined by c1 c2, (c1*dt + c2*deltaP)
+	// if c1, c2 are both zero, (or not given value either), tau_num is also zero, which might be useful for accuracy test.
+	// when NS type, tau is always physical tau, relating to Mu or Nu;
+	// besides, tau_num would be determined by tau and c2 part, (tau + c2*deltaP),
+	// so, c2 should be given (c1 is useless now), and Mu or Nu should be given ONLY ONE;
+	// for NS type, specially, if Smooth is true, tau_num is determined ONLY by tau, (tau_num = tau), which means c2 is zero
+
+	Mu = 0.0;
+	Pr = 0.73;
+	R_gas = 1;
+
+	//prepare the boundary condtion function
+	Fluid2d* bcvalue = new Fluid2d[4]; // Class, primitive variables only for boundary
+	BoundaryCondition2d leftboundary(0); 
+	BoundaryCondition2d rightboundary(0); 
+	BoundaryCondition2d downboundary(0);  
+	BoundaryCondition2d upboundary(0); 
+
+	leftboundary = periodic_boundary_left; 
+	rightboundary = periodic_boundary_right;  
+	downboundary = periodic_boundary_down; 
+	upboundary = periodic_boundary_up;  
+
+	//prepare the reconstruction
+	gausspoint = 2; // fifth-order or sixth-order use THREE gauss points
+	// WENO5 has the function relating to arbitrary gausspoints
+	// WENO5_AO supports 2 gausspoint now, so fourth-order at most for spacial reconstruction (enough for two step fourth-order GKS)
+	SetGuassPoint(); // Function, set Gauss points coordinates and weight factor
+
+	reconstruction_variable = conservative; // Emumeration, choose the variables used for reconstruction type
+	wenotype = wenoz; // Emumeration, choose reconstruction type
+
+	cellreconstruction_2D_normal = WENO5_AO_with_df_normal;  // reconstruction in normal directon
+	cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;  // reconstruction in tangential directon
+	g0reconstruction_2D_normal = Center_do_nothing_normal;  // reconstruction for g0 in normal directon
+	g0reconstruction_2D_tangent = Center_all_collision_multi;  // reconstruction for g0 in tangential directon
+
+
+	//prepare the flux function
+	flux_function_2d = GKS2D; // 给函数指针 赋值 flux calculation type
+	// solver is GKS
+	// GKS2D means full solver (used for shock), GKS2D_smooth means smooth solver (used for non_shock)
+	// for accuracy test case, tau is ZERO, so GKS2D is equal to GKS2D_smooth for results, but the later is faster
+	// for inviscid flow, Euler type tau equals artifical viscosity;
+	// for viscous flow, NS type tau equals the modified collision time;
+	//end
+
+	//prepare time marching stratedgy
+	//time coe list must be 2d, end by _2D
+	timecoe_list_2d = S2O4_2D; 
+	Initial_stages(block);
+
+
+	// allocate memory for 2-D fluid field
+	// in a standard finite element method, we have
+	// first the cell average value, N*N
+	block.nx = block.nodex + 2 * block.ghost;
+	block.ny = block.nodey + 2 * block.ghost;
+
+	Fluid2d* fluids = Setfluid(block); // Function, input a class (geometry), output the pointer of one class (conservative variables)
+	// then the interfaces reconstructioned value, (N+1)*(N+1)
+	Interface2d* xinterfaces = Setinterface_array(block);
+	Interface2d* yinterfaces = Setinterface_array(block);
+	// then the flux, which the number is identical to interfaces
+	Flux2d_gauss** xfluxes = Setflux_gauss_array(block);
+	Flux2d_gauss** yfluxes = Setflux_gauss_array(block);
+	//end the allocate memory part
+
+	block.left = 0.0;
+	block.right = 2.0;
+	block.down = 0.0;
+	block.up = 2.0;
+	block.dx = (block.right - block.left) / block.nodex;
+	block.dy = (block.up - block.down) / block.nodey;
+	block.overdx = 1 / block.dx;
+	block.overdy = 1 / block.dy;
+	//set the uniform geometry information
+	SetUniformMesh(block, fluids, xinterfaces, yinterfaces, xfluxes, yfluxes); // Function, set mesh
+
+	//end
+
+	ICfor_sinwave_2d(fluids, block);
+
+	runtime.finish_initial = clock();
+	block.t = 0; //the current simulation time
+	block.step = 0; //the current step
+
+	int inputstep = 1;//input a certain step
+
+	while (block.t < tstop)
+	{
+
+		if (block.step % inputstep == 0)
+		{
+			cout << "pls cin interation step, if input is 0, then the program will exit " << endl;
+			cin >> inputstep;
+			if (inputstep == 0)
+			{
+				output2d(fluids, block); 
+				break;
+			}
+		}
+		if (runtime.start_compute == 0.0)
+		{
+			runtime.start_compute = clock();
+			cout << "runtime-start " << endl;
+		}
+
+		CopyFluid_new_to_old(fluids, block); // Function, copy variables
+		//determine the cfl condtion
+		block.dt = Get_CFL(block, fluids, tstop); // Function, get real CFL number
+
+		if ((block.t + block.dt - tstop) > 0)
+		{
+			block.dt = tstop - block.t + 1e-16;
+		}
+
+		for (int i = 0; i < block.stages; i++)
+		{
+			//after determine the cfl condition, let's implement boundary condtion
+			leftboundary(fluids, block, bcvalue[0]);
+			rightboundary(fluids, block, bcvalue[1]);
+			downboundary(fluids, block, bcvalue[2]);
+			upboundary(fluids, block, bcvalue[3]);
+			//cout << "after bc " << (double)(clock() - runtime.start_compute) / CLOCKS_PER_SEC << endl;
+
+			Convar_to_Primvar(fluids, block); // Function
+			//then is reconstruction part, which we separate the left or right reconstrction
+			//and the center reconstruction
+			Reconstruction_within_cell(xinterfaces, yinterfaces, fluids, block); // Function
+			//cout << "after cell recon " << (double)(clock() - runtime.start_compute) / CLOCKS_PER_SEC << endl;
+
+			Reconstruction_forg0(xinterfaces, yinterfaces, fluids, block); // Function
+			//cout << "after g0 recon " << (double)(clock() - runtime.start_compute) / CLOCKS_PER_SEC << endl;
+
+			//then is solver part
+			Calculate_flux(xfluxes, yfluxes, xinterfaces, yinterfaces, block, i); // Function
+			//cout << "after flux calcu " << (double)(clock() - runtime.start_compute) / CLOCKS_PER_SEC << endl;
+
+			//then is update flux part
+			Update(fluids, xfluxes, yfluxes, block, i); // Function
+			
+			if (is_using_df_factor)
+			{
+				Update_alpha(xinterfaces, yinterfaces, fluids, block);
+			}
+
+		}
+		block.step++;
+		block.t = block.t + block.dt;
+	}
+
+	error_for_sinwave_2d(fluids, block, tstop, error); // Function, get error
+	runtime.finish_compute = clock();
+}
+
+void ICfor_sinwave_2d(Fluid2d* fluids, Block2d block)
+{
+	for (int i = block.ghost; i < block.nx - block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.ny - block.ghost; j++)
+		{
+			double pi = 3.14159265358979323846;
+			int index = i * (block.ny) + j;
+			double xleft = (i - block.ghost) * block.dx;
+			double xright = (i + 1 - block.ghost) * block.dx;
+			double yleft = (j - block.ghost) * block.dy;
+			double yright = (j + 1 - block.ghost) * block.dy;
+
+			//case in two dimensional x-y-plane
+			double k1 = sin(pi * (xright + yright));
+			double k2 = sin(pi * (xright + yleft));
+			double k3 = sin(pi * (xleft + yright));
+			double k4 = sin(pi * (xleft + yleft));
+			fluids[index].primvar[0] = 1.0 - 0.2 / pi / pi / block.dx / block.dy * ((k1 - k2) - (k3 - k4));
+			fluids[index].exact = fluids[index].primvar[0];
+			fluids[index].primvar[1] = 1;
+			fluids[index].primvar[2] = 1;
+			fluids[index].primvar[3] = 1;
+		}
+	}
+#pragma omp parallel for
+	for (int i = block.ghost; i < block.nx - block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.ny - block.ghost; j++)
+		{
+			int index = i * (block.ny) + j;
+			Primvar_to_convar_2D(fluids[index].convar, fluids[index].primvar);
+		}
+	}
+}
+
+void error_for_sinwave_2d(Fluid2d* fluids, Block2d block, double tstop, double* error)
+{
+	if (abs(block.t - tstop) <= (1e-10))
+	{
+		cout << "Accuracy-residual-file-output" << endl;
+		double error1 = 0;
+		double error2 = 0;
+		double error3 = 0;
+		for (int i = block.ghost; i < block.nx - block.ghost; i++)
+		{
+			for (int j = block.ghost; j < block.ny - block.ghost; j++)
+			{
+				double pi = 3.14159265358979323846;
+				int index = i * block.ny + j;
+				double xleft = (i - block.ghost) * block.dx;
+				double xright = (i + 1 - block.ghost) * block.dx;
+				double yleft = (j - block.ghost) * block.dy;
+				double yright = (j + 1 - block.ghost) * block.dy;
+
+				//case in two dimensional x-y-plane
+				double k1 = sin(pi * (xright + yright));
+				double k2 = sin(pi * (xright + yleft));
+				double k3 = sin(pi * (xleft + yright));
+				double k4 = sin(pi * (xleft + yleft));
+				double primvar0 = 1.0 - 0.2 / pi / pi / block.dx / block.dy * ((k1 - k2) - (k3 - k4));
+
+
+				error1 = error1 + abs(fluids[index].convar[0] - primvar0);
+				error2 = error2 + pow(fluids[index].convar[0] - primvar0, 2);
+				error3 = (error3 > abs(fluids[index].convar[0] - primvar0)) ? error3 : abs(fluids[index].convar[0] - primvar0);
+			}
+		}
+		error1 /= (block.nodex * block.nodey);
+		error2 = sqrt(error2 / (block.nodex * block.nodey));
+		error[0] = error1; error[1] = error2; error[2] = error3;
+		cout << error1 << endl;
+	}
+}
 
