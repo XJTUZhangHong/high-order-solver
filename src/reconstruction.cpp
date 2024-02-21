@@ -762,6 +762,18 @@ void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
 
 	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	// For 7th-order stencil, the smoothness indicator
+	double a1, a2, a3, a4, a5, a6;
+	a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
+	a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
+	a3 = (5 * wn3 - 38 * wn2 + 61 * wn1 - 61 * wp1 + 38 * wp2 - 5 * wp3) / 216.0;
+	a4 = (-13 * wn3 + 144 * wn2 - 459 * wn1 + 656 * w0 - 459 * wp1 + 144 * wp2 - 13 * wp3) / 1584.0;
+	a5 = (-wn3 + 4 * wn2 - 5 * wn1 + 5 * wp1 - 4 * wp2 + wp3) / 240.0;
+	a6 = (wn3 - 6 * wn2 + 15 * wn1 - 20 * w0 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
+	beta[4] = (a1 + a3 / 10.0 + a5 / 126.0) * (a1 + a3 / 10.0 + a5 / 126.0) + 13.0 / 3.0 * (a2 + 123 / 455 * a4 + 85 / 2002 * a6)* (a2 + 123 / 455 * a4 + 85 / 2002 * a6)
+			+ 781 / 20 * (a3 + 26045 / 49203 * a5) * (a3 + 26045 / 49203 * a5)
+			+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
+			+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
 
 	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
 
@@ -817,20 +829,18 @@ void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	//-- - combination-- -
 	var = 0.0;
 	der1 = 0.0;
-	double final_weight[4];
-	final_weight[3] = ww[3] / d[3];
-	for (int k = 0; k < 3; k++)
+	double final_weight[5];
+	final_weight[4] = ww[4] / d[4];
+	for (int k = 0; k < 4; k++)
 	{
-		final_weight[k] = ww[k] - ww[3] / d[3] * d[k];
+		final_weight[k] = ww[k] - ww[4] / d[4] * d[k];
 	}
 
-	for (int k = 0; k < 4; k++)
+	for (int k = 0; k < 5; k++)
 	{
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
-	var = p[4];
-	der1 = px[4];
 }
 
 void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double* df, double h)
@@ -860,7 +870,18 @@ void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
 
 	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
-
+	// For 7th-order stencil, the smoothness indicator
+	double a1, a2, a3, a4, a5, a6;
+	a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
+	a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
+	a3 = (5 * wn3 - 38 * wn2 + 61 * wn1 - 61 * wp1 + 38 * wp2 - 5 * wp3) / 216.0;
+	a4 = (-13 * wn3 + 144 * wn2 - 459 * wn1 + 656 * w0 - 459 * wp1 + 144 * wp2 - 13 * wp3) / 1584.0;
+	a5 = (-wn3 + 4 * wn2 - 5 * wn1 + 5 * wp1 - 4 * wp2 + wp3) / 240.0;
+	a6 = (wn3 - 6 * wn2 + 15 * wn1 - 20 * w0 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
+	beta[4] = (a1 + a3 / 10.0 + a5 / 126.0) * (a1 + a3 / 10.0 + a5 / 126.0) + 13.0 / 3.0 * (a2 + 123 / 455 * a4 + 85 / 2002 * a6)* (a2 + 123 / 455 * a4 + 85 / 2002 * a6)
+			+ 781 / 20 * (a3 + 26045 / 49203 * a5) * (a3 + 26045 / 49203 * a5)
+			+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
+			+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;	
 	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
 
 	sum_alpha = 0.0;
@@ -915,20 +936,18 @@ void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	//-- - combination-- -
 	var = 0.0;
 	der1 = 0.0;
-	double final_weight[4];
-	final_weight[3] = ww[3] / d[3];
-	for (int k = 0; k < 3; k++)
+	double final_weight[5];
+	final_weight[4] = ww[4] / d[4];
+	for (int k = 0; k < 4; k++)
 	{
-		final_weight[k] = ww[k] - ww[3] / d[3] * d[k];
+		final_weight[k] = ww[k] - ww[4] / d[4] * d[k];
 	}
 
-	for (int k = 0; k < 4; k++)
+	for (int k = 0; k < 5; k++)
 	{
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
-	var = p[4];
-	der1 = px[4];
 }
 
 void Reconstruction_forg0(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
