@@ -13,7 +13,7 @@ int main()
     //ShuOsher();
     // 2-D problem
     //RT_instability();
-    //PlanarShock();
+    PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
     //doubleMach();
