@@ -12,12 +12,12 @@ int main()
     //accuracy_sinwave_1d();
     //ShuOsher();
     // 2-D problem
-    //RT_instability();
+    RT_instability();
     //PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
     //doubleMach();
-    viscous_sod_shock_problem();
+    //viscous_sod_shock_problem();
     // 3-D problem
     //CubicTube();
     return 0;

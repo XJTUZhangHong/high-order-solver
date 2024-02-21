@@ -635,7 +635,7 @@ void RT_instability()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 
