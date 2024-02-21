@@ -38,11 +38,11 @@ void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 
 void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
 
-void WENO5_AO_with_single_weight(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
+void WENO7_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
 
-void weno_5th_ao_with_single_weight_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* beta, double h);
+void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double* df, double h);
 
-void weno_5th_ao_with_single_weight_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* beta, double h);
+void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double* df, double h);
 
 // interface center reconstruction
 void Reconstruction_forg0(Interface1d *interfaces, Fluid1d *fluids, Block1d block);

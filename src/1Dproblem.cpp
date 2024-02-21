@@ -374,7 +374,7 @@ void ShuOsher()
 	rightboundary = free_boundary_right;
 	//prepare the reconstruction function
 
-	cellreconstruction = WENO5_AO_with_single_weight;
+	cellreconstruction = WENO5_AO;
 	wenotype = wenoz;
 	reconstruction_variable = characteristic;
 	g0reconstruction = Center_collision;
@@ -521,7 +521,7 @@ void accuracy_sinwave_1d()
 	int mesh_set = 4; 
 	int mesh_number_start = 20; 
 	double length = 2.0; 
-	double CFL = 0.1;
+	double CFL = 0.05;
 
 	double dt_ratio = 1.0;
 	//end
@@ -554,7 +554,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	Block1d block; 
 
 	block.nodex = mesh_number;
-	block.ghost = 3; 
+	block.ghost = 4; 
 
 	double tstop = 2.0; 
 
@@ -658,7 +658,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO5_AO_with_DF;
+			cellreconstruction = WENO7_AO_with_DF;
 		}
 		for (int i = 0; i < block.stages; ++i)
 		{
