@@ -583,7 +583,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	//end
 
 
-	cellreconstruction = WENO5_AO; 
+	cellreconstruction = WENO7_AO_with_DF;
 	wenotype = wenoz;
 	reconstruction_variable = conservative;
 	g0reconstruction = Center_collision;
@@ -656,10 +656,6 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 		//determine the cfl condtion
 		block.dt = Get_CFL(block, fluids, tstop);
 
-		if (block.step > 0 && is_using_df_factor)
-		{
-			cellreconstruction = WENO7_AO_with_DF;
-		}
 		for (int i = 0; i < block.stages; ++i)
 		{
 

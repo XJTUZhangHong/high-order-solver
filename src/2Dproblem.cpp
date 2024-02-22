@@ -174,9 +174,9 @@ void PlanarSheer()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 500;
-	block.nodey = 500;
-	block.ghost = 3;
+	block.nodex = 200;
+	block.nodey = 200;
+	block.ghost = 4;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -196,7 +196,7 @@ void PlanarSheer()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -297,10 +297,18 @@ void PlanarSheer()
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
 
-			if (block.step > 0 && is_using_df_factor)
+			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				if (block.step == 0)
+				{
+					cellreconstruction_2D_normal = First_order_normal;
+					cellreconstruction_2D_tangent = First_order_tangent;
+				}
+				else
+				{
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				}
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -599,7 +607,7 @@ void RT_instability()
 	block.uniform = true;
 	block.nodex = 64;
 	block.nodey = 256;
-	block.ghost = 3;
+	block.ghost = 4;
 
 
 
@@ -718,8 +726,8 @@ void RT_instability()
 
 			if (block.step > 00 && is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -807,7 +815,7 @@ void doubleMach()
 	block.uniform = true;
 	block.nodex = 960;
 	block.nodey = 240;
-	block.ghost = 3;
+	block.ghost = 4;
 
 	double tstop = 0.2;
 	block.CFL = 0.5;
@@ -922,8 +930,8 @@ void doubleMach()
 		block.dt = Get_CFL(block, fluids, tstop);
 		if (block.step > 00 && is_using_df_factor)
 		{
-			cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-			cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+			cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+			cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 		}
 		for (int i = 0; i < block.stages; i++)
 		{
@@ -1292,7 +1300,7 @@ void accuracy_sinwave_2d()
 	int mesh_set = 4;
 	int mesh_number_start = 10;
 	double length = 2.0;
-	double CFL = 0.1;
+	double CFL = 0.05;
 	double dt_ratio = 1.0;
 
 	double mesh_size_start = length / mesh_number_start;
@@ -1313,7 +1321,6 @@ void accuracy_sinwave_2d()
 
 void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 {
-
 	Runtime runtime;
 	runtime.start_initial = clock();
 	Block2d block; // Class, geometry variables
@@ -1364,7 +1371,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	upboundary = periodic_boundary_up;  
 
 	//prepare the reconstruction
-	gausspoint = 2; // fifth-order or sixth-order use THREE gauss points
+	gausspoint = 4; // fifth-order or sixth-order use THREE gauss points
 	// WENO5 has the function relating to arbitrary gausspoints
 	// WENO5_AO supports 2 gausspoint now, so fourth-order at most for spacial reconstruction (enough for two step fourth-order GKS)
 	SetGuassPoint(); // Function, set Gauss points coordinates and weight factor
@@ -1372,7 +1379,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	reconstruction_variable = conservative; // Emumeration, choose the variables used for reconstruction type
 	wenotype = wenoz; // Emumeration, choose reconstruction type
 
-	cellreconstruction_2D_normal = WENO5_AO_with_df_normal;  // reconstruction in normal directon
+	cellreconstruction_2D_normal = WENO7_AO_with_df_normal;  // reconstruction in normal directon
 	cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;  // reconstruction in tangential directon
 	g0reconstruction_2D_normal = Center_do_nothing_normal;  // reconstruction for g0 in normal directon
 	g0reconstruction_2D_tangent = Center_all_collision_multi;  // reconstruction for g0 in tangential directon
@@ -1481,12 +1488,11 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 
 			//then is update flux part
 			Update(fluids, xfluxes, yfluxes, block, i); // Function
-			
+
 			if (is_using_df_factor)
 			{
 				Update_alpha(xinterfaces, yinterfaces, fluids, block);
 			}
-
 		}
 		block.step++;
 		block.t = block.t + block.dt;
