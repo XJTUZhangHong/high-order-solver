@@ -6,6 +6,8 @@ int main()
 {
     omp_set_num_threads(32);
     is_using_df_factor = true;
+    // 5th-order -- gausspoint = 2
+    // 7th-order -- gausspoint = 4
     // 1-D problem
     //SodTubeProblem();
     //Blastwave();
@@ -15,10 +17,10 @@ int main()
     //RT_instability();
     //PlanarShock();
     //PlanarSheer();
-    //High_mach_astrophusical_jet();
+    High_mach_astrophusical_jet();
     //doubleMach();
     //viscous_sod_shock_problem();
-    accuracy_sinwave_2d();
+    //accuracy_sinwave_2d();
     // 3-D problem
     //CubicTube();
     return 0;

@@ -28,7 +28,7 @@ void PlanarShock()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -129,10 +129,18 @@ void PlanarShock()
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
 
-			if (block.step > 0 && is_using_df_factor)
+			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				if (block.step == 0)
+				{
+					cellreconstruction_2D_normal = First_order_normal;
+					cellreconstruction_2D_tangent = First_order_tangent;
+				}
+				else
+				{
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				}
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -174,8 +182,8 @@ void PlanarSheer()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 200;
-	block.nodey = 200;
+	block.nodex = 500;
+	block.nodey = 500;
 	block.ghost = 4;
 
 	block.CFL = 0.5;
@@ -393,7 +401,7 @@ void High_mach_astrophusical_jet()
 	block.uniform = true;
 	block.nodex = 256;
 	block.nodey = 256;
-	block.ghost = 3;
+	block.ghost = 4;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -413,7 +421,7 @@ void High_mach_astrophusical_jet()
 	upboundary = periodic_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -432,11 +440,11 @@ void High_mach_astrophusical_jet()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -468,7 +476,7 @@ void High_mach_astrophusical_jet()
 	//ended mesh part
 
 	//RM 2 T=0.6 with x,y = 0.7
-	double tstop[]{ 0.0002 };
+	double tstop[]{ 0.0001 };
 	IC_for_astrophusical_jet(fluids, block);
 
 	runtime.finish_initial = clock();
@@ -509,10 +517,18 @@ void High_mach_astrophusical_jet()
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
 			block.dt = 2e-7;
-			if (block.step > 0 && is_using_df_factor)
+			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				if (block.step == 0)
+				{
+					cellreconstruction_2D_normal = First_order_normal;
+					cellreconstruction_2D_tangent = First_order_tangent;
+				}
+				else
+				{
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				}
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -582,7 +598,7 @@ void inflow_boundary_left(Fluid2d* fluids, Block2d block)
 			if (j * block.dy > 0.45 && j * block.dy < 0.55)
 			{
 				fluids[i * block.nx + j].primvar[0] = 5.0;
-				fluids[i * block.nx + j].primvar[1] = 4000.0;
+				fluids[i * block.nx + j].primvar[1] = 8000.0;
 				fluids[i * block.nx + j].primvar[2] = 0.0;
 				fluids[i * block.nx + j].primvar[3] = 0.4127;
 			}
@@ -625,7 +641,7 @@ void RT_instability()
 
 	//prepare the reconstruction function
 
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -724,10 +740,18 @@ void RT_instability()
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
 
-			if (block.step > 00 && is_using_df_factor)
+			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				if (block.step == 0)
+				{
+					cellreconstruction_2D_normal = First_order_normal;
+					cellreconstruction_2D_tangent = First_order_tangent;
+				}
+				else
+				{
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				}
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -835,7 +859,7 @@ void doubleMach()
 
 	//prepare the reconstruction function
 
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -928,10 +952,18 @@ void doubleMach()
 		CopyFluid_new_to_old(fluids, block);
 		//determine the cfl condtion
 		block.dt = Get_CFL(block, fluids, tstop);
-		if (block.step > 00 && is_using_df_factor)
+		if (is_using_df_factor)
 		{
-			cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-			cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+			if (block.step == 0)
+			{
+				cellreconstruction_2D_normal = First_order_normal;
+				cellreconstruction_2D_tangent = First_order_tangent;
+			}
+			else
+			{
+				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+			}
 		}
 		for (int i = 0; i < block.stages; i++)
 		{
@@ -1083,7 +1115,7 @@ void viscous_sod_shock_problem()
 	block.uniform = true;
 	block.nodex = 1000;
 	block.nodey = 500;
-	block.ghost = 3;
+	block.ghost = 4;
 
 
 
@@ -1122,7 +1154,7 @@ void viscous_sod_shock_problem()
 	upboundary = reflection_boundary_up;
 
 
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -1216,10 +1248,18 @@ void viscous_sod_shock_problem()
 			//determine the cfl condtion
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
 
-			if (block.step > 00 && is_using_df_factor)
+			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				if (block.step == 0)
+				{
+					cellreconstruction_2D_normal = First_order_normal;
+					cellreconstruction_2D_tangent = First_order_tangent;
+				}
+				else
+				{
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				}
 			}
 			for (int i = 0; i < block.stages; i++)
 			{

@@ -561,7 +561,7 @@ void Update_RT(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, 
 
 			for (int var = 0; var < 4; var++)
 			{
-				for (int num_gauss = 0; num_gauss < 2; num_gauss++)
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
 				{
 					Lw1[var] += gauss_weight[num_gauss] * ((xfluxes[face][stage].gauss[num_gauss].f[var] - xfluxes[face + block.ny + 1][stage].gauss[num_gauss].f[var]) / block.dx / block.dt
 						+ (yfluxes[face][stage].gauss[num_gauss].f[var] - yfluxes[face + 1][stage].gauss[num_gauss].f[var]) / block.dy / block.dt);
