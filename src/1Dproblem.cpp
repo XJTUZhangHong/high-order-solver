@@ -521,7 +521,7 @@ void accuracy_sinwave_1d()
 	int mesh_set = 4; 
 	int mesh_number_start = 20; 
 	double length = 2.0; 
-	double CFL = 0.05;
+	double CFL = 0.01;
 
 	double dt_ratio = 1.0;
 	//end
