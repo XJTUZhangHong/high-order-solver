@@ -495,22 +495,24 @@ void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	//one big stencil
 	d[3] = dhi;
 
-	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	//beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	//beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
-	// beta[0] = (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0);
-	// beta[1] = (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0);
-	// beta[2] = (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0);
-	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
+	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[2] = 0.5 * ((wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
+	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
 
-	double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
+	//double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 4; i++)
 	{
-		double global_div = tau5 / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		double global_div = tau5 * tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div);
 		sum_alpha += alpha[i];
 	}
 
@@ -580,23 +582,24 @@ void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	//one big stencil
 	d[3] = dhi;
 
-	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	//beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	//beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
-	// beta[0] = (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0);
-	// beta[1] = (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0);
-	// beta[2] = (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0);
+	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
+	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[2] = 0.5 * ((wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
+	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
 
-	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
-
-	double tau5 = 1.0 / 3.0 * (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
+	//double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 4; i++)
 	{
-		double global_div = tau5 / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		double global_div = tau5 * tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div);
 		sum_alpha += alpha[i];
 	}
 
@@ -2215,19 +2218,24 @@ void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g
 	//one big stencil
 	d[3] = dhi;
 
-	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
-	//beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
-	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	//beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	//beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	//beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
-	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
+	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[2] = 0.5 * ((wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
+	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0) + (wp2 - w0) * (wp2 - w0));
+
+	//double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2]));
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 4; i++)
 	{
-		double global_div = tau5 / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		double global_div = tau5 * tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div);
 		sum_alpha += alpha[i];
 	}
 
