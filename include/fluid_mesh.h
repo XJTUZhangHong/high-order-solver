@@ -36,7 +36,7 @@ public:
 	double convar_stage2[3];
 	double cx; //center coordinate in x direction
 	double dx; //the mesh size dx
-	double alpha = 1.0;
+	double alpha = 0.0;
 };
 
 // to remember the fluid information in a fixed point,

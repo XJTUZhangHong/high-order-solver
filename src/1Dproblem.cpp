@@ -6,7 +6,7 @@ void SodTubeProblem()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 100;
+	block.nodex = 200;
 	block.ghost = 4;
 
 	double tstop = 0.2;
@@ -36,9 +36,9 @@ void SodTubeProblem()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = GKS;
+	flux_function = LF;
 	//prepare time marching stratedgy
-	timecoe_list = S2O4;
+	timecoe_list = RK3;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -209,9 +209,9 @@ void Blastwave()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = GKS;
+	flux_function = LF;
 	//prepare time marching stratedgy
-	timecoe_list = S2O4;
+	timecoe_list = RK3;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -350,7 +350,7 @@ void ShuOsher()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 200;
+	block.nodex = 400;
 	block.ghost = 4;
 
 	double tstop = 1.8;
@@ -380,9 +380,9 @@ void ShuOsher()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = GKS;
+	flux_function = LF;
 	//prepare time marching stratedgy
-	timecoe_list = S2O4;
+	timecoe_list = RK3;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field

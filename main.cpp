@@ -10,12 +10,12 @@ int main()
     // 7th-order -- gausspoint = 4
     // 1-D problem
     //SodTubeProblem();
-    //Blastwave();
+    Blastwave();
     //accuracy_sinwave_1d();
     //ShuOsher();
     // 2-D problem
     //RT_instability();
-    PlanarShock();
+    //PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
     //doubleMach();
