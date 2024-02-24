@@ -46,11 +46,11 @@ void PlanarShock()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -659,7 +659,7 @@ void RT_instability()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 
@@ -771,10 +771,6 @@ void RT_instability()
 				{
 					Update_alpha(xinterfaces, yinterfaces, fluids, block);
 				}
-			}
-			if (block.step % 100 == 0)
-			{
-				output2d(fluids, block);
 			}
 			block.step++;
 			//cout << "The step is " << block.step << endl;
@@ -1340,7 +1336,7 @@ void accuracy_sinwave_2d()
 	int mesh_set = 4;
 	int mesh_number_start = 10;
 	double length = 2.0;
-	double CFL = 0.1;
+	double CFL = 0.2;
 	double dt_ratio = 1.0;
 
 	double mesh_size_start = length / mesh_number_start;
@@ -1411,7 +1407,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	upboundary = periodic_boundary_up;  
 
 	//prepare the reconstruction
-	gausspoint = 4; // fifth-order or sixth-order use THREE gauss points
+	gausspoint = 2; // fifth-order or sixth-order use THREE gauss points
 	// WENO5 has the function relating to arbitrary gausspoints
 	// WENO5_AO supports 2 gausspoint now, so fourth-order at most for spacial reconstruction (enough for two step fourth-order GKS)
 	SetGuassPoint(); // Function, set Gauss points coordinates and weight factor
@@ -1419,8 +1415,8 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	reconstruction_variable = conservative; // Emumeration, choose the variables used for reconstruction type
 	wenotype = wenoz; // Emumeration, choose reconstruction type
 
-	cellreconstruction_2D_normal = WENO7_AO_with_df_normal;  // reconstruction in normal directon
-	cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;  // reconstruction in tangential directon
+	cellreconstruction_2D_normal = WENO5_AO_with_df_normal;  // reconstruction in normal directon
+	cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;  // reconstruction in tangential directon
 	g0reconstruction_2D_normal = Center_do_nothing_normal;  // reconstruction for g0 in normal directon
 	g0reconstruction_2D_tangent = Center_all_collision_multi;  // reconstruction for g0 in tangential directon
 

@@ -102,7 +102,7 @@ void SodTubeProblem()
 
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO7_AO_with_DF;
+			cellreconstruction = WENO5_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)
@@ -276,7 +276,7 @@ void Blastwave()
 
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO7_AO_with_DF;
+			cellreconstruction = WENO5_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)
@@ -447,7 +447,7 @@ void ShuOsher()
 		
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO7_AO_with_DF;
+			cellreconstruction = WENO5_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)
@@ -521,7 +521,7 @@ void accuracy_sinwave_1d()
 	int mesh_set = 4; 
 	int mesh_number_start = 20; 
 	double length = 2.0; 
-	double CFL = 0.2;
+	double CFL = 0.1;
 
 	double dt_ratio = 1.0;
 	//end
@@ -568,7 +568,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	tau_type = Euler; 
 
 
-	flux_function = GKS; 
+	flux_function = LF; 
 
 	gks1dsolver = gks2nd; 
 	c1_euler = 0.0; 
@@ -590,7 +590,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	//end
 
 
-	timecoe_list = S2O4;
+	timecoe_list = RK3;
 	Initial_stages(block); 
 	//end
 

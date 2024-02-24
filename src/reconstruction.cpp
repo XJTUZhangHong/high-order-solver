@@ -383,27 +383,32 @@ void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
 		
 		alpha_left = Calculate_alpha_k_1d(prim_left_left, prim_left_right);
 		alpha_right = Calculate_alpha_k_1d(prim_right_left, prim_right_right);
+		fluids[i].alpha = alpha_left;
 
-		if (alpha_left + alpha_right < 1.0)
-		{
-			fluids[i].alpha = 1.0;
-		}
-		else
-		{
-			fluids[i].alpha = 2.0 / (1.0 + (alpha_left + alpha_right) * (alpha_left + alpha_right));
-		}
+		// if (alpha_left + alpha_right < 1.0)
+		// {
+		// 	fluids[i].alpha = 1.0;
+		// }
+		// else
+		// {
+		// 	fluids[i].alpha = 2.0 / (1.0 + (alpha_left + alpha_right) * (alpha_left + alpha_right));
+		// }
 	}
 }
 
 void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block)
 {
 	// discontiunity feedback factor
-	double df[5];
-	df[0] = fluids[-2].alpha;
-	df[1] = fluids[-1].alpha;
-	df[2] = fluids[0].alpha;
-	df[3] = fluids[1].alpha;
-	df[4] = fluids[2].alpha;
+	double df;
+	double sum_df = fluids[-1].alpha + fluids[0].alpha + fluids[1].alpha + fluids[2].alpha;
+	if (sum_df < 1.0)
+	{
+		df = 1.0;
+	}
+	else
+	{
+		df = 2.0 / (1.0 + sum_df);
+	}
 	//Note: function by WENO5_AO reconstruction
 	double wn2[3]; Copy_Array(wn2, fluids[-2].convar, 3);
 	double wn1[3]; Copy_Array(wn1, fluids[-1].convar, 3);
@@ -483,7 +488,7 @@ void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	double dlo = 0.85;
 	//-- - parameter of WENO-- -
 	double beta[4], d[4], ww[4], alpha[4];
-	double epsilonW = 1e-10;
+	double epsilonW = 1e-6 * h * h;
 	//-- - intermediate parameter-- -
 	double p[4], px[4], pxx[4], tempvar;
 	double sum_alpha;
@@ -495,18 +500,22 @@ void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	//one big stencil
 	d[3] = dhi;
 
-	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
-	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	// beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	// beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	// beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	// beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
+	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[2] = 0.5 * ((wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
 
-	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	double tau5 = abs(beta[3] - beta[0]) + abs(beta[2] - beta[0]) + abs(beta[1] - beta[0]);
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 4; i++)
 	{
-		double global_div = tau5 / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		double global_div = tau5 * tau5 * tau5 / (beta[i] + epsilonW) / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div);
 		sum_alpha += alpha[i];
 	}
 
@@ -563,7 +572,7 @@ void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	double dlo = 0.85;
 	//-- - parameter of WENO-- -
 	double beta[4], d[4], ww[4], alpha[4];
-	double epsilonW = 1e-10;
+	double epsilonW = 1e-6 * h * h;
 
 	//-- - intermediate parameter-- -
 	double p[4], px[4], pxx[4], tempvar;
@@ -576,18 +585,22 @@ void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	//one big stencil
 	d[3] = dhi;
 
-	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
-	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	// beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	// beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	// beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	// beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
+	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[2] = 0.5 * ((wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
 
-	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	double tau5 = abs(beta[3] - beta[0]) + abs(beta[2] - beta[0]) + abs(beta[1] - beta[0]);
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 4; i++)
 	{
-		double global_div = tau5 / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		double global_div = tau5 * tau5 * tau5 / (beta[i] + epsilonW) / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div);
 		sum_alpha += alpha[i];
 	}
 
@@ -2206,18 +2219,18 @@ void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g
 	//one big stencil
 	d[3] = dhi;
 
-	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
-	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
+	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[2] = 0.5 * ((wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
+	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
 
-	double tau5 = (abs(beta[3] - beta[0]) + abs(beta[3] - beta[1]) + abs(beta[3] - beta[2])) / 3.0;
+	double tau5 = abs(beta[3] - beta[0]) + abs(beta[2] - beta[0]) + abs(beta[1] - beta[0]);
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 4; i++)
 	{
-		double global_div = tau5 / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		double global_div = tau5 * tau5 * tau5 / (beta[i] + epsilonW) / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div);
 		sum_alpha += alpha[i];
 	}
 
@@ -2664,7 +2677,7 @@ void Polynoial_7th(double* p, double* px, double* df, double wn3, double wn2, do
 	px[4] = df[3] * (b6 + 2.0 * c6 * x + 3.0 * d6 * x * x
 	+ 4.0 * e6 * x * x * x + 5.0 * f6 * x * x * x * x + 6.0 * g6 * x * x * x * x * x) / h;
 }
-// cell center rreconstructioon
+// cell center rreconstruction
 void Reconstruction_forg0(Interface2d* xinterfaces, Interface2d* yinterfaces, Fluid2d* fluids, Block2d block)
 {
 
