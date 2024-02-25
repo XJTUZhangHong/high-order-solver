@@ -1371,6 +1371,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 
 	K = 3; // 1d K=4, 2d K=3, 3d K=2;
 	Gamma = 1.4; // diatomic gas, r=1.4
+	smooth = true;
 
 	//this part should rewritten ad gks2dsolver blabla
 	gks2dsolver = gks2nd_2d; // Emumeration, choose solver type
@@ -1525,10 +1526,11 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 			//then is update flux part
 			Update(fluids, xfluxes, yfluxes, block, i); // Function
 
-			if (is_using_df_factor)
-			{
-				Update_alpha(xinterfaces, yinterfaces, fluids, block);
-			}
+			// for smooth case, no alpha need to calculate
+			// if (is_using_df_factor)
+			// {
+			// 	Update_alpha(xinterfaces, yinterfaces, fluids, block);
+			// }
 		}
 		block.step++;
 		block.t = block.t + block.dt;

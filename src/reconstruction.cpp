@@ -7,6 +7,7 @@ Reconstruction_variable reconstruction_variable = conservative; //initialization
 WENOtype wenotype = wenojs; //initialization
 bool is_reduce_order_warning = false; //initialization
 bool is_using_df_factor = false;
+bool smooth = false;
 
 void Check_Order_Reduce(Point1d& left, Point1d& right, Fluid1d& fluid)
 {
@@ -498,10 +499,6 @@ void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	//one big stencil
 	d[3] = dhi;
 
-	// beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
-	// beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
-	// beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
-	// beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
 	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
 	beta[2] = 0.5 * ((wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
@@ -2037,7 +2034,7 @@ void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Rec
 	sum_df1[1] = alpha1[1] + alpha1[3];
 	sum_df1[2] = alpha1[2] + alpha1[4];
 	sum_df1[3] = alpha1[0] + alpha1[2] + alpha1[4];
-	
+
 	sum_df2[0] = alpha2[0] + alpha2[2];
 	sum_df2[1] = alpha2[1] + alpha2[3];
 	sum_df2[2] = alpha2[2] + alpha2[4];
@@ -2054,11 +2051,11 @@ void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Rec
 		}
 		if (sum_df2[i] < 3.0)
 		{
-			df2[i] = 4.0;
+			df2[i] = 1.0;
 		}
 		else
 		{
-			df2[i] = 2.0 / (1.0 + sum_df2[i]);
+			df2[i] = 4.0 / (1.0 + sum_df2[i]);
 		}
 	}
 	//lets first reconstruction the left value
@@ -2220,7 +2217,7 @@ void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g
 	double dlo = 0.85;
 	//-- - parameter of WENO-- -
 	double beta[4], d[4], ww[4], alpha[4];
-	double epsilonW = 1e-10;
+	double epsilonW = 1e-6 * h * h;
 	//-- - intermediate parameter-- -
 	double p[4], px[4], pxx[4], tempvar;
 	double sum_alpha;

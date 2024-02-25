@@ -7,6 +7,7 @@ enum WENOtype { linear, wenojs, wenoz };
 extern WENOtype wenotype;
 extern bool is_reduce_order_warning;
 extern bool is_using_df_factor;
+extern bool smooth;
 
 // one-dimensional problem
 void Reconstruction_within_cell(Interface1d *interfaces, Fluid1d *fluids, Block1d block);
