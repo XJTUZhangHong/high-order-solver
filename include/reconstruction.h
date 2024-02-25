@@ -34,9 +34,9 @@ void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block);
 
 void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
 
-void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double df, double h);
+void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
 
-void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double df, double h);
+void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
 
 void WENO7_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
 
@@ -79,7 +79,7 @@ void WENO5_AO_tangential(Recon2d *re, Recon2d &wn2, Recon2d &wn1, Recon2d &w0, R
 void weno_5th_ao_2gauss(double &g1, double &g1x, double &g1xx, double &g2, double &g2x, double &g2xx, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order);
 void WENO5_AO_with_df_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block);
 void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, double* alpha1, double* alpha2, double h);
-void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* alpham, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order);
+void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g2, double& g2x, double& g2xx, double* df, double wn2, double wn1, double w0, double wp1, double wp2, double h, int order);
 void WENO7_AO_with_df_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block);
 void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, Recon2d& wp3, double* alpha1, double* alpha2, double h);
 void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x, double& g3, double& g3x, double& g4, double& g4x, double* df, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double h, int order);

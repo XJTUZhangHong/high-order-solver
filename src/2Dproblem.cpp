@@ -421,7 +421,7 @@ void High_mach_astrophusical_jet()
 	upboundary = periodic_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 4;
+	gausspoint = 2;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -526,8 +526,8 @@ void High_mach_astrophusical_jet()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -1150,7 +1150,7 @@ void viscous_sod_shock_problem()
 	upboundary = reflection_boundary_up;
 
 
-	gausspoint = 4;
+	gausspoint = 2;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -1162,11 +1162,11 @@ void viscous_sod_shock_problem()
 	g0reconstruction_2D_tangent = Center_all_collision_multi;
 
 	is_reduce_order_warning = true;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 	// allocate memory for 2-D fluid field
@@ -1253,8 +1253,8 @@ void viscous_sod_shock_problem()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
