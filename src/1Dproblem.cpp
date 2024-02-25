@@ -350,7 +350,7 @@ void ShuOsher()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 400;
+	block.nodex = 200;
 	block.ghost = 4;
 
 	double tstop = 1.8;
@@ -380,9 +380,9 @@ void ShuOsher()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = GKS;
+	flux_function = LF;
 	//prepare time marching stratedgy
-	timecoe_list = S2O4;
+	timecoe_list = RK3;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -568,7 +568,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	tau_type = Euler; 
 
 
-	flux_function = GKS; 
+	flux_function = LF; 
 
 	gks1dsolver = gks2nd; 
 	c1_euler = 0.0; 
@@ -583,14 +583,14 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	//end
 
 
-	cellreconstruction = WENO5_AO_with_DF;
+	cellreconstruction = WENO7_AO_with_DF;
 	wenotype = wenoz;
 	reconstruction_variable = conservative;
 	g0reconstruction = Center_collision;
 	//end
 
 
-	timecoe_list = S2O4;
+	timecoe_list = RK3;
 	Initial_stages(block); 
 	//end
 
@@ -672,10 +672,10 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 
 			Update(fluids, fluxes, block, i);
 			
-			if (is_using_df_factor)
-			{
-				Update_alpha(interfaces, fluids, block);
-			}
+			// if (is_using_df_factor)
+			// {
+			// 	Update_alpha(interfaces, fluids, block);
+			// }
 		}
 		block.step++;
 		block.t = block.t + block.dt;

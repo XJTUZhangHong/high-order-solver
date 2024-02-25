@@ -204,7 +204,7 @@ void PlanarSheer()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 4;
+	gausspoint = 2;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -222,11 +222,11 @@ void PlanarSheer()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -314,8 +314,8 @@ void PlanarSheer()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -659,7 +659,7 @@ void RT_instability()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 
@@ -855,7 +855,7 @@ void doubleMach()
 
 	//prepare the reconstruction function
 
-	gausspoint = 4;
+	gausspoint = 2;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -868,12 +868,12 @@ void doubleMach()
 
 	is_reduce_order_warning = false;
 	//prepare the flux function
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 	//flux_function_2d = GKS2D_with_avg_der;
 	//prepare time marching stratedgy
 	//block.stages = 1;
 	//time coe list must be 2d
-	timecoe_list_2d = S2O4_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 	// allocate memory for 2-D fluid field
@@ -957,8 +957,8 @@ void doubleMach()
 			}
 			else
 			{
-				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
 			}
 		}
 		for (int i = 0; i < block.stages; i++)

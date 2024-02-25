@@ -384,7 +384,7 @@ void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
 		
 		alpha_left = Calculate_alpha_k_1d(prim_left_left, prim_left_right);
 		alpha_right = Calculate_alpha_k_1d(prim_right_left, prim_right_right);
-		fluids[i].alpha = alpha_left;
+		fluids[i].alpha = alpha_left + alpha_right;
 	}
 }
 
@@ -393,19 +393,19 @@ void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d bl
 	// discontiunity feedback factor
 	double df[4];
 	double sum_df[4];
-	sum_df[0] = fluids[-1].alpha + fluids[0].alpha;
-	sum_df[1] = fluids[0].alpha + fluids[1].alpha;
-	sum_df[2] = fluids[1].alpha + fluids[2].alpha;
-	sum_df[3] = fluids[-1].alpha + fluids[0].alpha + fluids[1].alpha + fluids[2].alpha;
+	sum_df[0] = fluids[-2].alpha + fluids[0].alpha;
+	sum_df[1] = fluids[-1].alpha + fluids[1].alpha;
+	sum_df[2] = fluids[0].alpha + fluids[2].alpha;
+	sum_df[3] = fluids[-2].alpha + fluids[0].alpha + fluids[2].alpha;
 	for (int i = 0; i < 4; i++)
 	{
-		if (sum_df[i] < 1.0)
+		if (sum_df[i] < 3.0)
 		{
 			df[i] = 1.0;
 		}
 		else
 		{
-			df[i] = 2.0 / (1.0 + sum_df[i]);
+			df[i] = 4.0 / (1.0 + sum_df[i]);
 		}
 	}
 	//Note: function by WENO5_AO reconstruction
@@ -649,14 +649,25 @@ void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double w
 void WENO7_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block)
 {
 	// discontiunity feedback factor
-	double df[7];
-	df[0] = fluids[-3].alpha;
-	df[1] = fluids[-2].alpha;
-	df[2] = fluids[1].alpha;
-	df[3] = fluids[0].alpha;
-	df[4] = fluids[1].alpha;
-	df[5] = fluids[2].alpha;
-	df[6] = fluids[3].alpha;
+	// discontiunity feedback factor
+	double df[5];
+	double sum_df[5];
+	sum_df[0] = fluids[-2].alpha + fluids[0].alpha;
+	sum_df[1] = fluids[-1].alpha + fluids[1].alpha;
+	sum_df[2] = fluids[0].alpha + fluids[2].alpha;
+	sum_df[3] = fluids[-2].alpha + fluids[0].alpha + fluids[2].alpha;
+	sum_df[4] = fluids[-3].alpha + fluids[-1].alpha + fluids[1].alpha + fluids[3].alpha;
+	for (int i = 0; i < 5; i++)
+	{
+		if (sum_df[i] < 3.0)
+		{
+			df[i] = 1.0;
+		}
+		else
+		{
+			df[i] = 4.0 / (1.0 + sum_df[i]);
+		}
+	}
 	//Note: function by WENO7_AO reconstruction
 	double wn3[3]; Copy_Array(wn3, fluids[-3].convar, 3);
 	double wn2[3]; Copy_Array(wn2, fluids[-2].convar, 3);
