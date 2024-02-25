@@ -36,9 +36,9 @@ void SodTubeProblem()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = LF;
+	flux_function = GKS;
 	//prepare time marching stratedgy
-	timecoe_list = RK3;
+	timecoe_list = S2O4;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -209,9 +209,9 @@ void Blastwave()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = LF;
+	flux_function = GKS;
 	//prepare time marching stratedgy
-	timecoe_list = RK3;
+	timecoe_list = S2O4;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -380,9 +380,9 @@ void ShuOsher()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = LF;
+	flux_function = GKS;
 	//prepare time marching stratedgy
-	timecoe_list = RK3;
+	timecoe_list = S2O4;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -521,7 +521,7 @@ void accuracy_sinwave_1d()
 	int mesh_set = 4; 
 	int mesh_number_start = 20; 
 	double length = 2.0; 
-	double CFL = 0.1;
+	double CFL = 0.2;
 
 	double dt_ratio = 1.0;
 	//end
@@ -568,7 +568,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	tau_type = Euler; 
 
 
-	flux_function = LF; 
+	flux_function = GKS; 
 
 	gks1dsolver = gks2nd; 
 	c1_euler = 0.0; 
@@ -590,7 +590,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	//end
 
 
-	timecoe_list = RK3;
+	timecoe_list = S2O4;
 	Initial_stages(block); 
 	//end
 

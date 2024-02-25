@@ -2037,6 +2037,7 @@ void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Rec
 	sum_df1[1] = alpha1[1] + alpha1[3];
 	sum_df1[2] = alpha1[2] + alpha1[4];
 	sum_df1[3] = alpha1[0] + alpha1[2] + alpha1[4];
+	
 	sum_df2[0] = alpha2[0] + alpha2[2];
 	sum_df2[1] = alpha2[1] + alpha2[3];
 	sum_df2[2] = alpha2[2] + alpha2[4];
