@@ -46,11 +46,11 @@ void PlanarShock()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 
@@ -222,11 +222,11 @@ void PlanarSheer()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1.0;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 	//prepare time marching stratedgy
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 
@@ -1109,8 +1109,8 @@ void viscous_sod_shock_problem()
 	runtime.start_initial = omp_get_wtime();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 1000;
-	block.nodey = 500;
+	block.nodex = 100;
+	block.nodey = 50;
 	block.ghost = 4;
 
 
@@ -1127,8 +1127,8 @@ void viscous_sod_shock_problem()
 	//this part should rewritten ad gks2dsolver blabla
 	gks2dsolver = gks2nd_2d;
 	tau_type = NS;
-	c1_euler = 0.01;
-	c2_euler = 5;
+	c1_euler = 0.05;
+	c2_euler = 10;
 
 
 	//prepare the boundary condtion function
@@ -1162,11 +1162,11 @@ void viscous_sod_shock_problem()
 	g0reconstruction_2D_tangent = Center_all_collision_multi;
 
 	is_reduce_order_warning = true;
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 
 
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 	// allocate memory for 2-D fluid field

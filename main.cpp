@@ -12,7 +12,7 @@ int main()
     //SodTubeProblem();
     //Blastwave();
     //accuracy_sinwave_1d();
-    ShuOsher();
+    //ShuOsher();
     // 2-D problem
     //RT_instability();
     //PlanarShock();
