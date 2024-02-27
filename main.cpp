@@ -6,6 +6,7 @@ int main()
 {
     omp_set_num_threads(32);
     is_using_df_factor = true;
+    df_thres = 3.0;
     // 5th-order -- gausspoint = 2
     // 7th-order -- gausspoint = 4
     // 1-D problem

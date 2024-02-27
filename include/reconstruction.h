@@ -5,6 +5,7 @@ enum Reconstruction_variable{conservative,characteristic};
 extern Reconstruction_variable reconstruction_variable;
 enum WENOtype { linear, wenojs, wenoz };
 extern WENOtype wenotype;
+extern double df_thres;
 extern bool is_reduce_order_warning;
 extern bool is_using_df_factor;
 extern bool smooth;
@@ -20,37 +21,27 @@ void Check_Order_Reduce_by_Lambda_1D(bool& order_reduce, double* convar);
 
 // interface left & right reconstruction
 void Reconstruction_within_cell(Interface1d* interfaces, Fluid1d* fluids, Block1d block);
-
-void Vanleer(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
-
-void WENO5_AO(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
-
-void weno_5th_ao_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double h);
-
-void weno_5th_ao_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double h);
-
 double Calculate_alpha_k_1d(double* prim_left, double* prim_right);
-
 void Update_alpha(Interface1d* interfaces, Fluid1d* fluids, Block1d block);
-
+void Vanleer(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
+void WENO5_AO(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
+void weno_5th_ao_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double h);
+void weno_5th_ao_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double h);
 void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
-
 void weno_5th_ao_with_df_left(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
-
 void weno_5th_ao_with_df_right(double& var, double& der1, double& der2, double wn2, double wn1, double w0, double wp1, double wp2, double* df, double h);
-
 void WENO7_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
-
 void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double* df, double h);
-
 void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double* df, double h);
+void WENO9_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d block);
+void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double* df, double h);
+void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double* df, double h);
 
 // interface center reconstruction
 void Reconstruction_forg0(Interface1d *interfaces, Fluid1d *fluids, Block1d block);
 typedef void (*Reconstruction_forG0)(Interface1d &interfaces, Fluid1d *fluids);
 extern Reconstruction_forG0 g0reconstruction;
 void Center_collision(Interface1d &interfaces, Fluid1d *fluids);
-
 
 // two-dimensional problem
 double Calculate_alpha_k(double* prim_left, double* prim_right);
