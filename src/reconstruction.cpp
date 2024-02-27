@@ -746,7 +746,7 @@ void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
 	double beta[5], d[5], ww[5], alpha[5];
-	double epsilonW = 1e-10;
+	double epsilonW = 1e-6;
 	//-- - intermediate parameter-- -
 	double p[5], px[5], pxx[5], tempvar;
 	double sum_alpha;
@@ -760,43 +760,41 @@ void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	//one 7th-order stencil
 	d[4] = dhi;
 
-	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
-	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
-	beta[2] = 0.5 * ((wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
-	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
-	beta[4] = 1.0 / 6.0 * ((wn3 - w0) * (wn3 - w0) + (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0)
-	 + (wp3 - w0) * (wp3 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
-	double tau5 = abs(beta[4] - beta[0]) + abs(beta[3] - beta[0]) + abs(beta[2] - beta[0]) + abs(beta[1] - beta[0]);
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
-	// For 7th-order stencil, the smoothness indicator
-	// double a1, a2, a3;
-	// double beta4[4];
-	// a1 = (-19 * wn3 + 87 * wn2 - 177 * wn1 + 109 * w0) / 60.0;
-	// a2 = (-wn3 + 4 * wn2 - 5 * wn1 + 2 * w0) / 2;
-	// a3 = (-wn3 + 3 * wn2 - 3 * wn1 + w0) / 6.0;
-	// beta4[0] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	//For 7th-order stencil, the smoothness indicator
+	double a1, a2, a3;
+	double beta4[4];
+	a1 = (-19 * wn3 + 87 * wn2 - 177 * wn1 + 109 * w0) / 60.0;
+	a2 = (-wn3 + 4 * wn2 - 5 * wn1 + 2 * w0) / 2;
+	a3 = (-wn3 + 3 * wn2 - 3 * wn1 + w0) / 6.0;
+	beta4[0] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// a1 = (11 * wn2 - 63 * wn1 + 33 * w0 + 19 * wp1) / 60.0;
-	// a2 = (wn1 - 2 * w0 + wp1) / 2;
-	// a3 = (-wn2 + 3 * wn1 - 3 * w0 + wp1) / 6.0;
-	// beta4[1] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	a1 = (11 * wn2 - 63 * wn1 + 33 * w0 + 19 * wp1) / 60.0;
+	a2 = (wn1 - 2 * w0 + wp1) / 2;
+	a3 = (-wn2 + 3 * wn1 - 3 * w0 + wp1) / 6.0;
+	beta4[1] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// a1 = (-19 * wn1 - 33 * w0 + 63 * wp1 - 11 * wp2) / 60.0;
-	// a2 = (wn1 - 2 * w0 + wp1) / 2;
-	// a3 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
-	// beta4[2] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	a1 = (-19 * wn1 - 33 * w0 + 63 * wp1 - 11 * wp2) / 60.0;
+	a2 = (wn1 - 2 * w0 + wp1) / 2;
+	a3 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	beta4[2] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// a1 = (-109 * w0 + 177 * wp1 - 87 * wp2 + 19 * wp3) / 60.0;
-	// a2 = (2 * w0 - 5 * wp1 + 4 * wp2 - wp3) / 2;
-	// a3 = (-w0 + 3 * wp1 - 3 * wp2 + wp3) / 6.0;
-	// beta4[3] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	a1 = (-109 * w0 + 177 * wp1 - 87 * wp2 + 19 * wp3) / 60.0;
+	a2 = (2 * w0 - 5 * wp1 + 4 * wp2 - wp3) / 2;
+	a3 = (-w0 + 3 * wp1 - 3 * wp2 + wp3) / 6.0;
+	beta4[3] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
-	// 		+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
+	beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
+			+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
+	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
 	// double a1, a2, a3, a4, a5, a6;
 	// a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
 	// a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
@@ -809,13 +807,11 @@ void weno_7th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	// 		+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
 	// 		+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
 
-	//double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
-
 	sum_alpha = 0.0;
 	for (int i = 0; i < 5; i++)
 	{
-		double global_div = tau5 * tau5 * tau5 / (beta[i] + epsilonW) / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div);
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
 		sum_alpha += alpha[i];
 	}
 
@@ -885,7 +881,7 @@ void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
 	double beta[5], d[5], ww[5], alpha[5];
-	double epsilonW = 1e-10;
+	double epsilonW = 1e-6;
 	//-- - intermediate parameter-- -
 	double p[5], px[5], pxx[5], tempvar;
 	double sum_alpha;
@@ -899,43 +895,41 @@ void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	//one 7th-order stencil
 	d[4] = dhi;
 
-	beta[0] = 0.5 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0));
-	beta[1] = 0.5 * ((wn1 - w0) * (wn1 - w0) + (wp1 - w0) * (wp1 - w0));
-	beta[2] = 0.5 * ((wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
-	beta[3] = 0.25 * ((wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
-	beta[4] = 1.0 / 6.0 * ((wn3 - w0) * (wn3 - w0) + (wn2 - w0) * (wn2 - w0) + (wn1 - w0) * (wn1 - w0)
-	 + (wp3 - w0) * (wp3 - w0) + (wp2 - w0) * (wp2 - w0) + (wp1 - w0) * (wp1 - w0));
-	double tau5 = abs(beta[4] - beta[0]) + abs(beta[3] - beta[0]) + abs(beta[2] - beta[0]) + abs(beta[1] - beta[0]);
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
 
-	// For 7th-order stencil, the smoothness indicator
-	// double a1, a2, a3;
-	// double beta4[4];
-	// a1 = (-19 * wn3 + 87 * wn2 - 177 * wn1 + 109 * w0) / 60.0;
-	// a2 = (-wn3 + 4 * wn2 - 5 * wn1 + 2 * w0) / 2;
-	// a3 = (-wn3 + 3 * wn2 - 3 * wn1 + w0) / 6.0;
-	// beta4[0] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	//For 7th-order stencil, the smoothness indicator
+	double a1, a2, a3;
+	double beta4[4];
+	a1 = (-19 * wn3 + 87 * wn2 - 177 * wn1 + 109 * w0) / 60.0;
+	a2 = (-wn3 + 4 * wn2 - 5 * wn1 + 2 * w0) / 2;
+	a3 = (-wn3 + 3 * wn2 - 3 * wn1 + w0) / 6.0;
+	beta4[0] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// a1 = (11 * wn2 - 63 * wn1 + 33 * w0 + 19 * wp1) / 60.0;
-	// a2 = (wn1 - 2 * w0 + wp1) / 2;
-	// a3 = (-wn2 + 3 * wn1 - 3 * w0 + wp1) / 6.0;
-	// beta4[1] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	a1 = (11 * wn2 - 63 * wn1 + 33 * w0 + 19 * wp1) / 60.0;
+	a2 = (wn1 - 2 * w0 + wp1) / 2;
+	a3 = (-wn2 + 3 * wn1 - 3 * w0 + wp1) / 6.0;
+	beta4[1] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// a1 = (-19 * wn1 - 33 * w0 + 63 * wp1 - 11 * wp2) / 60.0;
-	// a2 = (wn1 - 2 * w0 + wp1) / 2;
-	// a3 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
-	// beta4[2] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	a1 = (-19 * wn1 - 33 * w0 + 63 * wp1 - 11 * wp2) / 60.0;
+	a2 = (wn1 - 2 * w0 + wp1) / 2;
+	a3 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	beta4[2] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// a1 = (-109 * w0 + 177 * wp1 - 87 * wp2 + 19 * wp3) / 60.0;
-	// a2 = (2 * w0 - 5 * wp1 + 4 * wp2 - wp3) / 2;
-	// a3 = (-w0 + 3 * wp1 - 3 * wp2 + wp3) / 6.0;
-	// beta4[3] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
-	// 		 + 781 / 20 * a3 * a3;
+	a1 = (-109 * w0 + 177 * wp1 - 87 * wp2 + 19 * wp3) / 60.0;
+	a2 = (2 * w0 - 5 * wp1 + 4 * wp2 - wp3) / 2;
+	a3 = (-w0 + 3 * wp1 - 3 * wp2 + wp3) / 6.0;
+	beta4[3] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
 
-	// beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
-	// 		+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
+	beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
+			+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
+	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
 	// double a1, a2, a3, a4, a5, a6;
 	// a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
 	// a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
@@ -948,13 +942,11 @@ void weno_7th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	// 		+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
 	// 		+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
 
-	//double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
-
 	sum_alpha = 0.0;
 	for (int i = 0; i < 5; i++)
 	{
-		double global_div = tau5 * tau5 * tau5 / (beta[i] + epsilonW) / (beta[i] + epsilonW);
-		alpha[i] = d[i] * (1.0 + global_div);
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
 		sum_alpha += alpha[i];
 	}
 

@@ -697,7 +697,7 @@ void RT_instability()
 	//ended mesh part
 
 	IC_for_RT_instability(fluids, block);
-	double tstop[] = { 1.95 };
+	double tstop[] = { 1.75 };
 
 	//IC_for_hurricane_problem(fluids, block);
 	//double tstop[] = { 0.045 };
@@ -868,12 +868,12 @@ void doubleMach()
 
 	is_reduce_order_warning = false;
 	//prepare the flux function
-	flux_function_2d = LF2D;
+	flux_function_2d = GKS2D;
 	//flux_function_2d = GKS2D_with_avg_der;
 	//prepare time marching stratedgy
 	//block.stages = 1;
 	//time coe list must be 2d
-	timecoe_list_2d = RK3_2D;
+	timecoe_list_2d = S2O4_2D;
 	Initial_stages(block);
 
 	// allocate memory for 2-D fluid field
@@ -1109,8 +1109,8 @@ void viscous_sod_shock_problem()
 	runtime.start_initial = omp_get_wtime();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 100;
-	block.nodey = 50;
+	block.nodex = 1000;
+	block.nodey = 500;
 	block.ghost = 4;
 
 
@@ -1128,7 +1128,7 @@ void viscous_sod_shock_problem()
 	gks2dsolver = gks2nd_2d;
 	tau_type = NS;
 	c1_euler = 0.05;
-	c2_euler = 10;
+	c2_euler = 9;
 
 
 	//prepare the boundary condtion function

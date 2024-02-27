@@ -6,7 +6,7 @@ void SodTubeProblem()
 	runtime.start_initial = clock();
 
 	Block1d block;
-	block.nodex = 200;
+	block.nodex = 100;
 	block.ghost = 4;
 
 	double tstop = 0.2;
@@ -380,9 +380,9 @@ void ShuOsher()
 	g0reconstruction = Center_collision;
 	is_reduce_order_warning = true;
 	//prepare the flux function
-	flux_function = LF;
+	flux_function = GKS;
 	//prepare time marching stratedgy
-	timecoe_list = RK3;
+	timecoe_list = S2O4;
 	Initial_stages(block);
 
 	// allocate memory for 1-D fluid field
@@ -568,7 +568,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	tau_type = Euler; 
 
 
-	flux_function = LF; 
+	flux_function = GKS; 
 
 	gks1dsolver = gks2nd; 
 	c1_euler = 0.0; 
@@ -583,14 +583,14 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	//end
 
 
-	cellreconstruction = WENO5_AO_with_DF;
+	cellreconstruction = WENO7_AO_with_DF;
 	wenotype = wenoz;
 	reconstruction_variable = conservative;
 	g0reconstruction = Center_collision;
 	//end
 
 
-	timecoe_list = RK3;
+	timecoe_list = S2O4;
 	Initial_stages(block); 
 	//end
 
@@ -662,11 +662,9 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 			leftboundary(fluids, block, bcvalue[0]);
 			rightboundary(fluids, block, bcvalue[1]);
 
-			
 			Reconstruction_within_cell(interfaces, fluids, block);
 
 			Reconstruction_forg0(interfaces, fluids, block);
-
 			
 			Calculate_flux(fluxes, interfaces, block, i);
 
