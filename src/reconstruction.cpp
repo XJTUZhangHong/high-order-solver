@@ -1119,10 +1119,10 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	double davg= 0.85;
 	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
-	double beta[5], d[5], ww[5], alpha[5];
+	double beta[6], d[6], ww[6], alpha[6];
 	double epsilonW = 1e-6;
 	//-- - intermediate parameter-- -
-	double p[5], px[5], pxx[5], tempvar;
+	double p[6], px[6], pxx[6], tempvar;
 	double sum_alpha;
 
 	//three 3rd-order stencil
@@ -1168,18 +1168,8 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 
 	beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
 			+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
+			
 	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
-	// double a1, a2, a3, a4, a5, a6;
-	// a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
-	// a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
-	// a3 = (5 * wn3 - 38 * wn2 + 61 * wn1 - 61 * wp1 + 38 * wp2 - 5 * wp3) / 216.0;
-	// a4 = (-13 * wn3 + 144 * wn2 - 459 * wn1 + 656 * w0 - 459 * wp1 + 144 * wp2 - 13 * wp3) / 1584.0;
-	// a5 = (-wn3 + 4 * wn2 - 5 * wn1 + 5 * wp1 - 4 * wp2 + wp3) / 240.0;
-	// a6 = (wn3 - 6 * wn2 + 15 * wn1 - 20 * w0 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
-	// beta[4] = (a1 + a3 / 10.0 + a5 / 126.0) * (a1 + a3 / 10.0 + a5 / 126.0) + 13.0 / 3.0 * (a2 + 123 / 455 * a4 + 85 / 2002 * a6)* (a2 + 123 / 455 * a4 + 85 / 2002 * a6)
-	// 		+ 781 / 20 * (a3 + 26045 / 49203 * a5) * (a3 + 26045 / 49203 * a5)
-	// 		+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
-	// 		+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
 
 	sum_alpha = 0.0;
 	for (int i = 0; i < 5; i++)
@@ -1197,6 +1187,7 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	// 3th order polynomial 1
 	double b2, c2, b4, c4, d4, e4, x = -1.0;
 	double b6, c6, d6, e6, f6, g6;
+	double b9, c9, d9, e9, f9, g9, h9, i9;
 	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
 	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
 	p[0] = w0 + df[0] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
@@ -1230,21 +1221,38 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	+ e6 * (x * x * x * x - 1.0 / 5.0) + f6 * (x * x * x * x * x + 1.0 / 6.0) +g6 * (x * x * x * x * x * x - 1.0 / 7.0));
 	px[4] = df[4] * (b6 + 2.0 * c6 * x + 3.0 * d6 * x * x
 	+ 4.0 * e6 * x * x * x + 5.0 * f6 * x * x * x * x + 6.0 * g6 * x * x * x * x * x) / h;
+	// 9th order polynomial
+	b9 = (-7175 * w0 + 889 * wn1 - 119 * wn2 + 9 * wn3 + 7175 * wp1 - 889 * wp2 + 119 * wp3 - 9 * wp4) / 5040.0;
+	c9 = (-27895 * w0 + 28679 * wn1 - 9835 * wn2 + 2081 * wn3 - 205 * wn4 - 2065 * wp1 + 11459 * wp2 - 2455 * wp3 + 236 * wp4) / 30240.0;
+	d9 = (1365 * w0 - 587 * wn1 + 89 * wn2 - 7 * wn3 - 1365 * wp1 + 587 * wp2 - 89 * wp3 + 7 * wp4) / 1440.0;
+	e9 = (1174 * w0 - 1160 * wn1 + 556 * wn2 - 128 * wn3 + 13 * wn4 - 464 * wp1 - 68 * wp2 + 88 * wp3 - 11 * wp4) / 3456.0;
+	f9 = (-75 * w0 + 41 * wn1 - 11 * wn2 + wn3 + 75 * wp1 - 41 * wp2 + 11 * wp3 - wp4) / 480.0;
+	g9 = (-380 * w0 + 334 * wn1 - 170 * wn2 + 46 * wn3 - 5 * wn4 + 250 * wp1 - 86 * wp2 + 10 * wp3 + wp4) / 8640.0;
+	h9 = (35 * w0 - 21 * wn1 + 7 * wn2 - wn3 - 35 * wp1 + 21 * wp2 - 7 * wp3 + wp4) / 5040.0;
+	i9 = (70 * w0 - 56 * wn1 + 28 * wn2 - 8 * wn3 + wn4 - 56 * wp1 + 28 * wp2 - 8 * wp3 + wp4) / 40320.0;
+	p[5] = w0 + df[5] * (b9 * (x + 1.0 / 2.0) + c9 * (x * x - 1.0 / 3.0) + d9 * (x * x * x + 1.0 / 4.0)
+	+ e9 * (x * x * x * x - 1.0 / 5.0) + f9 * (x * x * x * x * x + 1.0 / 6.0) + g9 * (x * x * x * x * x * x - 1.0 / 7.0)
+	+ h9 * (x * x * x * x * x * x * x + 1.0 / 8.0) + i9 * (x * x * x * x * x * x * x * x - 1.0 / 9.0));
+	px[5] = df[5] * (b9 + 2.0 * c9 * x + 3.0 * d9 * x * x
+	+ 4.0 * e9 * x * x * x + 5.0 * f9 * x * x * x * x + 6.0 * g9 * x * x * x * x * x
+	+ 7.0 * h9 * x * x * x * x * x * x + 8.0 * i9 * x * x * x * x * x * x * x) / h;
 	//-- - combination-- -
 	var = 0.0;
 	der1 = 0.0;
-	double final_weight[5];
-	final_weight[4] = ww[4] / d[4];
-	for (int k = 0; k < 4; k++)
+	double final_weight[6];
+	final_weight[5] = ww[5] / d[5];
+	for (int k = 0; k < 5; k++)
 	{
-		final_weight[k] = ww[k] - ww[4] / d[4] * d[k];
+		final_weight[k] = ww[k] - ww[5] / d[5] * d[k];
 	}
 
-	for (int k = 0; k < 5; k++)
+	for (int k = 0; k < 6; k++)
 	{
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
+	var = p[5];
+	der1 = px[5];
 }
 
 void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double* df, double h)
@@ -1254,10 +1262,10 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	double davg= 0.85;
 	// P(7,5,3) -- one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
-	double beta[5], d[5], ww[5], alpha[5];
+	double beta[6], d[6], ww[6], alpha[6];
 	double epsilonW = 1e-6;
 	//-- - intermediate parameter-- -
-	double p[5], px[5], pxx[5], tempvar;
+	double p[6], px[6], pxx[6], tempvar;
 	double sum_alpha;
 
 	//three 3rd-order stencil
@@ -1317,14 +1325,14 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	// 		+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
 
 	sum_alpha = 0.0;
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		double global_div = tau5 / (beta[i] + epsilonW);
 		alpha[i] = d[i] * (1.0 + global_div * global_div);
 		sum_alpha += alpha[i];
 	}
 
-	for (int k = 0; k < 5; k++)
+	for (int k = 0; k < 6; k++)
 	{
 		ww[k] = alpha[k] / sum_alpha;
 	}
@@ -1332,6 +1340,7 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	// 3th order polynomial 1
 	double b2, c2, b4, c4, d4, e4, x = 0.0;
 	double b6, c6, d6, e6, f6, g6;
+	double b9, c9, d9, e9, f9, g9, h9, i9;
 	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
 	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
 	p[0] = w0 + df[0] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
@@ -1365,21 +1374,38 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	+ e6 * (x * x * x * x - 1.0 / 5.0) + f6 * (x * x * x * x * x + 1.0 / 6.0) +g6 * (x * x * x * x * x * x - 1.0 / 7.0));
 	px[4] = df[4] * (b6 + 2.0 * c6 * x + 3.0 * d6 * x * x
 	+ 4.0 * e6 * x * x * x + 5.0 * f6 * x * x * x * x + 6.0 * g6 * x * x * x * x * x) / h;
+	// 9th order polynomial
+	b9 = (-7175 * w0 + 889 * wn1 - 119 * wn2 + 9 * wn3 + 7175 * wp1 - 889 * wp2 + 119 * wp3 - 9 * wp4) / 5040.0;
+	c9 = (-27895 * w0 + 28679 * wn1 - 9835 * wn2 + 2081 * wn3 - 205 * wn4 - 2065 * wp1 + 11459 * wp2 - 2455 * wp3 + 236 * wp4) / 30240.0;
+	d9 = (1365 * w0 - 587 * wn1 + 89 * wn2 - 7 * wn3 - 1365 * wp1 + 587 * wp2 - 89 * wp3 + 7 * wp4) / 1440.0;
+	e9 = (1174 * w0 - 1160 * wn1 + 556 * wn2 - 128 * wn3 + 13 * wn4 - 464 * wp1 - 68 * wp2 + 88 * wp3 - 11 * wp4) / 3456.0;
+	f9 = (-75 * w0 + 41 * wn1 - 11 * wn2 + wn3 + 75 * wp1 - 41 * wp2 + 11 * wp3 - wp4) / 480.0;
+	g9 = (-380 * w0 + 334 * wn1 - 170 * wn2 + 46 * wn3 - 5 * wn4 + 250 * wp1 - 86 * wp2 + 10 * wp3 + wp4) / 8640.0;
+	h9 = (35 * w0 - 21 * wn1 + 7 * wn2 - wn3 - 35 * wp1 + 21 * wp2 - 7 * wp3 + wp4) / 5040.0;
+	i9 = (70 * w0 - 56 * wn1 + 28 * wn2 - 8 * wn3 + wn4 - 56 * wp1 + 28 * wp2 - 8 * wp3 + wp4) / 40320.0;
+	p[5] = w0 + df[5] * (b9 * (x + 1.0 / 2.0) + c9 * (x * x - 1.0 / 3.0) + d9 * (x * x * x + 1.0 / 4.0)
+	+ e9 * (x * x * x * x - 1.0 / 5.0) + f9 * (x * x * x * x * x + 1.0 / 6.0) + g9 * (x * x * x * x * x * x - 1.0 / 7.0)
+	+ h9 * (x * x * x * x * x * x * x + 1.0 / 8.0) + i9 * (x * x * x * x * x * x * x * x - 1.0 / 9.0));
+	px[5] = df[5] * (b9 + 2.0 * c9 * x + 3.0 * d9 * x * x
+	+ 4.0 * e9 * x * x * x + 5.0 * f9 * x * x * x * x + 6.0 * g9 * x * x * x * x * x
+	+ 7.0 * h9 * x * x * x * x * x * x + 8.0 * i9 * x * x * x * x * x * x * x) / h;
 	//-- - combination-- -
 	var = 0.0;
 	der1 = 0.0;
-	double final_weight[5];
-	final_weight[4] = ww[4] / d[4];
-	for (int k = 0; k < 4; k++)
+	double final_weight[6];
+	final_weight[5] = ww[5] / d[5];
+	for (int k = 0; k < 5; k++)
 	{
-		final_weight[k] = ww[k] - ww[4] / d[4] * d[k];
+		final_weight[k] = ww[k] - ww[5] / d[5] * d[k];
 	}
 
-	for (int k = 0; k < 5; k++)
+	for (int k = 0; k < 6; k++)
 	{
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
+	var = p[5];
+	der1 = px[5];
 }
 
 void Reconstruction_forg0(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
