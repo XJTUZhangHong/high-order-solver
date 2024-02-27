@@ -28,7 +28,7 @@ void PlanarShock()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -138,8 +138,8 @@ void PlanarShock()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -204,7 +204,7 @@ void PlanarSheer()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -314,8 +314,8 @@ void PlanarSheer()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -421,7 +421,7 @@ void High_mach_astrophusical_jet()
 	upboundary = periodic_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -526,8 +526,8 @@ void High_mach_astrophusical_jet()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -625,8 +625,6 @@ void RT_instability()
 	block.nodey = 256;
 	block.ghost = 4;
 
-
-
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
 
@@ -640,7 +638,6 @@ void RT_instability()
 	BoundaryCondition2d upboundary(0);
 
 	//prepare the reconstruction function
-
 	gausspoint = 2;
 	SetGuassPoint();
 
@@ -697,7 +694,7 @@ void RT_instability()
 	//ended mesh part
 
 	IC_for_RT_instability(fluids, block);
-	double tstop[] = { 1.75 };
+	double tstop[] = { 1.95 };
 
 	//IC_for_hurricane_problem(fluids, block);
 	//double tstop[] = { 0.045 };
@@ -855,7 +852,7 @@ void doubleMach()
 
 	//prepare the reconstruction function
 
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -957,8 +954,8 @@ void doubleMach()
 			}
 			else
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 			}
 		}
 		for (int i = 0; i < block.stages; i++)
