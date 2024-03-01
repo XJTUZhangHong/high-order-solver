@@ -6,7 +6,6 @@ int main()
 {
     omp_set_num_threads(32);
     is_using_df_factor = true;
-    df_thres = 2.0;
     // 5th-order -- gausspoint = 2
     // 7th-order -- gausspoint = 4
     // 1-D problem
@@ -15,8 +14,8 @@ int main()
     //accuracy_sinwave_1d();
     //ShuOsher();
     // 2-D problem
-    RT_instability();
-    //PlanarShock();
+    //RT_instability();
+    PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
     //doubleMach();
