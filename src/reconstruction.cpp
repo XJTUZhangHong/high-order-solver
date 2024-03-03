@@ -2015,6 +2015,8 @@ void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3,
 	{
 		df[i] = sum_df[i] < 4.0 ? 1.0 : 5.0 / (1.0 + sum_df[i]);
 	}
+	// df[3] = sum_df[3] < 6.0 ? 1.0 : 7.0 / (1.0 + sum_df[3]);
+	// df[4] = sum_df[4] < 8.0 ? 1.0 : 9.0 / (1.0 + sum_df[4]);
 	//we denote that   |left...cell-center...right|
 	double ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4];
 	double var[4], der1[4], der2[4];
@@ -2842,6 +2844,10 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 		df1[i] = sum_df1[i] < 4.0 ? 1.0 : 5.0 / (1.0 + sum_df1[i]);
 		df2[i] = sum_df2[i] < 4.0 ? 1.0 : 5.0 / (1.0 + sum_df2[i]);
 	}
+	// df1[3] = sum_df1[3] < 6.0 ? 1.0 : 7.0 / (1.0 + sum_df1[3]);
+	// df2[3] = sum_df2[3] < 6.0 ? 1.0 : 7.0 / (1.0 + sum_df2[3]);
+	// df1[4] = sum_df1[4] < 8.0 ? 1.0 : 9.0 / (1.0 + sum_df1[4]);
+	// df2[4] = sum_df2[4] < 8.0 ? 1.0 : 9.0 / (1.0 + sum_df2[4]);
 	//lets first reconstruction the left value
 	double ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4];
 	double base_left[4];
