@@ -6,8 +6,8 @@ void PlanarShock()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 500;
-	block.nodey = 500;
+	block.nodex = 200;
+	block.nodey = 200;
 	block.ghost = 4;
 
 	block.CFL = 0.5;
@@ -28,7 +28,7 @@ void PlanarShock()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 4;
+	gausspoint = 2;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -131,16 +131,8 @@ void PlanarShock()
 
 			if (is_using_df_factor)
 			{
-				if (block.step == 0)
-				{
-					cellreconstruction_2D_normal = First_order_normal;
-					cellreconstruction_2D_tangent = First_order_tangent;
-				}
-				else
-				{
-					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
-				}
+				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
