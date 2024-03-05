@@ -2924,8 +2924,15 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	p[0] = (23.0 * w0 + 2.0 * wn1 - wn2) / 24.0;
 	p[1] = (26.0 * w0 - wn1 - wp1) / 24.0;
+	p[2] = (23.0 * w0 + 2.0 * wp1 - wp2) / 24.0;
+	p[3] = (2134.0 * w0 - 116.0 * wn1 + 9.0 * wn2 - 116.0 * wp1 + 9.0 * wp2) / 1920.0;
+	p[4] = (121004 * w0 - 7621 * wn1 + 954 * wn2 - 75 * wn3 - 7621 * wp1 + 954 * wp2 - 75 * wp3) / 107520.0;
+	
 	px[0] = (3.0 * w0 - 4.0 * wn1 + wn2) / (2.0 * h);
 	px[1] = (-wn1 + wp1) / (2.0 * h);
+	px[2] = (-3.0 * w0 + 4.0 * wp1 - wp2) / (2.0 * h);
+	px[3] = (-34.0 * wn1 + 5.0 * wn2 + 34.0 * wp1 - 5.0 * wp2) / (48.0 * h);
+	px[4] = (-9455 * wn1 + 2236 * wn2 - 259 * wn3 + 9455 * wp1 - 2236 * wp2 + 259 * wp3) / (11520.0 * h);
 	//-- - combination-- -
 	g1 = 0.0;
 	g1x = 0.0;
@@ -2946,8 +2953,13 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	p[0] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wn2) / 60.0;
 	p[1] = (56 * w0 + (2 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wp1) / 60.0;
+	p[2] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wp1 + (2 + 3 * sqrt15) * wp2) / 60.0;
+	p[3] = (2186 * w0 + 4 * (29 + 41 * sqrt15) * wn1 - 9 * wn2 - 22 * sqrt15 * wn2 + 116 * wp1 - 164 * sqrt15 * wp1 - 9 * wp2 + 22 * sqrt15 * wp2) / 2400.0;
+
 	px[0] = (-((-15 + sqrt15) * w0) + 2 * (-10 + sqrt15) * wn1 - (-5 + sqrt15) * wn2) / (10.0 * h);
 	px[1] = (2 * sqrt15 * w0 - (5 + sqrt15) * wn1 - (-5 + sqrt15) * wp1) / (h * 10.0);
+	px[2] = (-((15 + sqrt15) * w0) + 2 * (10 + sqrt15) * wp1 - (5 + sqrt15) * wp2) / (10.0 * h);
+	px[3] = (78 * sqrt15 * w0 - 2 * (95 + 21 * sqrt15) * wn1 + 20 * wn2 + 3 * sqrt15 * wn2 + 190 * wp1 - 42 * sqrt15 * wp1 - 20 * wp2 + 3 * sqrt15 * wp2) / (300.0 * h);
 	//-- - combination-- -
 	g2 = 0.0;
 	g2x = 0.0;
@@ -2963,8 +2975,13 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	p[0] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wn2) / 60.0;
 	p[1] = (56 * w0 + (2 - 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wp1) / 60.0;
+	p[2] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wp1 + (2 - 3 * sqrt15) * wp2) / 60.0;
+	p[3] = (2186 * w0 - 4 * (-29 + 41 * sqrt15) * wn1 - 9 * wn2 + 22 * sqrt15 * wn2 + 116 * wp1 + 164 * sqrt15 * wp1 - 9 * wp2 - 22 * sqrt15 * wp2) / 2400.0;
+
 	px[0] = ((15 + sqrt15) * w0 - 2 * (10 + sqrt15) * wn1 + (5 + sqrt15) * wn2) / (10.0 * h);
 	px[1] = (-2 * sqrt15 * w0 - (5 - sqrt15) * wn1 + (5 + sqrt15) * wp1) / (h * 10.0);
+	px[2] = ((-15 + sqrt15) * w0 - 2 * (-10 + sqrt15) * wp1 + (-5 + sqrt15) * wp2) / (10.0 * h);
+	px[3] = (-78 * sqrt15 * w0 + 2 * (-95 + 21 * sqrt15) * wn1 + 20 * wn2 - 3 * sqrt15 * wn2 + 190 * wp1 + 42 * sqrt15 * wp1 - 20 * wp2 - 3 * sqrt15 * wp2) / (300.0 * h);
 	//-- - combination-- -
 	g3 = 0.0;
 	g3x = 0.0;
@@ -2979,32 +2996,6 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 void Polynoial_7th(double* p, double* px, double* df, double wn3, double wn2, double wn1, double w0,
                    double wp1, double wp2, double wp3, double x, double h)
 {
-	//-- - candidate polynomial-- -
-	double b2, c2, b4, c4, d4, e4;
-	// 3th order polynomial 1
-	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
-	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
-	p[0] = w0 + df[0] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[0] = df[0] * (b2 + 2.0 * c2 * x) / h;
-	// 3th order polynomial 2
-	b2 = wp1 - w0;
-	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
-	p[1] = w0 + df[1] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[1] = df[1] * (b2 + 2.0 * c2 * x) / h;
-	// 3th order polynomial 3
-	b2 = wp1 - w0;
-	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
-	p[2] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[2] = df[2] * (b2 + 2.0 * c2 * x) / h;
-	// 5th order polynomial
-	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
-	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
-	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
-	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
-	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
-	p[3] = w0 +
-		df[3] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
-	px[3] = df[3] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
 	// 7th order polynomial
 	double b6, c6, d6, e6, f6, g6;
 	b6 = (-245 * w0 + 25 * wn1 - 2 * wn2 + 245 * wp1 - 25 * wp2 + 2 * wp3) / 180.0;
