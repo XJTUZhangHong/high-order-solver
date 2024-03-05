@@ -2920,8 +2920,6 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 	double sqrt15 = 3.872983346207417;
 	// gauss point 1
-	double x = -0.5;
-	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	p[0] = (23.0 * w0 + 2.0 * wn1 - wn2) / 24.0;
 	p[1] = (26.0 * w0 - wn1 - wp1) / 24.0;
 	p[2] = (23.0 * w0 + 2.0 * wp1 - wp2) / 24.0;
@@ -2949,17 +2947,19 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 		g1x += final_weight[k] * px[k];
 	}
 	// gauss point 2
-	x = -0.5 - sqrt(15) / 10.0;
-	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	p[0] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wn2) / 60.0;
 	p[1] = (56 * w0 + (2 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wp1) / 60.0;
 	p[2] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wp1 + (2 + 3 * sqrt15) * wp2) / 60.0;
 	p[3] = (2186 * w0 + 4 * (29 + 41 * sqrt15) * wn1 - 9 * wn2 - 22 * sqrt15 * wn2 + 116 * wp1 - 164 * sqrt15 * wp1 - 9 * wp2 + 22 * sqrt15 * wp2) / 2400.0;
+	p[4] = (4534440 * w0 + 5 * (57144 + 78421 * sqrt15) * wn1 - 35748 * wn2 - 84364 * sqrt15 * wn2 + 2808 * wn3 + 9541 * sqrt15 * wn3 + 285720 * wp1 - 
+ 		   392105 * sqrt15 * wp1 - 35748 * wp2 + 84364 * sqrt15 * wp2 + 2808 * wp3 - 9541 * sqrt15 * wp3) / 5040000.0;
 
 	px[0] = (-((-15 + sqrt15) * w0) + 2 * (-10 + sqrt15) * wn1 - (-5 + sqrt15) * wn2) / (10.0 * h);
 	px[1] = (2 * sqrt15 * w0 - (5 + sqrt15) * wn1 - (-5 + sqrt15) * wp1) / (h * 10.0);
 	px[2] = (-((15 + sqrt15) * w0) + 2 * (10 + sqrt15) * wp1 - (5 + sqrt15) * wp2) / (10.0 * h);
 	px[3] = (78 * sqrt15 * w0 - 2 * (95 + 21 * sqrt15) * wn1 + 20 * wn2 + 3 * sqrt15 * wn2 + 190 * wp1 - 42 * sqrt15 * wp1 - 20 * wp2 + 3 * sqrt15 * wp2) / (300.0 * h);
+	px[4] = (103860 * sqrt15 * w0 - 5 * (49925 + 11619 * sqrt15) * wn1 + 41300 * wn2 + 6678 * sqrt15 * wn2 - 4325 * wn3 - 513 * sqrt15 * wn3 + 249625 * wp1 - 
+ 		    58095 * sqrt15 * wp1 - 41300 * wp2 + 6678 * sqrt15 * wp2 + 4325 * wp3 - 513 * sqrt15 * wp3) / (360000.0 * h);
 	//-- - combination-- -
 	g2 = 0.0;
 	g2x = 0.0;
@@ -2971,17 +2971,19 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 
 	// gauss point 3
-	x = -0.5 + sqrt(15) / 10.0;
-	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	p[0] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wn2) / 60.0;
 	p[1] = (56 * w0 + (2 - 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wp1) / 60.0;
 	p[2] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wp1 + (2 - 3 * sqrt15) * wp2) / 60.0;
 	p[3] = (2186 * w0 - 4 * (-29 + 41 * sqrt15) * wn1 - 9 * wn2 + 22 * sqrt15 * wn2 + 116 * wp1 + 164 * sqrt15 * wp1 - 9 * wp2 - 22 * sqrt15 * wp2) / 2400.0;
+	p[4] = (4534440 * w0 - 5 * (-57144 + 78421 * sqrt15) * wn1 - 35748 * wn2 + 84364 * sqrt15 * wn2 + 2808 * wn3 - 9541 * sqrt15 * wn3 + 285720 * wp1 + 
+ 		   392105 * sqrt15 * wp1 - 35748 * wp2 - 84364 * sqrt15 * wp2 + 2808 * wp3 + 9541 * sqrt15 * wp3) / 5040000.0;
 
 	px[0] = ((15 + sqrt15) * w0 - 2 * (10 + sqrt15) * wn1 + (5 + sqrt15) * wn2) / (10.0 * h);
 	px[1] = (-2 * sqrt15 * w0 - (5 - sqrt15) * wn1 + (5 + sqrt15) * wp1) / (h * 10.0);
 	px[2] = ((-15 + sqrt15) * w0 - 2 * (-10 + sqrt15) * wp1 + (-5 + sqrt15) * wp2) / (10.0 * h);
 	px[3] = (-78 * sqrt15 * w0 + 2 * (-95 + 21 * sqrt15) * wn1 + 20 * wn2 - 3 * sqrt15 * wn2 + 190 * wp1 + 42 * sqrt15 * wp1 - 20 * wp2 - 3 * sqrt15 * wp2) / (300.0 * h);
+	px[4] = (-103860 * sqrt15 * w0 + 5 * (-49925 + 11619 * sqrt15) * wn1 + 41300 * wn2 - 6678 * sqrt15 * wn2 - 4325 * wn3 + 513 * sqrt15 * wn3 + 249625 * wp1 + 
+ 			58095 * sqrt15 * wp1 - 41300 * wp2 - 6678 * sqrt15 * wp2 + 4325 * wp3 + 513 * sqrt15 * wp3) / (360000.0 * h);
 	//-- - combination-- -
 	g3 = 0.0;
 	g3x = 0.0;
@@ -2993,22 +2995,6 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 }
 
-void Polynoial_7th(double* p, double* px, double* df, double wn3, double wn2, double wn1, double w0,
-                   double wp1, double wp2, double wp3, double x, double h)
-{
-	// 7th order polynomial
-	double b6, c6, d6, e6, f6, g6;
-	b6 = (-245 * w0 + 25 * wn1 - 2 * wn2 + 245 * wp1 - 25 * wp2 + 2 * wp3) / 180.0;
-	c6 = (-230 * w0 + 210 * wn1 - 57 * wn2 + 7 * wn3 + 15 * wp1 + 63 * wp2 - 8 * wp3) / 240.0;
-	d6 = (28 * w0 - 11 * wn1 + wn2 - 28 * wp1 + 11 * wp2 - wp3) / 36.0;
-	e6 = (46 * w0 - 39 * wn1 + 15 * wn2 - 2 * wn3 - 24 * wp1 + 3 * wp2 + wp3) / 144.0;
-	f6 = (-10 * w0 + 5 * wn1 - wn2 + 10 * wp1 - 5 * wp2 + wp3) / 120.0;
-	g6 = (-20 * w0 + 15 * wn1 - 6 * wn2 + wn3 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
-	p[4] = w0 + df[4] * (b6 * (x + 1.0 / 2.0) + c6 * (x * x - 1.0 / 3.0) + d6 * (x * x * x + 1.0 / 4.0)
-	+ e6 * (x * x * x * x - 1.0 / 5.0) + f6 * (x * x * x * x * x + 1.0 / 6.0) +g6 * (x * x * x * x * x * x - 1.0 / 7.0));
-	px[4] = df[4] * (b6 + 2.0 * c6 * x + 3.0 * d6 * x * x
-	+ 4.0 * e6 * x * x * x + 5.0 * f6 * x * x * x * x + 6.0 * g6 * x * x * x * x * x) / h;
-}
 // cell center rreconstruction
 void Reconstruction_forg0(Interface2d* xinterfaces, Interface2d* yinterfaces, Fluid2d* fluids, Block2d block)
 {
