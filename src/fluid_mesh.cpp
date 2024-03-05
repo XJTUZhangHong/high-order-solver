@@ -41,6 +41,31 @@ void SetGuassPoint()
 		gauss_weight[0] = 1.0 / 12.0;		gauss_weight[1] = 1.0 / 12.0;
 		gauss_weight[2] = 5.0 / 12.0;		gauss_weight[3] = 5.0 / 12.0;
 
+		// gauss_loc[0] = 0.861136311594053;
+		// gauss_loc[1] = -gauss_loc[0];
+		// gauss_loc[2] = 0.339981043584856;
+		// gauss_loc[3] = -gauss_loc[2];
+		// gauss_weight[0] = 0.173927422568727;
+		// gauss_weight[1] = 0.173927422568727;
+		// gauss_weight[2] = 0.326072577431273;
+		// gauss_weight[3] = 0.326072577431273;
+	}
+	if (gausspoint == 5)
+	{
+		cout << "the usage of 5 gausspoint may be imcompatiable for some reconstructions" << endl;
+		gauss_loc = new double[5]; gauss_weight = new double[5];
+		gauss_loc[0] = 0.906179845938664;
+		gauss_loc[1] = -0.906179845938664;
+		gauss_loc[2] = 0.538469310105683;
+		gauss_loc[3] = -0.538469310105683;
+		gauss_loc[4] = 0.0;
+		
+		gauss_weight[0] = 0.118463442528095;
+		gauss_weight[1] = 0.118463442528095;
+		gauss_weight[2] = 0.239314335249683;
+		gauss_weight[3] = 0.239314335249683;
+		gauss_weight[4] = 0.568888888888889;
+
 	}
 	cout << gausspoint << " gausspoint(s) specify" << endl;
 }

@@ -2294,7 +2294,6 @@ void weno_5th_ao_2gauss(double& g1, double& g1x, double& g1xx, double& g2, doubl
 	g1 = 0; g1x = 0; g1xx = 0;
 	g2 = 0; g2x = 0; g2xx = 0;
 
-	//double sqrt3 = sqrt(3);
 	double sqrt3 = 1.732050807568877294;
 	//-- - candidate polynomial-- for gauss 1 point
 	p[0] = w0 - (sqrt3 * w0) / 4 + (4 * wn1 - wn2) / (4 * sqrt3);
@@ -2608,33 +2607,20 @@ void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g
 		ww[k] = alpha[k] / sum_alpha;
 	}
 	//-- - candidate polynomial-- -
-	double b2, c2, b4, c4, d4, e4, x;
+	double sqrt3 = 1.732050807568877294;
 	// gauss point 1
-	x = -0.5 - sqrt(3) / 6.0;
-	// 3th order polynomial 1
-	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
-	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
-	p[0] = w0 + df[0] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[0] = df[0] * (b2 + 2.0 * c2 * x) / h;
-	// 3th order polynomial 2
-	b2 = wp1 - w0;
-	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
-	p[1] = w0 + df[1] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[1] = df[1] * (b2 + 2.0 * c2 * x) / h;
-	// 3th order polynomial 3
-	b2 = wp1 - w0;
-	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
-	p[2] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[2] = df[2] * (b2 + 2.0 * c2 * x) / h;
-	// 5th order polynomial
-	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
-	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
-	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
-	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
-	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
-	p[3] = w0 +
-		df[3] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
-	px[3] = df[3] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+	p[0] = w0 + df[0] * (w0 - (sqrt3 * w0) / 4 + (4 * wn1 - wn2) / (4 * sqrt3) - w0);
+	p[1] = w0 + df[1] * (w0 + (wn1 - wp1) / (4 * sqrt3) - w0);
+	p[2] = w0 + df[2] * ((1.0 / 12.0) * (3 * (4 + sqrt3) * w0 + sqrt3 * (-4 * wp1 + wp2)) - w0);
+	p[3] = w0 + df[3] * ((4314 * w0 + (4 + 500 * sqrt3) * wn1 - wn2 - 70 * sqrt3 * wn2 +
+		4 * wp1 - 500 * sqrt3 * wp1 - wp2 + 70 * sqrt3 * wp2) / 4320 - w0);
+	
+	px[0] = -df[0] * ((-9 + sqrt3) * w0 - 2 * (-6 + sqrt3) * wn1 + (-3 + sqrt3) * wn2) / (6 * h);
+	px[1] = -df[1] * (-2 * sqrt3 * w0 + (3 + sqrt3) * wn1 + (-3 + sqrt3) * wp1) / (6 * h);
+	px[2] = -df[2] * ((9 + sqrt3) * w0 - 2 * (6 + sqrt3) * wp1 + (3 + sqrt3) * wp2) / (6 * h);
+	px[3] = df[3] * (48 * sqrt3 * w0 - 72 * wn1 - 26 * sqrt3 * wn1 + 9 * wn2 +
+		2 * sqrt3 * wn2 + 72 * wp1 - 26 * sqrt3 * wp1 - 9 * wp2 +
+		2 * sqrt3 * wp2) / (108 * h);
 	//-- - combination-- -
 	g1 = 0.0;
 	g1x = 0.0;
@@ -2651,31 +2637,19 @@ void weno_5th_ao_with_df_2gauss(double& g1, double& g1x, double& g1xx, double& g
 		g1x += final_weight[k] * px[k];
 	}
 	// gauss point 2
-	x = -0.5 + sqrt(3) / 6.0;
-	// 3th order polynomial 1
-	b2 = wn2 - 3.0 * wn1 + 2.0 * w0;
-	c2 = 0.5 * wn2 - wn1 + 0.5 * w0;
-	p[0] = w0 + df[0] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[0] = df[0] * (b2 + 2.0 * c2 * x) / h;
-	// 3th order polynomial 2
-	b2 = wp1 - w0;
-	c2 = 0.5 * wn1 - w0 + 0.5 * wp1;
-	p[1] = w0 + df[1] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[1] = df[1] * (b2 + 2.0 * c2 * x) / h;
-	// 3th order polynomial 3
-	b2 = wp1 - w0;
-	c2 = 0.5 * w0 - wp1 + 0.5 * wp2;
-	p[2] = w0 + df[2] * (b2 * (x + 0.5) + c2 * (x * x - 1.0 / 3.0));
-	px[2] = df[2] * (b2 + 2.0 * c2 * x) / h;
-	// 5th order polynomial
-	// a4 = (2 * wn2 - 13 * wn1 + 47 * w0 + 27 * wp1 - 3 * wp2) / 60;
-	b4 = (wn1 - 15 * w0 + 15 * wp1 - wp2) / 12.0;
-	c4 = (-wn2 + 6 * wn1 - 8 * w0 + 2 * wp1 + wp2) / 8.0;
-	d4 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
-	e4 = (wn2 - 4 * wn1 + 6 * w0 - 4 * wp1 + wp2) / 24.0;
-	p[3] = w0 +
-		df[3] * (b4 * (x + 1.0 / 2.0) + c4 * (x * x - 1.0 / 3.0) + d4 * (x * x * x + 1.0 / 4.0) + e4 * (x * x * x * x - 1.0 / 5.0));
-	px[3] = df[3] * (b4 + 2.0 * c4 * x + 3.0 * d4 * x * x + 4.0 * e4 * x * x * x) / h;
+	p[0] = w0 + df[0] * ((1.0 / 12.0) * (3 * (4 + sqrt3) * w0 + sqrt3 * (-4 * wn1 + wn2)) - w0);
+	p[1] = w0 + df[1] * (w0 + (-wn1 + wp1) / (4 * sqrt3) - w0);
+	p[2] = w0 + df[2] * (w0 - (sqrt3 * w0) / 4 + (4 * wp1 - wp2) / (4 * sqrt3) - w0);
+	p[3] = w0 + df[3] * ((4314 * w0 + (4 - 500 * sqrt3) * wn1 - wn2 + 70 * sqrt3 * wn2 +
+		4 * wp1 + 500 * sqrt3 * wp1 - wp2 - 70 * sqrt3 * wp2) / 4320 - w0);
+
+	px[0] = df[0] * ((9 + sqrt3) * w0 - 2 * (6 + sqrt3) * wn1 + (3 + sqrt3) * wn2) / (6 * h);
+	px[1] = df[1] * (-2 * sqrt3 * w0 + (-3 + sqrt3) * wn1 + (3 + sqrt3) * wp1) / (6 * h);
+	px[2] = df[2] * ((-9 + sqrt3) * w0 - 2 * (-6 + sqrt3) * wp1 + (-3 + sqrt3) * wp2) / (6 * h);
+	px[3] = -df[3] * ((48 * sqrt3 * w0 + 72 * wn1 - 26 * sqrt3 * wn1 - 9 * wn2 +
+		2 * sqrt3 * wn2 - 72 * wp1 - 26 * sqrt3 * wp1 + 9 * wp2 +
+		2 * sqrt3 * wp2) / (108 * h));
+	
 	//-- - combination-- -
 	g2 = 0.0;
 	g2x = 0.0;
@@ -2719,17 +2693,6 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 {
 	double df1[5], df2[5];
 	double sum_df1[5], sum_df2[5];
-	// sum_df1[0] = Max_three_number(alpha1[1], alpha1[2], alpha1[3]);
-	// sum_df1[1] = Max_three_number(alpha1[2], alpha1[3], alpha1[4]);
-	// sum_df1[2] = Max_three_number(alpha1[3], alpha1[4], alpha1[5]);
-	// sum_df1[3] = Max_five_number(alpha1[1], alpha1[2], alpha1[3], alpha1[4], alpha1[5]);
-	// sum_df1[4] = Max_seven_number(alpha1[0], alpha1[1], alpha1[2], alpha1[3], alpha1[4], alpha1[5], alpha1[6]);
-	// sum_df2[0] = Max_three_number(alpha2[1], alpha2[2], alpha2[3]);
-	// sum_df2[1] = Max_three_number(alpha2[2], alpha2[3], alpha2[4]);
-	// sum_df2[2] = Max_three_number(alpha2[3], alpha2[4], alpha2[5]);
-	// sum_df2[3] = Max_five_number(alpha2[1], alpha2[2], alpha2[3], alpha2[4], alpha2[5]);
-	// sum_df2[4] = Max_seven_number(alpha2[0], alpha2[1], alpha2[2], alpha2[3], alpha2[4], alpha2[5], alpha2[6]);
-	
 	sum_df1[0] = alpha1[1] + alpha1[3];
 	sum_df1[1] = alpha1[2] + alpha1[4];
 	sum_df1[2] = alpha1[3] + alpha1[5];
@@ -2765,7 +2728,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 		{
 			// 7th-order we use 4 gauss points
 			weno_7th_ao_with_df_2gauss(re[0].left.convar[i], re[0].left.der1y[i],
-					re[1].left.convar[i], re[1].left.der1y[i], re[2].left.convar[i], re[2].left.der1y[i],re[3].left.convar[i], re[3].left.der1y[i], df1, wn3.left.convar[i],
+					re[1].left.convar[i], re[1].left.der1y[i], re[2].left.convar[i], re[2].left.der1y[i], df1, wn3.left.convar[i],
 					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], wp3.left.convar[i], h, 2);
 		}
 	}
@@ -2782,7 +2745,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 		for (int i = 0; i < 4; i++)
 		{
 			weno_7th_ao_with_df_2gauss(var[0][i], der1[0][i],
-				var[1][i], der1[1][i], var[2][i], der1[2][i], var[3][i], der1[3][i], df1, ren3[i],
+				var[1][i], der1[1][i], var[2][i], der1[2][i], df1, ren3[i],
 				ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], h, 2);
 		}
 		for (int igauss = 0; igauss < gausspoint; igauss++)
@@ -2797,7 +2760,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 	{
 		double tmp[4];
 		weno_7th_ao_with_df_2gauss(re[0].left.der1x[i], tmp[0],
-				re[1].left.der1x[i], tmp[1], re[2].left.der1x[i], tmp[2], re[3].left.der1x[i], tmp[3], df1, wn3.left.der1x[i], 
+				re[1].left.der1x[i], tmp[1], re[2].left.der1x[i], tmp[2], df1, wn3.left.der1x[i], 
 				wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], wp3.left.der1x[i], h, 1);
 	}
 
@@ -2814,7 +2777,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 		for (int i = 0; i < 4; i++)
 		{
 			weno_7th_ao_with_df_2gauss(re[0].right.convar[i], re[0].right.der1y[i],
-					re[1].right.convar[i], re[1].right.der1y[i], re[2].right.convar[i], re[2].right.der1y[i], re[3].right.convar[i], re[3].right.der1y[i],  df2, wn3.right.convar[i], 
+					re[1].right.convar[i], re[1].right.der1y[i], re[2].right.convar[i], re[2].right.der1y[i], df2, wn3.right.convar[i], 
 					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], wp3.right.convar[i], h, 2);
 		}
 	}
@@ -2831,7 +2794,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 		for (int i = 0; i < 4; i++)
 		{
 			weno_7th_ao_with_df_2gauss(var[0][i], der1[0][i], 
-				var[1][i], der1[1][i], var[2][i], der1[2][i], var[3][i], der1[3][i], df2, ren3[i],
+				var[1][i], der1[1][i], var[2][i], der1[2][i], df2, ren3[i],
 				ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], h, 2);
 		}
 		for (int igauss = 0; igauss < gausspoint; igauss++)
@@ -2845,7 +2808,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 	{
 		double tmp[4];
 		weno_7th_ao_with_df_2gauss(re[0].right.der1x[i], tmp[0],
-				re[1].right.der1x[i], tmp[1], re[2].right.der1x[i], tmp[2], re[3].right.der1x[i], tmp[3], df2, wn3.right.der1x[i], 
+				re[1].right.der1x[i], tmp[1], re[2].right.der1x[i], tmp[2], df2, wn3.right.der1x[i], 
 				wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], wp3.right.der1x[i], h, 1);
 	}
 
@@ -2879,7 +2842,7 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 	}
 }
 
-void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x, double& g3, double& g3x, double& g4, double& g4x, double* df, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double h, int order)
+void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x, double& g3, double& g3x, double* df, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double h, int order)
 {
 	//the parameter order constrols up to which order you want construct
 	// order from 0, 1, 2
@@ -2942,18 +2905,7 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 
 	beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
 			+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
-	// double a1, a2, a3, a4, a5, a6;
-	// a1 = (-191 * wn3 + 1688* wn2 - 7843 * wn1 + 7843 * wp1 - 1688 * wp2 + 191 * wp3) / 10080.0;
-	// a2 = (79 * wn3 - 1014 * wn2 + 8385 * wn1 - 14900 * w0 + 8385 * wp1 - 1014 * wp2 + 79 * wp3) / 10080.0;
-	// a3 = (5 * wn3 - 38 * wn2 + 61 * wn1 - 61 * wp1 + 38 * wp2 - 5 * wp3) / 216.0;
-	// a4 = (-13 * wn3 + 144 * wn2 - 459 * wn1 + 656 * w0 - 459 * wp1 + 144 * wp2 - 13 * wp3) / 1584.0;
-	// a5 = (-wn3 + 4 * wn2 - 5 * wn1 + 5 * wp1 - 4 * wp2 + wp3) / 240.0;
-	// a6 = (wn3 - 6 * wn2 + 15 * wn1 - 20 * w0 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
-	// beta[4] = (a1 + a3 / 10.0 + a5 / 126.0) * (a1 + a3 / 10.0 + a5 / 126.0) + 13.0 / 3.0 * (a2 + 123 / 455 * a4 + 85 / 2002 * a6)* (a2 + 123 / 455 * a4 + 85 / 2002 * a6)
-	// 		+ 781 / 20 * (a3 + 26045 / 49203 * a5) * (a3 + 26045 / 49203 * a5)
-	// 		+ 1421461 / 2275 * (a4 + 81596225 / 93816426 * a6) * (a4 + 81596225 / 93816426 * a6)
-	// 		+ 21520059541 / 1377684 * a5 * a5 + 15510384942580921 / 27582029244 * a6 * a6;
-
+	
 	double tau5 = 0.25 * (abs(beta[4] - beta[0]) + abs(beta[4] - beta[1]) + abs(beta[4] - beta[2]) + abs(beta[4] - beta[3]));
 
 	sum_alpha = 0.0;
@@ -2970,7 +2922,7 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 	
 	// gauss point 1
-	double x = -1.0;
+	double x = -0.5;
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	//-- - combination-- -
 	g1 = 0.0;
@@ -2988,7 +2940,7 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 		g1x += final_weight[k] * px[k];
 	}
 	// gauss point 2
-	x = 0.0;
+	x = -0.5 - sqrt(15) / 10.0;
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	//-- - combination-- -
 	g2 = 0.0;
@@ -3001,7 +2953,7 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 
 	// gauss point 3
-	x = -0.5 - sqrt(5) / 10.0;
+	x = -0.5 + sqrt(15) / 10.0;
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
 	//-- - combination-- -
 	g3 = 0.0;
@@ -3011,19 +2963,6 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	{
 		g3 += final_weight[k] * p[k];
 		g3x += final_weight[k] * px[k];
-	}
-
-	// gauss point 4
-	x = -0.5 + sqrt(5) / 10.0;
-	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
-	//-- - combination-- -
-	g4 = 0.0;
-	g4x = 0.0;
-
-	for (int k = 0; k < 5; k++)
-	{
-		g4 += final_weight[k] * p[k];
-		g4x += final_weight[k] * px[k];
 	}
 }
 

@@ -1397,7 +1397,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	upboundary = periodic_boundary_up;  
 
 	//prepare the reconstruction
-	gausspoint = 4; // fifth-order or sixth-order use THREE gauss points
+	gausspoint = 3; // fifth-order or sixth-order use THREE gauss points
 	// WENO5 has the function relating to arbitrary gausspoints
 	// WENO5_AO supports 2 gausspoint now, so fourth-order at most for spacial reconstruction (enough for two step fourth-order GKS)
 	SetGuassPoint(); // Function, set Gauss points coordinates and weight factor
