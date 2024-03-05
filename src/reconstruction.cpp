@@ -2922,7 +2922,9 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	// gauss point 1
 	double x = -0.5;
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
+	p[0] = (23.0 * w0 + 2.0 * wn1 - wn2) / 24.0;
 	p[1] = (26.0 * w0 - wn1 - wp1) / 24.0;
+	px[0] = (3.0 * w0 - 4.0 * wn1 + wn2) / (2.0 * h);
 	px[1] = (-wn1 + wp1) / (2.0 * h);
 	//-- - combination-- -
 	g1 = 0.0;
@@ -2942,7 +2944,9 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	// gauss point 2
 	x = -0.5 - sqrt(15) / 10.0;
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
+	p[0] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wn2) / 60.0;
 	p[1] = (56 * w0 + (2 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wp1) / 60.0;
+	px[0] = (-((-15 + sqrt15) * w0) + 2 * (-10 + sqrt15) * wn1 - (-5 + sqrt15) * wn2) / (10.0 * h);
 	px[1] = (2 * sqrt15 * w0 - (5 + sqrt15) * wn1 - (-5 + sqrt15) * wp1) / (h * 10.0);
 	//-- - combination-- -
 	g2 = 0.0;
@@ -2957,7 +2961,9 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	// gauss point 3
 	x = -0.5 + sqrt(15) / 10.0;
 	Polynoial_7th(p, px, df, wn3, wn2, wn1, w0, wp1, wp2, wp3, x, h);
+	p[0] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wn2) / 60.0;
 	p[1] = (56 * w0 + (2 - 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wp1) / 60.0;
+	px[0] = ((15 + sqrt15) * w0 - 2 * (10 + sqrt15) * wn1 + (5 + sqrt15) * wn2) / (10.0 * h);
 	px[1] = (-2 * sqrt15 * w0 - (5 - sqrt15) * wn1 + (5 + sqrt15) * wp1) / (h * 10.0);
 	//-- - combination-- -
 	g3 = 0.0;
