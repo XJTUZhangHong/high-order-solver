@@ -1496,14 +1496,13 @@ void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, I
 		alpha_right = 0.5 * (alpha[0][1] + alpha[1][1]);
 		alpha_down = 0.5 * (alpha[0][2] + alpha[1][2]);
 		alpha_up = 0.5 * (alpha[0][3] + alpha[1][3]);
-
-		alpha_left = alpha_left < 2.0 ? 0.0 : alpha_left;
-		alpha_right = alpha_right < 2.0 ? 0.0 : alpha_right;
-		alpha_down = alpha_down < 2.0 ? 0.0 : alpha_down;
-		alpha_up = alpha_up < 2.0 ? 0.0 : alpha_up;
-
-		fluids.alpha_x = alpha_left + alpha_right;
-		fluids.alpha_y = alpha_down + alpha_up;
+	}
+	if (gausspoint == 3)
+	{
+		alpha_left = (alpha[0][0] + alpha[1][0] + alpha[2][0]) / 3.0;
+		alpha_right = (alpha[0][1] + alpha[1][1] + alpha[2][1]) / 3.0;
+		alpha_down = (alpha[0][2] + alpha[1][2] + alpha[2][2]) / 3.0;
+		alpha_up = (alpha[0][3] + alpha[1][3] + alpha[2][3]) / 3.0;
 	}
 	if (gausspoint == 4)
 	{
@@ -1511,15 +1510,14 @@ void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, I
 		alpha_right = 0.25 * (alpha[0][1] + alpha[1][1] + alpha[2][1] + alpha[3][1]);
 		alpha_down = 0.25 * (alpha[0][2] + alpha[1][2] + alpha[2][2] + alpha[3][2]);
 		alpha_up = 0.25 * (alpha[0][3] + alpha[1][3] + alpha[2][3] + alpha[3][3]);
-
-		alpha_left = alpha_left < 2.0 ? 0.0 : alpha_left;
-		alpha_right = alpha_right < 2.0 ? 0.0 : alpha_right;
-		alpha_down = alpha_down < 2.0 ? 0.0 : alpha_down;
-		alpha_up = alpha_up < 2.0 ? 0.0 : alpha_up;
-
-		fluids.alpha_x = alpha_left + alpha_right;
-		fluids.alpha_y = alpha_down + alpha_up;
 	}
+	alpha_left = alpha_left < 2.0 ? 0.0 : alpha_left;
+	alpha_right = alpha_right < 2.0 ? 0.0 : alpha_right;
+	alpha_down = alpha_down < 2.0 ? 0.0 : alpha_down;
+	alpha_up = alpha_up < 2.0 ? 0.0 : alpha_up;
+
+	fluids.alpha_x = alpha_left + alpha_right;
+	fluids.alpha_y = alpha_down + alpha_up;
 }
 
 void Update_alpha(Interface2d* xinterfaces, Interface2d* yinterfaces, Fluid2d* fluids, Block2d block)
