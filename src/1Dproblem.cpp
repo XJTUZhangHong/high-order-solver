@@ -102,7 +102,7 @@ void SodTubeProblem()
 
 		if (block.step > 0 && is_using_df_factor)
 		{
-			cellreconstruction = WENO9_AO_with_DF;
+			cellreconstruction = WENO7_AO_with_DF;
 		}
 
 		for (int i = 0; i < block.stages; i++)

@@ -11,14 +11,14 @@ int main()
     // 1-D problem
     //SodTubeProblem();
     //Blastwave();
-    accuracy_sinwave_1d();
+    //accuracy_sinwave_1d();
     //ShuOsher();
     // 2-D problem
     //RT_instability();
     //PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
-    //doubleMach();
+    doubleMach();
     //viscous_sod_shock_problem();
     //accuracy_sinwave_2d();
     // 3-D problem

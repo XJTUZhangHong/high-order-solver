@@ -394,15 +394,14 @@ void WENO5_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d bl
 	// discontiunity feedback factor
 	double df[4];
 	double sum_df[4];
-	sum_df[0] = fluids[-2].alpha + fluids[0].alpha;
-	sum_df[1] = fluids[-1].alpha + fluids[1].alpha;
-	sum_df[2] = fluids[0].alpha + fluids[2].alpha;
-	sum_df[3] = fluids[-2].alpha + fluids[0].alpha + fluids[2].alpha;
-	for (int i = 0; i < 3; i++)
+	sum_df[0] = Max_three_number(fluids[-2].alpha, fluids[-1].alpha, fluids[0].alpha);
+	sum_df[1] = Max_three_number(fluids[-1].alpha, fluids[0].alpha, fluids[1].alpha);
+	sum_df[2] = Max_three_number(fluids[0].alpha, fluids[1].alpha, fluids[2].alpha);
+	sum_df[3] = Max_five_number(fluids[-2].alpha, fluids[-1].alpha, fluids[0].alpha, fluids[1].alpha, fluids[2].alpha);
+	for (int i = 0; i < 4; i++)
 	{
-		df[i] = sum_df[i] < 4.0 ? 1.0 : 4.0 / sum_df[i];
+		df[i] = sum_df[i] < 3.0 ? 1.0 : 3.0 / sum_df[i];
 	}
-	df[3] = sum_df[3] < 6.0 ? 1.0 : 6.0 / sum_df[3];
 	//Note: function by WENO5_AO reconstruction
 	double wn2[3]; Copy_Array(wn2, fluids[-2].convar, 3);
 	double wn1[3]; Copy_Array(wn1, fluids[-1].convar, 3);
@@ -660,17 +659,15 @@ void WENO7_AO_with_DF(Point1d& left, Point1d& right, Fluid1d* fluids, Block1d bl
 	// discontiunity feedback factor
 	double df[5];
 	double sum_df[5];
-	sum_df[0] = fluids[-2].alpha + fluids[0].alpha;
-	sum_df[1] = fluids[-1].alpha + fluids[1].alpha;
-	sum_df[2] = fluids[0].alpha + fluids[2].alpha;
-	sum_df[3] = fluids[-2].alpha + fluids[0].alpha + fluids[2].alpha;
-	sum_df[4] = fluids[-3].alpha + fluids[-1].alpha + fluids[1].alpha + fluids[3].alpha;
-	for (int i = 0; i < 3; i++)
+	sum_df[0] = Max_three_number(fluids[-2].alpha, fluids[-1].alpha, fluids[0].alpha);
+	sum_df[1] = Max_three_number(fluids[-1].alpha, fluids[0].alpha, fluids[1].alpha);
+	sum_df[2] = Max_three_number(fluids[0].alpha, fluids[1].alpha, fluids[2].alpha);
+	sum_df[3] = Max_five_number(fluids[-2].alpha, fluids[-1].alpha, fluids[0].alpha, fluids[1].alpha, fluids[2].alpha);
+	sum_df[4] = Max_seven_number(fluids[-3].alpha, fluids[-2].alpha, fluids[-1].alpha, fluids[0].alpha, fluids[1].alpha, fluids[2].alpha, fluids[3].alpha);
+	for (int i = 0; i < 5; i++)
 	{
-		df[i] = sum_df[i] < 4.0 ? 1.0 : 4.0 / sum_df[i];
+		df[i] = sum_df[i] < 3.0 ? 1.0 : 3.0 / sum_df[i];
 	}
-	df[3] = sum_df[3] < 6.0 ? 1.0 : 6.0 / sum_df[3];
-	df[4] = sum_df[4] < 8.0 ? 1.0 : 8.0 / sum_df[4];
 	//Note: function by WENO7_AO reconstruction
 	double wn3[3]; Copy_Array(wn3, fluids[-3].convar, 3);
 	double wn2[3]; Copy_Array(wn2, fluids[-2].convar, 3);
@@ -1579,6 +1576,11 @@ void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, I
 		alpha_down = 0.5 * (alpha[0][2] + alpha[1][2]);
 		alpha_up = 0.5 * (alpha[0][3] + alpha[1][3]);
 
+		alpha_left = alpha_left < 2.0 ? 0.0 : alpha_left;
+		alpha_right = alpha_right < 2.0 ? 0.0 : alpha_right;
+		alpha_down = alpha_down < 2.0 ? 0.0 : alpha_down;
+		alpha_up = alpha_up < 2.0 ? 0.0 : alpha_up;
+
 		fluids.alpha_x = alpha_left + alpha_right;
 		fluids.alpha_y = alpha_down + alpha_up;
 	}
@@ -1588,6 +1590,11 @@ void Calculate_alpha(Interface2d& left, Interface2d& right, Interface2d& down, I
 		alpha_right = 0.25 * (alpha[0][1] + alpha[1][1] + alpha[2][1] + alpha[3][1]);
 		alpha_down = 0.25 * (alpha[0][2] + alpha[1][2] + alpha[2][2] + alpha[3][2]);
 		alpha_up = 0.25 * (alpha[0][3] + alpha[1][3] + alpha[2][3] + alpha[3][3]);
+
+		alpha_left = alpha_left < 2.0 ? 0.0 : alpha_left;
+		alpha_right = alpha_right < 2.0 ? 0.0 : alpha_right;
+		alpha_down = alpha_down < 2.0 ? 0.0 : alpha_down;
+		alpha_up = alpha_up < 2.0 ? 0.0 : alpha_up;
 
 		fluids.alpha_x = alpha_left + alpha_right;
 		fluids.alpha_y = alpha_down + alpha_up;
@@ -1810,11 +1817,10 @@ void WENO5_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn2,
 	sum_df[1] = alpha[1] + alpha[3];
 	sum_df[2] = alpha[2] + alpha[4];
 	sum_df[3] = alpha[0] + alpha[2] + alpha[4];
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		df[i] = sum_df[i] < 4.0 ? 1.0 : 4.0 / sum_df[i];
+		df[i] = sum_df[i] < 2.0 ? 1.0 : 2.0 / sum_df[i];
 	}
-	df[3] = sum_df[3] < 6.0 ? 1.0 : 6.0 / sum_df[3];
 
 	//we denote that   |left...cell-center...right|
 	double ren2[4], ren1[4], re0[4], rep1[4], rep2[4];
@@ -1972,19 +1978,21 @@ void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3,
 {
 	double df[5];
 	double sum_df[5];
+	// sum_df[0] = Max_three_number(alpha[1], alpha[2], alpha[3]);
+	// sum_df[1] = Max_three_number(alpha[2], alpha[3], alpha[4]);
+	// sum_df[2] = Max_three_number(alpha[3], alpha[4], alpha[5]);
+	// sum_df[3] = Max_five_number(alpha[1], alpha[2], alpha[3], alpha[4], alpha[5]);
+	// sum_df[4] = Max_seven_number(alpha[0], alpha[1], alpha[2], alpha[3], alpha[4], alpha[5], alpha[6]);
 	sum_df[0] = alpha[1] + alpha[3];
 	sum_df[1] = alpha[2] + alpha[4];
 	sum_df[2] = alpha[3] + alpha[5];
 	sum_df[3] = alpha[1] + alpha[3] + alpha[5];
 	sum_df[4] = alpha[0] + alpha[2] + alpha[4] + alpha[6];
-	for (int i = 0; i < 3; i++)
+	
+	for (int i = 0; i < 5; i++)
 	{
-		df[i] = sum_df[i] < 4.0 ? 1.0 : 4.0 / sum_df[i];
-		//df[i] = 1.0;
+		df[i] = sum_df[i] < 2.0 ? 1.0 : 2.0 / sum_df[i];
 	}
-	df[3] = sum_df[3] < 6.0 ? 1.0 : 6.0 / sum_df[3];
-	//df[4] = sum_df[4] < 8.0 ? 1.0 : 8.0 / sum_df[4];
-	df[4] = 1.0;
 	//we denote that   |left...cell-center...right|
 	double ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4];
 	double var[4], der1[4], der2[4];
@@ -2038,14 +2046,12 @@ void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3,
 		{
 			left.convar[i] = var[i];
 			left.der1x[i] = der1[i];
-
 		}
 	}
 	else
 	{
 		Char_to_convar(left.convar, base_left, var);
 		Char_to_convar(left.der1x, base_left, der1);
-
 	}
 
 	// cell right
@@ -2090,7 +2096,6 @@ void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3,
 	{
 		Char_to_convar(right.convar, base_right, var);
 		Char_to_convar(right.der1x, base_right, der1);
-
 	}
 	
 	Check_Order_Reduce_by_Lambda_2D(right.is_reduce_order, right.convar);
@@ -2487,14 +2492,11 @@ void weno_5th_ao_with_df_tangential(Recon2d* re, Recon2d& wn2, Recon2d& wn1, Rec
 	sum_df2[1] = alpha2[1] + alpha2[3];
 	sum_df2[2] = alpha2[2] + alpha2[4];
 	sum_df2[3] = alpha2[0] + alpha2[2] + alpha2[4];
-
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		df1[i] = sum_df1[i] < 4.0 ? 1.0 : 5.0 / (1.0 + sum_df1[i]);
-		df2[i] = sum_df2[i] < 4.0 ? 1.0 : 5.0 / (1.0 + sum_df2[i]);
+		df1[i] = sum_df1[i] < 2.0 ? 1.0 : 2.0 / sum_df1[i];
+		df2[i] = sum_df2[i] < 2.0 ? 1.0 : 2.0 / sum_df2[i];
 	}
-	df1[3] = sum_df1[3] < 6.0 ? 1.0 : 7.0 / (1.0 + sum_df1[3]);
-	df2[3] = sum_df2[3] < 6.0 ? 1.0 : 7.0 / (1.0 + sum_df2[3]);
 	//lets first reconstruction the left value
 	double ren2[4], ren1[4], re0[4], rep1[4], rep2[4];
 	double base_left[4];
@@ -2796,6 +2798,17 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 {
 	double df1[5], df2[5];
 	double sum_df1[5], sum_df2[5];
+	// sum_df1[0] = Max_three_number(alpha1[1], alpha1[2], alpha1[3]);
+	// sum_df1[1] = Max_three_number(alpha1[2], alpha1[3], alpha1[4]);
+	// sum_df1[2] = Max_three_number(alpha1[3], alpha1[4], alpha1[5]);
+	// sum_df1[3] = Max_five_number(alpha1[1], alpha1[2], alpha1[3], alpha1[4], alpha1[5]);
+	// sum_df1[4] = Max_seven_number(alpha1[0], alpha1[1], alpha1[2], alpha1[3], alpha1[4], alpha1[5], alpha1[6]);
+	// sum_df2[0] = Max_three_number(alpha2[1], alpha2[2], alpha2[3]);
+	// sum_df2[1] = Max_three_number(alpha2[2], alpha2[3], alpha2[4]);
+	// sum_df2[2] = Max_three_number(alpha2[3], alpha2[4], alpha2[5]);
+	// sum_df2[3] = Max_five_number(alpha2[1], alpha2[2], alpha2[3], alpha2[4], alpha2[5]);
+	// sum_df2[4] = Max_seven_number(alpha2[0], alpha2[1], alpha2[2], alpha2[3], alpha2[4], alpha2[5], alpha2[6]);
+	
 	sum_df1[0] = alpha1[1] + alpha1[3];
 	sum_df1[1] = alpha1[2] + alpha1[4];
 	sum_df1[2] = alpha1[3] + alpha1[5];
@@ -2807,15 +2820,11 @@ void weno_7th_ao_with_df_tangential(Recon2d* re, Recon2d& wn3, Recon2d& wn2, Rec
 	sum_df2[2] = alpha2[3] + alpha2[5];
 	sum_df2[3] = alpha2[1] + alpha2[3] + alpha2[5];
 	sum_df2[4] = alpha2[0] + alpha2[2] + alpha2[4] + alpha2[6];
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 5; i++)
 	{
-		df1[i] = sum_df1[i] < 4.0 ? 1.0 : 4.0 / sum_df1[i];
-		df2[i] = sum_df2[i] < 4.0 ? 1.0 : 4.0/ sum_df2[i];
+		df1[i] = sum_df1[i] < 2.0 ? 1.0 : 2.0 / sum_df1[i];
+		df2[i] = sum_df2[i] < 2.0 ? 1.0 : 2.0 / sum_df2[i];
 	}
-	df1[3] = sum_df1[3] < 6.0 ? 1.0 : 6.0 / sum_df1[3];
-	df2[3] = sum_df2[3] < 6.0 ? 1.0 : 6.0 / sum_df2[3];
-	df1[4] = sum_df1[4] < 8.0 ? 1.0 : 8.0 / sum_df1[4];
-	df2[4] = sum_df2[4] < 8.0 ? 1.0 : 8.0 / sum_df2[4];
 	//lets first reconstruction the left value
 	double ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4];
 	double base_left[4];

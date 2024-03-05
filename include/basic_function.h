@@ -658,6 +658,12 @@ void Zdirection(double *change, double *origin);
 
 void Local_to_Global(double *change,double *normal);
 
+double Max_three_number(double a1, double a2, double a3);
+
+double Max_five_number(double a1, double a2, double a3, double a4, double a5);
+
+double Max_seven_number(double a1, double a2, double a3, double a4, double a5, double a6, double a7);
+
 Flux1d** Setflux_array(Block1d block);
 
 void SetUniformMesh(Block1d block, Fluid1d* fluids, Interface1d* interfaces, Flux1d** fluxes);

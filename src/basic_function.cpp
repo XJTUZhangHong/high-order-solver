@@ -1232,6 +1232,36 @@ void Local_to_Global(double *change,double *normal)
     change[2] = temp[0] * normal[1] + temp[1] * normal[0];
 }
 
+double Max_three_number(double a1, double a2, double a3)
+{
+	double max_number;
+	max_number = a1 < a2 ? a2 : a1;
+	max_number = max_number < a3 ? a3 : max_number;
+	return max_number;
+}
+
+double Max_five_number(double a1, double a2, double a3, double a4, double a5)
+{
+	double max_number;
+	max_number = a1 < a2 ? a2 : a1;
+	max_number = max_number < a3 ? a3 : max_number;
+	max_number = max_number < a4 ? a4 : max_number;
+	max_number = max_number < a5 ? a5 : max_number;
+	return max_number;
+}
+
+double Max_seven_number(double a1, double a2, double a3, double a4, double a5, double a6, double a7)
+{
+	double max_number;
+	max_number = a1 < a2 ? a2 : a1;
+	max_number = max_number < a3 ? a3 : max_number;
+	max_number = max_number < a4 ? a4 : max_number;
+	max_number = max_number < a5 ? a5 : max_number;
+	max_number = max_number < a6 ? a6 : max_number;
+	max_number = max_number < a7 ? a7 : max_number;
+	return max_number;
+}
+
 Flux1d** Setflux_array(Block1d block)
 {
 	Flux1d** fluxes = new Flux1d * [block.nx + 1];  // dynamic variable (since block.nx is not determined)
