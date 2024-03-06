@@ -3498,20 +3498,52 @@ void weno_9th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 
 	double sqrt5 = 2.236067977499790;
 	// gauss point 1
-	g1 = w0 + df[1] * ((5 * w0 + 2 * wn1 - wp1) / 6.0 - w0);
-	g1x = df[1] * (w0 - wn1) / h;
+	// x = -1
+	p[0] = w0 + df[0] * ((2 * w0 + 5 * wn1 - wn2) / 6.0 - w0);
+	p[1] = w0 + df[1] * ((5 * w0 + 2 * wn1 - wp1) / 6.0 - w0);
+	p[2] = w0 + df[2] * ((11 * w0 - 7 * wp1 + 2 * wp2) / 6.0 - w0);
+
+	px[0] = df[0] * (w0 - wn1) / h;
+	px[1] = df[1] * (w0 - wn1) / h;
+	px[2] = df[2] * (-2 * w0 + 3 * wp1 - wp2) / h;
+	g1 = p[1];
+	g1x = px[1];
 	
 	// gauss point 2
-	g2 = w0 + df[1] * ((5 * w0 - wn1 + 2 * wp1) / 6.0 - w0);
-	g2x = df[1] * (-w0 + wp1) / h;
+	// x = 0
+	p[0] = w0 + df[0] * ((11 * w0 - 7 * wn1 + 2 * wn2) / 6.0 - w0);
+	p[1] = w0 + df[1] * ((5 * w0 - wn1 + 2 * wp1) / 6.0 - w0);
+	p[2] = w0 + df[2] * ((2 * w0 + 5 * wp1 - wp2) / 6.0 - w0);
+
+	px[0] = df[0] * (2 * w0 - 3 * wn1 + wn2) / h;
+	px[1] = df[1] * (-w0 + wp1) / h;
+	px[2] = df[2] * (-w0 + wp1) / h;
+	g2 = p[1];
+	g2x = px[1];
 
 	// gauss point 3
-	g3 = w0 + df[1] * ((62 * w0 + (-1 + 3 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wp1) / 60.0 - w0);
-	g3x = df[1] * (2 * sqrt5 * w0 - (5 + sqrt5) * wn1 - (-5 + sqrt5) * wp1) / (10.0 * h);
+	// x = -0.5 - sqrt(5) / 10
+	p[0] = w0 + df[0] * (((59 - 9 * sqrt5) * w0 + 2 * (1 + 6 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wn2) / 60.0 - w0);
+	p[1] = w0 + df[1] * ((62 * w0 + (-1 + 3 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wp1) / 60.0 - w0);
+	p[2] = w0 + df[2] * (((59 + 9 * sqrt5) * w0 + (2 - 12 * sqrt5) * wp1 + (-1 + 3 * sqrt5) * wp2) / 60.0 - w0);
+
+	px[0] = df[0] * ((-((-15 + sqrt5) * w0) + 2 * (-10 + sqrt(5)) * wn1 - (-5 + sqrt5) * wn2)) / (10.0 * h);
+	px[1] = df[1] * (2 * sqrt5 * w0 - (5 + sqrt5) * wn1 - (-5 + sqrt5) * wp1) / (10.0 * h);
+	px[2] = df[2] * (-((15 + sqrt5) * w0) + 2 * (10 + sqrt5) * wp1 - (5 + sqrt5) * wp2) / (10.0 * h);
+	g3 = p[1];
+	g3x = px[1];
 
 	// gauss point 4
-	g4 = w0 + df[1] * ((62 * w0 - (1 + 3 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wp1) / 60.0 - w0);
-	g4x = df[1] * (-2 * sqrt5 * w0 + (-5 + sqrt5) * wn1 + (5 + sqrt5) * wp1) / (10.0 * h);
+	// x = -0.5 + sqrt(5) / 10
+	p[0] = w0 + df[0] * (((59 + 9 * sqrt5) * w0 + (2 - 12 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wn2) / 60.0 - w0);
+	p[1] = w0 + df[1] * ((62 * w0 - (1 + 3 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wp1) / 60.0 - w0);
+	p[2] = w0 + df[2] * (((59 - 9 * sqrt5) * w0 + 2 * (1 + 6 * sqrt5) * wp1 - (1 + 3 * sqrt5) * wp2) / 60.0 - w0);
+
+	px[0] = df[0] *  ((15 + sqrt5) * w0 - 2 * (10 + sqrt5) * wn1 + (5 + sqrt5) * wn2) / (10.0 * h);
+	px[1] = df[1] * (-2 * sqrt5 * w0 + (-5 + sqrt5) * wn1 + (5 + sqrt5) * wp1) / (10.0 * h);
+	px[2] = df[2] * ((-15 + sqrt5) * w0 - 2 * (-10 + sqrt5) * wp1 + (-5 + sqrt5) * wp2) / (10.0 * h);
+	g4 = p[1];
+	g4x = px[1];
 }
 
 // cell center rreconstruction
