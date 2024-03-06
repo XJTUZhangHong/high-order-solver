@@ -1213,6 +1213,8 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
+	var = p[1];
+	der1 = px[1];
 }
 
 void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double* df, double h)
@@ -1361,6 +1363,8 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
+	var = p[1];
+	der1 = px[1];
 }
 
 void Reconstruction_forg0(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
@@ -1881,7 +1885,7 @@ void WENO7_AO_with_df_normal(Interface2d& left, Interface2d& right, Interface2d&
 		YchangetoX(wn2tmp, fluids[-2].convar); YchangetoX(wp2tmp, fluids[2].convar);
 		YchangetoX(wn3tmp, fluids[-3].convar); YchangetoX(wp3tmp, fluids[3].convar);
 
-		double alpha[5];
+		double alpha[7];
 		alpha[0] = fluids[-3].alpha_y;
 		alpha[1] = fluids[-2].alpha_y;
 		alpha[2] = fluids[-1].alpha_y;
@@ -1897,11 +1901,6 @@ void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3,
 {
 	double df[5];
 	double sum_df[5];
-	// sum_df[0] = Max_three_number(alpha[1], alpha[2], alpha[3]);
-	// sum_df[1] = Max_three_number(alpha[2], alpha[3], alpha[4]);
-	// sum_df[2] = Max_three_number(alpha[3], alpha[4], alpha[5]);
-	// sum_df[3] = Max_five_number(alpha[1], alpha[2], alpha[3], alpha[4], alpha[5]);
-	// sum_df[4] = Max_seven_number(alpha[0], alpha[1], alpha[2], alpha[3], alpha[4], alpha[5], alpha[6]);
 	sum_df[0] = alpha[1] + alpha[3];
 	sum_df[1] = alpha[2] + alpha[4];
 	sum_df[2] = alpha[3] + alpha[5];
@@ -2001,6 +2000,190 @@ void WENO7_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn3,
 	for (int i = 0; i < 4; i++)
 	{
 		weno_7th_ao_with_df_right(var[i], der1[i], der2[i], ren3[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], df, h);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			right.convar[i] = var[i];
+			right.der1x[i] = der1[i];
+		}
+	}
+	else
+	{
+		Char_to_convar(right.convar, base_right, var);
+		Char_to_convar(right.der1x, base_right, der1);
+	}
+	
+	Check_Order_Reduce_by_Lambda_2D(right.is_reduce_order, right.convar);
+	Check_Order_Reduce_by_Lambda_2D(left.is_reduce_order, left.convar);
+
+	if (left.is_reduce_order == true || right.is_reduce_order == true)
+	{
+		for (int m = 0; m < 4; m++)
+		{
+			right.convar[m] = w[m];
+			left.convar[m] = w[m];
+			right.der1x[m] = 0.0;
+			left.der1x[m] = 0.0;
+		}
+	}
+}
+
+void WENO9_AO_with_df_normal(Interface2d& left, Interface2d& right, Interface2d& down, Interface2d& up, Fluid2d* fluids, Block2d block)
+{
+	if ((fluids[0].xindex > block.ghost - 2) && (fluids[0].xindex < block.nx - block.ghost + 1))
+	{
+		double alpha[9];
+		alpha[0] = fluids[-4 * block.ny].alpha_x;
+		alpha[1] = fluids[-3 * block.ny].alpha_x;
+		alpha[2] = fluids[-2 * block.ny].alpha_x;
+		alpha[3] = fluids[-block.ny].alpha_x;
+		alpha[4] = fluids[0].alpha_x;
+		alpha[5] = fluids[block.ny].alpha_x;
+		alpha[6] = fluids[2 * block.ny].alpha_x;
+		alpha[7] = fluids[3 * block.ny].alpha_x;
+		alpha[8] = fluids[4 * block.ny].alpha_x;
+		WENO9_AO_with_df(left.line.right, right.line.left, alpha, fluids[-4 * block.ny].convar, fluids[-3 * block.ny].convar, 
+		fluids[-2 * block.ny].convar, fluids[-block.ny].convar, fluids[0].convar, fluids[block.ny].convar, fluids[2 * block.ny].convar, fluids[3 * block.ny].convar,fluids[4 * block.ny].convar, fluids[0].dx);
+	}
+
+
+	if ((fluids[0].yindex > block.ghost - 2) && (fluids[0].yindex < block.ny - block.ghost + 1))
+	{
+		double wn4tmp[4], wn3tmp[4], wn2tmp[4], wn1tmp[4], wtmp[4], wp1tmp[4], wp2tmp[4], wp3tmp[4], wp4tmp[4];
+		YchangetoX(wn1tmp, fluids[-1].convar); YchangetoX(wtmp, fluids[0].convar); YchangetoX(wp1tmp, fluids[1].convar);
+		YchangetoX(wn2tmp, fluids[-2].convar); YchangetoX(wp2tmp, fluids[2].convar);
+		YchangetoX(wn3tmp, fluids[-3].convar); YchangetoX(wp3tmp, fluids[3].convar);
+		YchangetoX(wn4tmp, fluids[-4].convar); YchangetoX(wp4tmp, fluids[4].convar);
+
+		double alpha[9];
+		alpha[0] = fluids[-4].alpha_y;
+		alpha[1] = fluids[-3].alpha_y;
+		alpha[2] = fluids[-2].alpha_y;
+		alpha[3] = fluids[-1].alpha_y;
+		alpha[4] = fluids[0].alpha_y;
+		alpha[5] = fluids[1].alpha_y;
+		alpha[6] = fluids[2].alpha_y;
+		alpha[7] = fluids[3].alpha_y;
+		alpha[8] = fluids[4].alpha_y;
+		WENO9_AO_with_df(down.line.right, up.line.left, alpha, wn4tmp, wn3tmp, wn2tmp, wn1tmp, wtmp, wp1tmp, wp2tmp, wp3tmp, wp4tmp, fluids[0].dy);
+	}
+}
+
+void WENO9_AO_with_df(Point2d& left, Point2d& right, double* alpha, double* wn4, double* wn3, double* wn2, double* wn1, double* w, double* wp1, double* wp2, double* wp3, double* wp4, double h)
+{
+	double df[6];
+	double sum_df[6];
+	sum_df[0] = alpha[2] + alpha[4];
+	sum_df[1] = alpha[3] + alpha[5];
+	sum_df[2] = alpha[4] + alpha[6];
+	sum_df[3] = alpha[2] + alpha[4] + alpha[6];
+	sum_df[4] = alpha[1] + alpha[3] + alpha[5] + alpha[7];
+	sum_df[5] = alpha[0] + alpha[2] + alpha[4] + alpha[6] + alpha[8];
+	
+	for (int i = 0; i < 6; i++)
+	{
+		df[i] = sum_df[i] < 2.0 ? 1.0 : 2.0 / sum_df[i];
+	}
+	//we denote that   |left...cell-center...right|
+	double ren4[4], ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4], rep4[4];
+	double var[4], der1[4], der2[4];
+
+	double base_left[4];
+	double base_right[4];
+	double wn1_primvar[4], w_primvar[4], wp1_primvar[4];
+	Convar_to_primvar_2D(wn1_primvar, wn1);
+	Convar_to_primvar_2D(w_primvar, w);
+	Convar_to_primvar_2D(wp1_primvar, wp1);
+
+	for (int i = 0; i < 4; i++)
+	{
+		base_left[i] = 0.5 * (wn1_primvar[i] + w_primvar[i]);
+		base_right[i] = 0.5 * (wp1_primvar[i] + w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ren4[i] = wn4[i];
+			ren3[i] = wn3[i];
+			ren2[i] = wn2[i];
+			ren1[i] = wn1[i];
+			re0[i] = w[i];
+			rep1[i] = wp1[i];
+			rep2[i] = wp2[i];
+			rep3[i] = wp3[i];
+			rep4[i] = wp4[i];
+		}
+	}
+	else
+	{
+		Convar_to_char(ren4, base_left, wn4);
+		Convar_to_char(ren3, base_left, wn3);
+		Convar_to_char(ren2, base_left, wn2);
+		Convar_to_char(ren1, base_left, wn1);
+		Convar_to_char(re0, base_left, w);
+		Convar_to_char(rep1, base_left, wp1);
+		Convar_to_char(rep2, base_left, wp2);
+		Convar_to_char(rep3, base_left, wp3);
+		Convar_to_char(rep4, base_left, wp4);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		weno_9th_ao_with_df_left(var[i], der1[i], der2[i], ren4[i], ren3[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], rep4[i], df, h);
+
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			left.convar[i] = var[i];
+			left.der1x[i] = der1[i];
+		}
+	}
+	else
+	{
+		Char_to_convar(left.convar, base_left, var);
+		Char_to_convar(left.der1x, base_left, der1);
+	}
+
+	// cell right
+	if (reconstruction_variable == conservative)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ren4[i] = wn4[i];
+			ren3[i] = wn3[i];
+			ren2[i] = wn2[i];
+			ren1[i] = wn1[i];
+			re0[i] = w[i];
+			rep1[i] = wp1[i];
+			rep2[i] = wp2[i];
+			rep3[i] = wp3[i];
+			rep4[i] = wp4[i];
+		}
+	}
+	else
+	{
+		Convar_to_char(ren4, base_right, wn4);
+		Convar_to_char(ren3, base_right, wn3);
+		Convar_to_char(ren2, base_right, wn2);
+		Convar_to_char(ren1, base_right, wn1);
+		Convar_to_char(re0, base_right, w);
+		Convar_to_char(rep1, base_right, wp1);
+		Convar_to_char(rep2, base_right, wp2);
+		Convar_to_char(rep3, base_right, wp3);
+		Convar_to_char(rep4, base_right, wp4);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		weno_9th_ao_with_df_right(var[i], der1[i], der2[i], ren4[i], ren3[i], ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], rep4[i], df, h);
 	}
 
 	if (reconstruction_variable == conservative)
@@ -2920,17 +3103,17 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 	double sqrt15 = 3.872983346207417;
 	// gauss point 1
-	p[0] = (23.0 * w0 + 2.0 * wn1 - wn2) / 24.0;
-	p[1] = (26.0 * w0 - wn1 - wp1) / 24.0;
-	p[2] = (23.0 * w0 + 2.0 * wp1 - wp2) / 24.0;
-	p[3] = (2134.0 * w0 - 116.0 * wn1 + 9.0 * wn2 - 116.0 * wp1 + 9.0 * wp2) / 1920.0;
-	p[4] = (121004 * w0 - 7621 * wn1 + 954 * wn2 - 75 * wn3 - 7621 * wp1 + 954 * wp2 - 75 * wp3) / 107520.0;
+	p[0] = w0 + df[0] * ((23.0 * w0 + 2.0 * wn1 - wn2) / 24.0 - w0);
+	p[1] = w0 + df[1] * ((26.0 * w0 - wn1 - wp1) / 24.0 - w0);
+	p[2] = w0 + df[2] * ((23.0 * w0 + 2.0 * wp1 - wp2) / 24.0 - w0);
+	p[3] = w0 + df[3] * ((2134.0 * w0 - 116.0 * wn1 + 9.0 * wn2 - 116.0 * wp1 + 9.0 * wp2) / 1920.0 - w0);
+	p[4] = w0 + df[4] * ((121004 * w0 - 7621 * wn1 + 954 * wn2 - 75 * wn3 - 7621 * wp1 + 954 * wp2 - 75 * wp3) / 107520.0 - w0);
 	
-	px[0] = (3.0 * w0 - 4.0 * wn1 + wn2) / (2.0 * h);
-	px[1] = (-wn1 + wp1) / (2.0 * h);
-	px[2] = (-3.0 * w0 + 4.0 * wp1 - wp2) / (2.0 * h);
-	px[3] = (-34.0 * wn1 + 5.0 * wn2 + 34.0 * wp1 - 5.0 * wp2) / (48.0 * h);
-	px[4] = (-9455 * wn1 + 2236 * wn2 - 259 * wn3 + 9455 * wp1 - 2236 * wp2 + 259 * wp3) / (11520.0 * h);
+	px[0] = df[0] * (3.0 * w0 - 4.0 * wn1 + wn2) / (2.0 * h);
+	px[1] = df[1] * (-wn1 + wp1) / (2.0 * h);
+	px[2] = df[2] * (-3.0 * w0 + 4.0 * wp1 - wp2) / (2.0 * h);
+	px[3] = df[3] * (-34.0 * wn1 + 5.0 * wn2 + 34.0 * wp1 - 5.0 * wp2) / (48.0 * h);
+	px[4] = df[4] * (-9455 * wn1 + 2236 * wn2 - 259 * wn3 + 9455 * wp1 - 2236 * wp2 + 259 * wp3) / (11520.0 * h);
 	//-- - combination-- -
 	g1 = 0.0;
 	g1x = 0.0;
@@ -2947,18 +3130,18 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 		g1x += final_weight[k] * px[k];
 	}
 	// gauss point 2
-	p[0] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wn2) / 60.0;
-	p[1] = (56 * w0 + (2 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wp1) / 60.0;
-	p[2] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wp1 + (2 + 3 * sqrt15) * wp2) / 60.0;
-	p[3] = (2186 * w0 + 4 * (29 + 41 * sqrt15) * wn1 - 9 * wn2 - 22 * sqrt15 * wn2 + 116 * wp1 - 164 * sqrt15 * wp1 - 9 * wp2 + 22 * sqrt15 * wp2) / 2400.0;
-	p[4] = (4534440 * w0 + 5 * (57144 + 78421 * sqrt15) * wn1 - 35748 * wn2 - 84364 * sqrt15 * wn2 + 2808 * wn3 + 9541 * sqrt15 * wn3 + 285720 * wp1 - 
- 		   392105 * sqrt15 * wp1 - 35748 * wp2 + 84364 * sqrt15 * wp2 + 2808 * wp3 - 9541 * sqrt15 * wp3) / 5040000.0;
+	p[0] = w0 + df[0] * (((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wn2) / 60.0 - w0);
+	p[1] = w0 + df[1] * ((56 * w0 + (2 + 3 * sqrt15) * wn1 + (2 - 3 * sqrt15) * wp1) / 60.0 - w0);
+	p[2] = w0 + df[2] * (((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wp1 + (2 + 3 * sqrt15) * wp2) / 60.0 - w0);
+	p[3] = w0 + df[3] * ((2186 * w0 + 4 * (29 + 41 * sqrt15) * wn1 - 9 * wn2 - 22 * sqrt15 * wn2 + 116 * wp1 - 164 * sqrt15 * wp1 - 9 * wp2 + 22 * sqrt15 * wp2) / 2400.0 - w0);
+	p[4] = w0 + df[4] * ((4534440 * w0 + 5 * (57144 + 78421 * sqrt15) * wn1 - 35748 * wn2 - 84364 * sqrt15 * wn2 + 2808 * wn3 + 9541 * sqrt15 * wn3 + 285720 * wp1 - 
+ 		   392105 * sqrt15 * wp1 - 35748 * wp2 + 84364 * sqrt15 * wp2 + 2808 * wp3 - 9541 * sqrt15 * wp3) / 5040000.0 - w0);
 
-	px[0] = (-((-15 + sqrt15) * w0) + 2 * (-10 + sqrt15) * wn1 - (-5 + sqrt15) * wn2) / (10.0 * h);
-	px[1] = (2 * sqrt15 * w0 - (5 + sqrt15) * wn1 - (-5 + sqrt15) * wp1) / (h * 10.0);
-	px[2] = (-((15 + sqrt15) * w0) + 2 * (10 + sqrt15) * wp1 - (5 + sqrt15) * wp2) / (10.0 * h);
-	px[3] = (78 * sqrt15 * w0 - 2 * (95 + 21 * sqrt15) * wn1 + 20 * wn2 + 3 * sqrt15 * wn2 + 190 * wp1 - 42 * sqrt15 * wp1 - 20 * wp2 + 3 * sqrt15 * wp2) / (300.0 * h);
-	px[4] = (103860 * sqrt15 * w0 - 5 * (49925 + 11619 * sqrt15) * wn1 + 41300 * wn2 + 6678 * sqrt15 * wn2 - 4325 * wn3 - 513 * sqrt15 * wn3 + 249625 * wp1 - 
+	px[0] = df[0] * (-((-15 + sqrt15) * w0) + 2 * (-10 + sqrt15) * wn1 - (-5 + sqrt15) * wn2) / (10.0 * h);
+	px[1] = df[1] * (2 * sqrt15 * w0 - (5 + sqrt15) * wn1 - (-5 + sqrt15) * wp1) / (h * 10.0);
+	px[2] = df[2] * (-((15 + sqrt15) * w0) + 2 * (10 + sqrt15) * wp1 - (5 + sqrt15) * wp2) / (10.0 * h);
+	px[3] = df[3] * (78 * sqrt15 * w0 - 2 * (95 + 21 * sqrt15) * wn1 + 20 * wn2 + 3 * sqrt15 * wn2 + 190 * wp1 - 42 * sqrt15 * wp1 - 20 * wp2 + 3 * sqrt15 * wp2) / (300.0 * h);
+	px[4] = df[4] * (103860 * sqrt15 * w0 - 5 * (49925 + 11619 * sqrt15) * wn1 + 41300 * wn2 + 6678 * sqrt15 * wn2 - 4325 * wn3 - 513 * sqrt15 * wn3 + 249625 * wp1 - 
  		    58095 * sqrt15 * wp1 - 41300 * wp2 + 6678 * sqrt15 * wp2 + 4325 * wp3 - 513 * sqrt15 * wp3) / (360000.0 * h);
 	//-- - combination-- -
 	g2 = 0.0;
@@ -2971,18 +3154,18 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	}
 
 	// gauss point 3
-	p[0] = ((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wn2) / 60.0;
-	p[1] = (56 * w0 + (2 - 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wp1) / 60.0;
-	p[2] = ((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wp1 + (2 - 3 * sqrt15) * wp2) / 60.0;
-	p[3] = (2186 * w0 - 4 * (-29 + 41 * sqrt15) * wn1 - 9 * wn2 + 22 * sqrt15 * wn2 + 116 * wp1 + 164 * sqrt15 * wp1 - 9 * wp2 - 22 * sqrt15 * wp2) / 2400.0;
-	p[4] = (4534440 * w0 - 5 * (-57144 + 78421 * sqrt15) * wn1 - 35748 * wn2 + 84364 * sqrt15 * wn2 + 2808 * wn3 - 9541 * sqrt15 * wn3 + 285720 * wp1 + 
- 		   392105 * sqrt15 * wp1 - 35748 * wp2 - 84364 * sqrt15 * wp2 + 2808 * wp3 + 9541 * sqrt15 * wp3) / 5040000.0;
+	p[0] = w0 + df[0] * (((62 + 9 * sqrt15) * w0 - 4 * (1 + 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wn2) / 60.0 - w0);
+	p[1] = w0 + df[1] * ((56 * w0 + (2 - 3 * sqrt15) * wn1 + (2 + 3 * sqrt15) * wp1) / 60.0 - w0);
+	p[2] = w0 + df[2] * (((62 - 9 * sqrt15) * w0 + 4 * (-1 + 3 * sqrt15) * wp1 + (2 - 3 * sqrt15) * wp2) / 60.0 - w0);
+	p[3] = w0 + df[3] * ((2186 * w0 - 4 * (-29 + 41 * sqrt15) * wn1 - 9 * wn2 + 22 * sqrt15 * wn2 + 116 * wp1 + 164 * sqrt15 * wp1 - 9 * wp2 - 22 * sqrt15 * wp2) / 2400.0 - w0);
+	p[4] = w0 + df[4] * ((4534440 * w0 - 5 * (-57144 + 78421 * sqrt15) * wn1 - 35748 * wn2 + 84364 * sqrt15 * wn2 + 2808 * wn3 - 9541 * sqrt15 * wn3 + 285720 * wp1 + 
+ 		   392105 * sqrt15 * wp1 - 35748 * wp2 - 84364 * sqrt15 * wp2 + 2808 * wp3 + 9541 * sqrt15 * wp3) / 5040000.0 - w0);
 
-	px[0] = ((15 + sqrt15) * w0 - 2 * (10 + sqrt15) * wn1 + (5 + sqrt15) * wn2) / (10.0 * h);
-	px[1] = (-2 * sqrt15 * w0 - (5 - sqrt15) * wn1 + (5 + sqrt15) * wp1) / (h * 10.0);
-	px[2] = ((-15 + sqrt15) * w0 - 2 * (-10 + sqrt15) * wp1 + (-5 + sqrt15) * wp2) / (10.0 * h);
-	px[3] = (-78 * sqrt15 * w0 + 2 * (-95 + 21 * sqrt15) * wn1 + 20 * wn2 - 3 * sqrt15 * wn2 + 190 * wp1 + 42 * sqrt15 * wp1 - 20 * wp2 - 3 * sqrt15 * wp2) / (300.0 * h);
-	px[4] = (-103860 * sqrt15 * w0 + 5 * (-49925 + 11619 * sqrt15) * wn1 + 41300 * wn2 - 6678 * sqrt15 * wn2 - 4325 * wn3 + 513 * sqrt15 * wn3 + 249625 * wp1 + 
+	px[0] = df[0] * ((15 + sqrt15) * w0 - 2 * (10 + sqrt15) * wn1 + (5 + sqrt15) * wn2) / (10.0 * h);
+	px[1] = df[1] * (-2 * sqrt15 * w0 - (5 - sqrt15) * wn1 + (5 + sqrt15) * wp1) / (h * 10.0);
+	px[2] = df[2] * ((-15 + sqrt15) * w0 - 2 * (-10 + sqrt15) * wp1 + (-5 + sqrt15) * wp2) / (10.0 * h);
+	px[3] = df[3] * (-78 * sqrt15 * w0 + 2 * (-95 + 21 * sqrt15) * wn1 + 20 * wn2 - 3 * sqrt15 * wn2 + 190 * wp1 + 42 * sqrt15 * wp1 - 20 * wp2 - 3 * sqrt15 * wp2) / (300.0 * h);
+	px[4] = df[4] * (-103860 * sqrt15 * w0 + 5 * (-49925 + 11619 * sqrt15) * wn1 + 41300 * wn2 - 6678 * sqrt15 * wn2 - 4325 * wn3 + 513 * sqrt15 * wn3 + 249625 * wp1 + 
  			58095 * sqrt15 * wp1 - 41300 * wp2 - 6678 * sqrt15 * wp2 + 4325 * wp3 + 513 * sqrt15 * wp3) / (360000.0 * h);
 	//-- - combination-- -
 	g3 = 0.0;
@@ -2993,6 +3176,342 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 		g3 += final_weight[k] * p[k];
 		g3x += final_weight[k] * px[k];
 	}
+}
+
+void WENO9_AO_with_df_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block)
+{
+	// along x direction tangitial recontruction,
+	double alpha1[9], alpha2[9];
+	alpha1[0] = fluids[-4].alpha_y; alpha1[1] = fluids[-3].alpha_y;
+	alpha1[2] = fluids[-2].alpha_y; alpha1[3] = fluids[-1].alpha_y;
+	alpha1[4] = fluids[0].alpha_y;  alpha1[5] = fluids[1].alpha_y;
+	alpha1[6] = fluids[2].alpha_y; alpha1[7] = fluids[3].alpha_y;
+	alpha1[8] = fluids[4].alpha_y;
+	alpha2[0] = fluids[block.ny - 4].alpha_y; alpha2[1] = fluids[block.ny - 3].alpha_y; 
+	alpha2[2] = fluids[block.ny - 2].alpha_y; alpha2[3] = fluids[block.ny - 1].alpha_y;
+	alpha2[4] = fluids[block.ny].alpha_y;  alpha2[5] = fluids[block.ny + 1].alpha_y;
+	alpha2[6] = fluids[block.ny + 2].alpha_y; alpha2[7] = fluids[block.ny + 3].alpha_y;
+	alpha2[8] = fluids[block.ny + 4].alpha_y;
+	weno_9th_ao_with_df_tangential(right[0].gauss, right[-4].line, right[-3].line, 
+		right[-2].line, right[-1].line, right[0].line, right[1].line, right[2].line, right[3].line, right[4].line, alpha1, alpha2, right[0].length);
+
+	//since we already do the coordinate transform, along y, no transform needed.
+	alpha1[0] = fluids[4 * block.ny].alpha_x; alpha1[1] = fluids[3 * block.ny].alpha_x; 
+	alpha1[2] = fluids[2 * block.ny].alpha_x; alpha1[3] = fluids[block.ny].alpha_x;
+	alpha1[4] = fluids[0].alpha_x;  alpha1[5] = fluids[-block.ny].alpha_x;
+	alpha1[6] = fluids[-2 * block.ny].alpha_x; alpha1[7] = fluids[-3 * block.ny].alpha_x;
+	alpha1[8] = fluids[-4 * block.ny].alpha_x;
+	alpha2[0] = fluids[4 * block.ny + 1].alpha_x; alpha2[1] = fluids[3 * block.ny + 1].alpha_x;
+	alpha2[2] = fluids[2 * block.ny + 1].alpha_x; alpha2[3] = fluids[block.ny + 1].alpha_x;
+	alpha2[4] = fluids[1].alpha_x;  alpha2[5] = fluids[-block.ny + 1].alpha_x;
+	alpha2[6] = fluids[-2 * block.ny + 1].alpha_x; alpha2[7] = fluids[-3 * block.ny + 1].alpha_x;
+	alpha2[8] = fluids[-4 * block.ny + 1].alpha_x;
+	weno_9th_ao_with_df_tangential(up[0].gauss, up[4 * (block.ny + 1)].line, up[3 * (block.ny + 1)].line, up[2 * (block.ny + 1)].line, up[block.ny + 1].line,
+		up[0].line, up[-(block.ny + 1)].line, up[-2 * (block.ny + 1)].line, up[-3 * (block.ny + 1)].line, up[-4 * (block.ny + 1)].line, alpha1, alpha2, up[0].length);
+}
+
+void weno_9th_ao_with_df_tangential(Recon2d* re, Recon2d& wn4, Recon2d& wn3, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, Recon2d& wp3, Recon2d& wp4, double* alpha1, double* alpha2, double h)
+{
+	double df1[6], df2[6];
+	double sum_df1[6], sum_df2[6];
+	sum_df1[0] = alpha1[2] + alpha1[4];
+	sum_df1[1] = alpha1[3] + alpha1[5];
+	sum_df1[2] = alpha1[4] + alpha1[6];
+	sum_df1[3] = alpha1[2] + alpha1[4] + alpha1[6];
+	sum_df1[4] = alpha1[1] + alpha1[3] + alpha1[5] + alpha1[7];
+	sum_df1[5] = alpha1[0] + alpha1[2] + alpha1[4] + alpha1[6] + alpha1[8];
+
+	sum_df2[0] = alpha2[2] + alpha2[4];
+	sum_df2[1] = alpha2[3] + alpha2[5];
+	sum_df2[2] = alpha2[4] + alpha2[6];
+	sum_df2[3] = alpha2[2] + alpha2[4] + alpha2[6];
+	sum_df2[4] = alpha2[1] + alpha2[3] + alpha2[5] + alpha2[7];
+	sum_df2[5] = alpha2[0] + alpha2[2] + alpha2[4] + alpha2[6] + alpha2[8];
+	for (int i = 0; i < 6; i++)
+	{
+		df1[i] = sum_df1[i] < 2.0 ? 1.0 : 2.0 / sum_df1[i];
+		df2[i] = sum_df2[i] < 2.0 ? 1.0 : 2.0 / sum_df2[i];
+	}
+	//lets first reconstruction the left value
+	double ren4[4], ren3[4], ren2[4], ren1[4], re0[4], rep1[4], rep2[4], rep3[4], rep4[4];
+	double base_left[4];
+	double base_right[4];
+	double wn1_primvar[4], w_primvar[4], wp1_primvar[4];
+	Convar_to_primvar_2D(w_primvar, w0.left.convar);
+
+	for (int i = 0; i < 4; i++)
+	{
+		base_left[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		double tmp[2];
+		for (int i = 0; i < 4; i++)
+		{
+			// 9th-order we use 4 gauss points
+			weno_9th_ao_with_df_2gauss(re[0].left.convar[i], re[0].left.der1y[i],
+					re[1].left.convar[i], re[1].left.der1y[i], re[2].left.convar[i], re[2].left.der1y[i], re[3].left.convar[i], re[3].left.der1y[i], df1, wn4.left.convar[i], wn3.left.convar[i],
+					wn2.left.convar[i], wn1.left.convar[i], w0.left.convar[i], wp1.left.convar[i], wp2.left.convar[i], wp3.left.convar[i], wp4.left.convar[i], h, 2);
+		}
+	}
+	else
+	{
+		Convar_to_char(ren4, base_left, wn4.left.convar);
+		Convar_to_char(ren3, base_left, wn3.left.convar);
+		Convar_to_char(ren2, base_left, wn2.left.convar);
+		Convar_to_char(ren1, base_left, wn1.left.convar);
+		Convar_to_char(re0, base_left, w0.left.convar);
+		Convar_to_char(rep1, base_left, wp1.left.convar);
+		Convar_to_char(rep2, base_left, wp2.left.convar);
+		Convar_to_char(rep3, base_left, wp3.left.convar);
+		Convar_to_char(rep4, base_left, wp4.left.convar);
+		double var[4][4], der1[4][4], der2[4][4];
+		for (int i = 0; i < 4; i++)
+		{
+			weno_9th_ao_with_df_2gauss(var[0][i], der1[0][i],
+				var[1][i], der1[1][i], var[2][i], der1[2][i], var[3][i], der1[3][i], df1, ren4[i], ren3[i],
+				ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], rep4[i], h, 2);
+		}
+		for (int igauss = 0; igauss < gausspoint; igauss++)
+		{
+			Char_to_convar(re[igauss].left.convar, base_left, var[igauss]);
+			Char_to_convar(re[igauss].left.der1y, base_left, der1[igauss]);
+		}
+
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		double tmp[4];
+		weno_9th_ao_with_df_2gauss(re[0].left.der1x[i], tmp[0],
+				re[1].left.der1x[i], tmp[1], re[2].left.der1x[i], tmp[2], re[3].left.der1x[i], tmp[3], df1, wn4.left.der1x[i], wn3.left.der1x[i], 
+				wn2.left.der1x[i], wn1.left.der1x[i], w0.left.der1x[i], wp1.left.der1x[i], wp2.left.der1x[i], wp3.left.der1x[i], wp4.left.der1x[i], h, 1);
+	}
+
+	//then let's construct the right part....
+	Convar_to_primvar_2D(w_primvar, w0.right.convar);
+	for (int i = 0; i < 4; i++)
+	{
+		base_right[i] = (w_primvar[i]);
+	}
+
+	if (reconstruction_variable == conservative)
+	{
+		double tmp[2];
+		for (int i = 0; i < 4; i++)
+		{
+			weno_9th_ao_with_df_2gauss(re[0].right.convar[i], re[0].right.der1y[i],
+					re[1].right.convar[i], re[1].right.der1y[i], re[2].right.convar[i], re[2].right.der1y[i], re[3].right.convar[i], re[3].right.der1y[i], df2, wn4.right.convar[i], wn3.right.convar[i], 
+					wn2.right.convar[i], wn1.right.convar[i], w0.right.convar[i], wp1.right.convar[i], wp2.right.convar[i], wp3.right.convar[i], wp4.right.convar[i], h, 2);
+		}
+	}
+	else
+	{
+		Convar_to_char(ren3, base_right, wn3.right.convar);
+		Convar_to_char(ren2, base_right, wn2.right.convar);
+		Convar_to_char(ren1, base_right, wn1.right.convar);
+		Convar_to_char(re0, base_right, w0.right.convar);
+		Convar_to_char(rep1, base_right, wp1.right.convar);
+		Convar_to_char(rep2, base_right, wp2.right.convar);
+		Convar_to_char(rep3, base_right, wp3.right.convar);
+		double var[4][4], der1[4][4], der2[4][4];
+		for (int i = 0; i < 4; i++)
+		{
+			weno_9th_ao_with_df_2gauss(var[0][i], der1[0][i], 
+				var[1][i], der1[1][i], var[2][i], der1[2][i], var[3][i], der1[3][i], df2, ren4[i], ren3[i],
+				ren2[i], ren1[i], re0[i], rep1[i], rep2[i], rep3[i], rep4[i], h, 2);
+		}
+		for (int igauss = 0; igauss < gausspoint; igauss++)
+		{
+			Char_to_convar(re[igauss].right.convar, base_right, var[igauss]);
+			Char_to_convar(re[igauss].right.der1y, base_right, der1[igauss]);
+		}
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		double tmp[4];
+		weno_9th_ao_with_df_2gauss(re[0].right.der1x[i], tmp[0],
+				re[1].right.der1x[i], tmp[1], re[2].right.der1x[i], tmp[2], re[3].right.der1x[i], tmp[3], df2, wn4.right.der1x[i], wn3.right.der1x[i], 
+				wn2.right.der1x[i], wn1.right.der1x[i], w0.right.der1x[i], wp1.right.der1x[i], wp2.right.der1x[i], wp3.right.der1x[i], wp4.right.der1x[i], h, 1);
+	}
+
+
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].left.is_reduce_order, re[num_gauss].left.convar);
+		if (re[num_gauss].left.is_reduce_order == true)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				re[num_gauss].left.convar[var] = w0.left.convar[var];
+				re[num_gauss].left.der1x[var] = w0.left.der1x[var];
+				re[num_gauss].left.der1y[var] = 0.0;
+			}
+		}
+	}
+
+	for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
+	{
+		Check_Order_Reduce_by_Lambda_2D(re[num_gauss].right.is_reduce_order, re[num_gauss].right.convar);
+		if (re[num_gauss].right.is_reduce_order == true)
+		{
+			for (int var = 0; var < 4; var++)
+			{
+				re[num_gauss].right.convar[var] = w0.right.convar[var];
+				re[num_gauss].right.der1x[var] = w0.right.der1x[var];
+				re[num_gauss].right.der1y[var] = 0.0;
+			}
+		}
+	}
+}
+
+void weno_9th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x, double& g3, double& g3x, double& g4, double& g4x, double* df, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double h, int order)
+{
+	//the parameter order constrols up to which order you want construct
+	// order from 0, 1, 2
+	if (order > 2 || order < 0)
+	{
+		cout << "invalid order input for the function " << __FUNCTION__ << endl;
+		exit(0);
+	}
+	double dhi = 0.85;
+	double dlo = 0.85;
+	double davg1= 0.85;
+	double davg2 = 0.85;
+	// P(9, 7,5,3) -- one 9th-order stencil, one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
+	//-- - parameter of WENO-- -
+	double beta[6], d[6], ww[6], alpha[6];
+	double epsilonW = 1e-6;
+	//-- - intermediate parameter-- -
+	double p[6], px[6], pxx[6], tempvar;
+	double sum_alpha;
+
+	//three 3rd-order stencil
+	d[0] = (1.0 - dhi) * (1.0 - dlo) * (1.0 - davg1) * (1.0 - davg2) / 2.0;
+	d[1] = (1.0 - dhi) * (1.0 - davg1) * (1.0 - davg2) * dlo;
+	d[2] = (1.0 - dhi) * (1.0 - dlo) * (1.0 - davg1) * (1.0 - davg2) / 2.0;
+	//one 5th-order stencil
+	d[3] = (1.0 - dhi) * (1.0 - davg2) * davg1;
+	//one 7th-order stencil
+	d[4] = (1.0 - dhi) * davg2;
+	//one 9th-order stencil
+	d[5] = dhi;
+
+	beta[0] = 13.0 / 12.0 * pow((wn2 - 2.0 * wn1 + w0), 2) + 0.25 * pow((wn2 - 4.0 * wn1 + 3.0 * w0), 2);
+	beta[1] = 13.0 / 12.0 * pow((wn1 - 2.0 * w0 + wp1), 2) + 0.25 * pow((wn1 - wp1), 2);
+	beta[2] = 13.0 / 12.0 * pow((w0 - 2.0 * wp1 + wp2), 2) + 0.25 * pow((3.0 * w0 - 4.0 * wp1 + wp2), 2);
+	//beta[3] = 1.0 / 6.0 * (beta[0] + 4.0 * beta[1] + beta[2]) + abs(beta[0] - beta[2]);
+
+	//For 7th-order stencil, the smoothness indicator
+	double a1, a2, a3, a4;
+	double beta4[4];
+	a1 = (-19 * wn3 + 87 * wn2 - 177 * wn1 + 109 * w0) / 60.0;
+	a2 = (-wn3 + 4 * wn2 - 5 * wn1 + 2 * w0) / 2;
+	a3 = (-wn3 + 3 * wn2 - 3 * wn1 + w0) / 6.0;
+	beta4[0] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
+
+	a1 = (11 * wn2 - 63 * wn1 + 33 * w0 + 19 * wp1) / 60.0;
+	a2 = (wn1 - 2 * w0 + wp1) / 2;
+	a3 = (-wn2 + 3 * wn1 - 3 * w0 + wp1) / 6.0;
+	beta4[1] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
+
+	a1 = (-19 * wn1 - 33 * w0 + 63 * wp1 - 11 * wp2) / 60.0;
+	a2 = (wn1 - 2 * w0 + wp1) / 2;
+	a3 = (-wn1 + 3 * w0 - 3 * wp1 + wp2) / 6.0;
+	beta4[2] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
+
+	a1 = (-109 * w0 + 177 * wp1 - 87 * wp2 + 19 * wp3) / 60.0;
+	a2 = (2 * w0 - 5 * wp1 + 4 * wp2 - wp3) / 2;
+	a3 = (-w0 + 3 * wp1 - 3 * wp2 + wp3) / 6.0;
+	beta4[3] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13 / 3 * a2 * a2
+			 + 781 / 20 * a3 * a3;
+
+	beta[4] = 1.0 / 20.0 * (beta4[0] + 9.0 * beta4[1] + 9.0 * beta4[2] + beta4[3])
+			+ abs(beta4[0] - beta4[1] - beta4[2] + beta4[3]);
+
+	// For 9th-order stencil, the smoothness indicator
+	double beta5[5];
+	a1 = (-462 * wn1 + 336 * wn2 - 146 * wn3 + 27 * wn4 + 245 * w0) / 120.0;
+	a2 = (-240 * wn1 + 262 * wn2 - 128 * wn3 + 25 * wn4 + 81 * w0) / 56.0;
+	a3 = (-18 * wn1 + 24 * wn2 - 14 * wn3 + 3 * wn4 + 5 * w0) / 12.0;
+	a4 = (-4 * wn1 + 6 * wn2 - 4 * wn3 + wn4 + w0) / 24.0;
+	beta5[0] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13.0 / 3.0 * (a2 + 123.0 / 455.0 * a4) * (a2 + 123.0 / 455.0 * a4) 
+		     + 781.0 / 20.0 * a3 * a3 + 1421461.0 / 2275.0 * a4 * a4;
+
+	a1 = (-192 * wn1 + 66 * wn2 - 11 * wn3 + 110 * w0 + 27 * wp1) / 120;
+	a2 = (10 * wn1 + 12 * wn2 - 3 * wn3 - 44 * w0 + 25 * wp1) / 56;
+	a3 = (12 * wn1 - 6 * wn2 + wn3 - 10 * w0 + 3 * wp1) / 12;
+	a4 = (6 * wn1 - 4 * wn2 + wn3 - 4 * w0 + wp1) / 24;
+	beta5[1] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13.0 / 3.0 * (a2 + 123.0 / 455.0 * a4) * (a2 + 123.0 / 455.0 * a4) 
+		     + 781.0 / 20.0 * a3 * a3 + 1421461.0 / 2275.0 * a4 * a4;
+
+	a1 = (-82 * wn1 + 11 * wn2 + 82 * wp1 - 11 * wp2)/120;
+	a2 = (40 * wn1 - 3 * wn2 - 74 * w0 + 40 * wp1 - 3 * wp2)/56;
+	a3 = (2 * wn1 - wn2 - 2 * wp1 + wp2)/12;
+	a4 = (-4 * wn1 + wn2 + 6 * w0 - 4 * wp1 + wp2)/24;
+	beta5[2] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13.0 / 3.0 * (a2 + 123.0 / 455.0 * a4) * (a2 + 123.0 / 455.0 * a4) 
+		     + 781.0 / 20.0 * a3 * a3 + 1421461.0 / 2275.0 * a4 * a4;
+	
+	a1 = (-27 * wn1 - 110 * w0 + 192 * wp1 - 66 * wp2 + 11 * wp3)/120;
+	a2 = (25 * wn1 - 44 * w0 + 10 * wp1 + 12 * wp2 - 3 * wp3)/56;
+	a3 = (-3 * wn1 + 10 * w0 - 12 * wp1 + 6 * wp2 - wp3)/12;
+	a4 = (wn1 - 4 * w0 + 6 * wp1 - 4 * wp2 + wp3)/24;
+	beta5[3] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13.0 / 3.0 * (a2 + 123.0 / 455.0 * a4) * (a2 + 123.0 / 455.0 * a4) 
+		     + 781.0 / 20.0 * a3 * a3 + 1421461.0 / 2275.0 * a4 * a4;
+
+	a1 = (-245 * w0 + 462 * wp1 - 336 * wp2 + 146 * wp3 - 27 * wp4)/120;
+	a2 = (81 * w0 - 240 * wp1 + 262 * wp2 - 128 * wp3 + 25 * wp4)/56;
+	a3 = (-5 * w0 + 18 * wp1 - 24 * wp2 + 14 * wp3 - 3 * wp4)/12;
+	a4 = (w0 - 4 * wp1 + 6 * wp2 - 4 * wp3 + wp4)/24;
+	beta5[4] = (a1 + a3 / 10.0) * (a1 + a3 / 10.0) + 13.0 / 3.0 * (a2 + 123.0 / 455.0 * a4) * (a2 + 123.0 / 455.0 * a4) 
+		     + 781.0 / 20.0 * a3 * a3 + 1421461.0 / 2275.0 * a4 * a4;
+	
+	// beta[3] represent the 5th-order smoothness indicator
+	beta[3] = beta5[2];
+	beta[5] = 1.0 / 15.0 * (beta5[0] + 5.0 * beta5[1] + 3.0 * beta5[2] + 5.0 * beta5[3] + beta5[4]) + abs(beta5[0] + beta5[1] - beta5[2] - beta5[3]);
+			
+	double tau5 = 0.2 * (abs(beta[5] - beta[0]) + abs(beta[5] - beta[1]) + abs(beta[5] - beta[2]) + abs(beta[5] - beta[3]) + abs(beta[5] - beta[4]));
+
+	sum_alpha = 0.0;
+	for (int i = 0; i < 6; i++)
+	{
+		double global_div = tau5 / (beta[i] + epsilonW);
+		alpha[i] = d[i] * (1.0 + global_div * global_div);
+		sum_alpha += alpha[i];
+	}
+
+	for (int k = 0; k < 6; k++)
+	{
+		ww[k] = alpha[k] / sum_alpha;
+	}
+	double final_weight[6];
+	final_weight[5] = ww[5] / d[5];
+	for (int k = 0; k < 5; k++)
+	{
+		final_weight[k] = ww[k] - ww[5] / d[5] * d[k];
+	}
+
+	double sqrt5 = 2.236067977499790;
+	// gauss point 1
+	g1 = w0 + df[1] * ((5 * w0 + 2 * wn1 - wp1) / 6.0 - w0);
+	g1x = df[1] * (w0 - wn1) / h;
+	
+	// gauss point 2
+	g2 = w0 + df[1] * ((5 * w0 - wn1 + 2 * wp1) / 6.0 - w0);
+	g2x = df[1] * (-w0 + wp1) / h;
+
+	// gauss point 3
+	g3 = w0 + df[1] * ((62 * w0 + (-1 + 3 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wp1) / 60.0 - w0);
+	g3x = df[1] * (2 * sqrt5 * w0 - (5 + sqrt5) * wn1 - (-5 + sqrt5) * wp1) / (10.0 * h);
+
+	// gauss point 4
+	g4 = w0 + df[1] * ((62 * w0 - (1 + 3 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wp1) / 60.0 - w0);
+	g4x = df[1] * (-2 * sqrt5 * w0 + (-5 + sqrt5) * wn1 + (5 + sqrt5) * wp1) / (10.0 * h);
 }
 
 // cell center rreconstruction

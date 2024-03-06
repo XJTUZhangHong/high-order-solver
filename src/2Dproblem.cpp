@@ -28,7 +28,7 @@ void PlanarShock()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 3;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -131,8 +131,8 @@ void PlanarShock()
 
 			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -613,8 +613,8 @@ void RT_instability()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 64;
-	block.nodey = 256;
+	block.nodex = 100;
+	block.nodey = 400;
 	block.ghost = 4;
 
 	block.CFL = 0.5;
@@ -630,7 +630,7 @@ void RT_instability()
 	BoundaryCondition2d upboundary(0);
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 3;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -738,8 +738,8 @@ void RT_instability()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -844,7 +844,7 @@ void doubleMach()
 
 	//prepare the reconstruction function
 
-	gausspoint = 4;
+	gausspoint = 3;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -1352,7 +1352,7 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	block.uniform = true;
 	block.nodex = mesh_number;
 	block.nodey = mesh_number;
-	block.ghost = 4; // 5th-order reconstruction, should 3 ghost cell
+	block.ghost = 5; // 5th-order reconstruction, should 3 ghost cell
 
 	double tstop = 2;
 	block.CFL = CFL;
@@ -1397,16 +1397,14 @@ void sinwave_2d(double& CFL, double& dt_ratio, int& mesh_number, double* error)
 	upboundary = periodic_boundary_up;  
 
 	//prepare the reconstruction
-	gausspoint = 3; // fifth-order or sixth-order use THREE gauss points
-	// WENO5 has the function relating to arbitrary gausspoints
-	// WENO5_AO supports 2 gausspoint now, so fourth-order at most for spacial reconstruction (enough for two step fourth-order GKS)
+	gausspoint = 4; // fifth-order or sixth-order use THREE gauss points
 	SetGuassPoint(); // Function, set Gauss points coordinates and weight factor
 
 	reconstruction_variable = conservative; // Emumeration, choose the variables used for reconstruction type
 	wenotype = wenoz; // Emumeration, choose reconstruction type
 
-	cellreconstruction_2D_normal = WENO7_AO_with_df_normal;  // reconstruction in normal directon
-	cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;  // reconstruction in tangential directon
+	cellreconstruction_2D_normal = WENO9_AO_with_df_normal;  // reconstruction in normal directon
+	cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;  // reconstruction in tangential directon
 	g0reconstruction_2D_normal = Center_do_nothing_normal;  // reconstruction for g0 in normal directon
 	g0reconstruction_2D_tangent = Center_all_collision_multi;  // reconstruction for g0 in tangential directon
 

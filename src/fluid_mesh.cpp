@@ -40,7 +40,7 @@ void SetGuassPoint()
 		gauss_loc[2] = -sqrt(5) / 5.0; gauss_loc[3] = -gauss_loc[2];
 		gauss_weight[0] = 1.0 / 12.0;		gauss_weight[1] = 1.0 / 12.0;
 		gauss_weight[2] = 5.0 / 12.0;		gauss_weight[3] = 5.0 / 12.0;
-
+		
 		// gauss_loc[0] = 0.861136311594053;
 		// gauss_loc[1] = -gauss_loc[0];
 		// gauss_loc[2] = 0.339981043584856;
