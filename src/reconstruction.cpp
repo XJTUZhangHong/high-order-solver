@@ -1189,7 +1189,7 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	p[1] = w0 + df[1] * (1.0 / 3.0 * wn1 + 5.0 / 6.0 * w0 - 1.0 / 6.0 * wp1 - w0);
 	p[2] = w0 + df[2] * (11.0 / 6.0 * w0 - 7.0 / 6.0 * wp1 + 1.0 / 3.0 * wp2 - w0);
 	p[3] = w0 + df[3] * ((1.0 / 60.0) * (47.0 * w0 + 27.0 * wn1 - 3.0 * wn2 - 13.0 * wp1 + 2.0 * wp2) - w0);
-	p[4] = w0 + df[4] * (1.0 / 420.0 * (319.0 * w0 + 214.0 * wn1 - 38.0 * wn2 + 4.0 * wn3 - 101.0 * wp1 + 25.0 * wp2 - 3.0 * wp3) - w0);
+	p[4] = w0 + df[4] * ((1.0 / 420.0) * (319.0 * w0 + 214.0 * wn1 - 38.0 * wn2 + 4.0 * wn3 - 101.0 * wp1 + 25.0 * wp2 - 3.0 * wp3) - w0);
 	p[5] = w0 + df[5] * ((1.0 / 2520.0) * (1879.0 * w0 + 1375.0 * wn1 - 305.0 * wn2 + 55.0 * wn3 - 5.0 * wn4 - 641.0 * wp1 + 199.0 * wp2 - 41.0 * wp3 + 4.0 * wp4) - w0);
 	
 	px[0] = df[0] * (w0 - wn1) / h;
@@ -1213,8 +1213,6 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
-	var = p[1];
-	der1 = px[1];
 }
 
 void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double* df, double h)
@@ -1363,8 +1361,6 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 		var += final_weight[k] * p[k];
 		der1 += final_weight[k] * px[k];
 	}
-	var = p[1];
-	der1 = px[1];
 }
 
 void Reconstruction_forg0(Interface1d* interfaces, Fluid1d* fluids, Block1d block)
@@ -3502,48 +3498,74 @@ void weno_9th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	p[0] = w0 + df[0] * ((2 * w0 + 5 * wn1 - wn2) / 6.0 - w0);
 	p[1] = w0 + df[1] * ((5 * w0 + 2 * wn1 - wp1) / 6.0 - w0);
 	p[2] = w0 + df[2] * ((11 * w0 - 7 * wp1 + 2 * wp2) / 6.0 - w0);
-
+	p[3] = w0 + df[3] * ((47 * w0 + 27 * wn1 - 3 * wn2 - 13 * wp1 + 2 * wp2) / 60.0 - w0);
+	p[4] = w0 + df[4] * ((319.0 * w0 + 214.0 * wn1 - 38.0 * wn2 + 4.0 * wn3 - 101.0 * wp1 + 25.0 * wp2 - 3.0 * wp3) / 420.0 - w0);
+	p[5] = w0 + df[5] * ((1879.0 * w0 + 1375.0 * wn1 - 305.0 * wn2 + 55.0 * wn3 - 5.0 * wn4 - 641.0 * wp1 + 199.0 * wp2 - 41.0 * wp3 + 4.0 * wp4) / 2520.0 - w0);
+	
 	px[0] = df[0] * (w0 - wn1) / h;
 	px[1] = df[1] * (w0 - wn1) / h;
 	px[2] = df[2] * (-2 * w0 + 3 * wp1 - wp2) / h;
-	g1 = p[1];
-	g1x = px[1];
+	px[3] = df[3] * (15 * w0 - 15 * wn1 + wn2 - wp1) / (12.0 * h);
+	px[4] = df[4] * (245.0 * w0 - 245.0 * wn1 + 25.0 * wn2 - 2.0 * wn3 - 25.0 * wp1 + 2.0 * wp2) / (180.0 * h);
+	px[5] = df[5] * (7175.0 * w0 - 7175.0 * wn1 + 889.0 * wn2 - 119.0 * wn3 + 9.0 * wn4 - 889.0 * wp1 + 119.0 * wp2 - 9.0 * wp3) / (5040.0 * h);
+	
+	g1 = p[4];
+	g1x = px[4];
 	
 	// gauss point 2
 	// x = 0
 	p[0] = w0 + df[0] * ((11 * w0 - 7 * wn1 + 2 * wn2) / 6.0 - w0);
 	p[1] = w0 + df[1] * ((5 * w0 - wn1 + 2 * wp1) / 6.0 - w0);
 	p[2] = w0 + df[2] * ((2 * w0 + 5 * wp1 - wp2) / 6.0 - w0);
-
+	p[3] = w0 + df[3] * ((47 * w0 - 13 * wn1 + 2 * wn2 + 27 * wp1 - 3 * wp2) / 60.0 - w0);
+	p[4] = w0 + df[4] * ((319.0 * w0 - 101.0 * wn1 + 25.0 * wn2 - 3.0 * wn3 + 214.0 * wp1 - 38.0 * wp2 + 4.0 * wp3) / 420.0 - w0);
+	p[5] = w0 + df[5] * ((1879.0 * w0 - 641.0 * wn1 + 199.0 * wn2 - 41.0 * wn3 + 4.0 * wn4 + 1375.0 * wp1 - 305.0 * wp2 + 55.0 * wp3 - 5.0 * wp4) / 2520.0 - w0);
+	
 	px[0] = df[0] * (2 * w0 - 3 * wn1 + wn2) / h;
 	px[1] = df[1] * (-w0 + wp1) / h;
 	px[2] = df[2] * (-w0 + wp1) / h;
-	g2 = p[1];
-	g2x = px[1];
+	px[3] = df[3] * (-15 * w0 + wn1 + 15 * wp1 - wp2) / (12.0 * h);
+	px[4] = df[4] * (-245.0 * w0 + 25.0 * wn1 - 2.0 * wn2 + 245.0 * wp1 - 25.0 * wp2 + 2.0 * wp3) / (180.0 * h);
+	px[5] = df[5] * (-7175.0 * w0 + 889.0 * wn1 - 119.0 * wn2 + 9.0 * wn3 + 7175.0 * wp1 - 889.0 * wp2 + 119.0 * wp3 - 9.0 * wp4) / (5040.0 * h);
+	
+	g2 = p[4];
+	g2x = px[4];
 
 	// gauss point 3
 	// x = -0.5 - sqrt(5) / 10
 	p[0] = w0 + df[0] * (((59 - 9 * sqrt5) * w0 + 2 * (1 + 6 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wn2) / 60.0 - w0);
 	p[1] = w0 + df[1] * ((62 * w0 + (-1 + 3 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wp1) / 60.0 - w0);
 	p[2] = w0 + df[2] * (((59 + 9 * sqrt5) * w0 + (2 - 12 * sqrt5) * wp1 + (-1 + 3 * sqrt5) * wp2) / 60.0 - w0);
+	p[3] = w0 + df[3] * ((626 * w0 + 14 * (-1 + 3 * sqrt5) * wn1 + wn2 - 6 * sqrt5 * wn2 - 14 * wp1 - 42 * sqrt5 * wp1 + wp2 + 6 * sqrt5 * wp2) / 600.0 - w0);
+	p[4] = w0 + df[4] * ((1320580 * w0 + 5 * (-6777 + 20321 * sqrt5) * wn1 + 3894 * wn2 - 23324 * sqrt5 * wn2 - 299 * wn3 + 2681 * sqrt5 * wn3 - 33885 * wp1 - 
+ 		   101605 * sqrt5 * wp1 + 3894 * wp2 + 23324 * sqrt5 * wp2 - 299 * wp3 - 2681 * sqrt5 * wp3) / 1260000.0 - w0);
 
 	px[0] = df[0] * ((-((-15 + sqrt5) * w0) + 2 * (-10 + sqrt(5)) * wn1 - (-5 + sqrt5) * wn2)) / (10.0 * h);
 	px[1] = df[1] * (2 * sqrt5 * w0 - (5 + sqrt5) * wn1 - (-5 + sqrt5) * wp1) / (10.0 * h);
 	px[2] = df[2] * (-((15 + sqrt5) * w0) + 2 * (10 + sqrt5) * wp1 - (5 + sqrt5) * wp2) / (10.0 * h);
-	g3 = p[1];
-	g3x = px[1];
+	px[3] = df[3] * (162 * sqrt5 * w0 - 2 * (205 + 44 * sqrt5) * wn1 + 55 * wn2 + 7 * sqrt5 * wn2 + 410 * wp1 - 88 * sqrt5 * wp1 - 55 * wp2 + 7 * sqrt5 * wp2) / (600.0 * h);
+	px[4] = df[4] * (13730 * sqrt5 * w0 - 5 * (7000 + 1557 * sqrt5) * wn1 + 7525 * wn2 + 999 * sqrt5 * wn2 - 850 * wn3 - 79 * sqrt5 * wn3 + 35000 * wp1 - 
+ 			7785 * sqrt5 * wp1 - 7525 * wp2 + 999 * sqrt5 * wp2 + 850 * wp3 - 79 * sqrt5 * wp3) / (45000.0 * h);
+	g3 = p[4];
+	g3x = px[4];
 
 	// gauss point 4
 	// x = -0.5 + sqrt(5) / 10
 	p[0] = w0 + df[0] * (((59 + 9 * sqrt5) * w0 + (2 - 12 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wn2) / 60.0 - w0);
 	p[1] = w0 + df[1] * ((62 * w0 - (1 + 3 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wp1) / 60.0 - w0);
 	p[2] = w0 + df[2] * (((59 - 9 * sqrt5) * w0 + 2 * (1 + 6 * sqrt5) * wp1 - (1 + 3 * sqrt5) * wp2) / 60.0 - w0);
+	p[3] = w0 + df[3] * ((626 * w0 - 14 * (1 + 3 * sqrt5) * wn1 + wn2 + 6 * sqrt5 * wn2 - 14 * wp1 + 42 * sqrt5 * wp1 + wp2 - 6 * sqrt5 * wp2) / 600.0 - w0);
+	p[4] = w0 + df[4] * ((1320580 * w0 - 5 * (6777 + 20321 * sqrt5) * wn1 + 3894 * wn2 + 23324 * sqrt5 * wn2 - 299 * wn3 - 2681 * sqrt5 * wn3 - 33885 * wp1 + 
+ 		   101605 * sqrt5 * wp1 + 3894 * wp2 - 23324 * sqrt5 * wp2 - 299 * wp3 + 2681 * sqrt5 * wp3) / 1260000.0 - w0);
 
 	px[0] = df[0] *  ((15 + sqrt5) * w0 - 2 * (10 + sqrt5) * wn1 + (5 + sqrt5) * wn2) / (10.0 * h);
 	px[1] = df[1] * (-2 * sqrt5 * w0 + (-5 + sqrt5) * wn1 + (5 + sqrt5) * wp1) / (10.0 * h);
 	px[2] = df[2] * ((-15 + sqrt5) * w0 - 2 * (-10 + sqrt5) * wp1 + (-5 + sqrt5) * wp2) / (10.0 * h);
-	g4 = p[1];
-	g4x = px[1];
+	px[3] = df[3] * (-162 * sqrt5 * w0 + (-410 + 88 * sqrt5) * wn1 + 55 * wn2 - 7 * sqrt5 * wn2 + 410 * wp1 + 88 * sqrt5 * wp1 - 55 * wp2 - 7 * sqrt5 * wp2) / (600.0 * h);
+	px[4] = df[4] * (-13730 * sqrt5 * w0 + 5 * (-7000 + 1557 * sqrt5) * wn1 + 7525 * wn2 - 999 * sqrt5 * wn2 - 850 * wn3 + 79 * sqrt5 * wn3 + 35000 * wp1 + 
+ 			7785 * sqrt5 * wp1 - 7525 * wp2 - 999 * sqrt5 * wp2 + 850 * wp3 + 79 * sqrt5 * wp3) / (45000.0 * h);
+	g4 = p[4];
+	g4x = px[4];
 }
 
 // cell center rreconstruction
