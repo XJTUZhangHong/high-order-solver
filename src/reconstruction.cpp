@@ -1075,7 +1075,7 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	double dlo = 0.85;
 	double davg1= 0.85;
 	double davg2 = 0.85;
-	// P(9, 7,5,3) -- one 9th-order stencil, one 7th-order stencil, one 5th-order stencil, three 3rd-order stencil
+	// P(9,5,3) -- one 9th-order stencil, one 5th-order stencil, three 3rd-order stencil
 	//-- - parameter of WENO-- -
 	double beta[6], d[6], ww[6], alpha[6];
 	double epsilonW = 1e-6;
@@ -1168,7 +1168,7 @@ void weno_9th_ao_with_df_left(double& var, double& der1, double& der2, double wn
 	
 	// beta[3] represent the 5th-order smoothness indicator
 	beta[3] = beta5[2];
-	beta[5] = 1.0 / 15.0 * (beta5[0] + 5.0 * beta5[1] + 3.0 * beta5[2] + 5.0 * beta5[3] + beta5[4]) + abs(beta5[0] + beta5[1] - beta5[2] - beta5[3]);
+	beta[5] = 1.0 / 70.0 * (beta5[0] + 16.0 * beta5[1] + 36.0 * beta5[2] + 16.0 * beta5[3] + beta5[4]) + abs(beta5[0] - beta5[1] - beta5[3] + beta5[4]);
 			
 	double tau5 = 0.2 * (abs(beta[5] - beta[0]) + abs(beta[5] - beta[1]) + abs(beta[5] - beta[2]) + abs(beta[5] - beta[3]) + abs(beta[5] - beta[4]));
 
@@ -1314,7 +1314,7 @@ void weno_9th_ao_with_df_right(double& var, double& der1, double& der2, double w
 	
 	// beta[3] represent the 5th-order smoothness indicator
 	beta[3] = beta5[2];
-	beta[5] = 1.0 / 15.0 * (beta5[0] + 5.0 * beta5[1] + 3.0 * beta5[2] + 5.0 * beta5[3] + beta5[4]) + abs(beta5[0] + beta5[1] - beta5[2] - beta5[3]);
+	beta[5] = 1.0 / 70.0 * (beta5[0] + 16.0 * beta5[1] + 36.0 * beta5[2] + 16.0 * beta5[3] + beta5[4]) + abs(beta5[0] - beta5[1] - beta5[3] + beta5[4]);
 			
 	double tau5 = 0.2 * (abs(beta[5] - beta[0]) + abs(beta[5] - beta[1]) + abs(beta[5] - beta[2]) + abs(beta[5] - beta[3]) + abs(beta[5] - beta[4]));
 
@@ -2044,7 +2044,6 @@ void WENO9_AO_with_df_normal(Interface2d& left, Interface2d& right, Interface2d&
 		WENO9_AO_with_df(left.line.right, right.line.left, alpha, fluids[-4 * block.ny].convar, fluids[-3 * block.ny].convar, 
 		fluids[-2 * block.ny].convar, fluids[-block.ny].convar, fluids[0].convar, fluids[block.ny].convar, fluids[2 * block.ny].convar, fluids[3 * block.ny].convar,fluids[4 * block.ny].convar, fluids[0].dx);
 	}
-
 
 	if ((fluids[0].yindex > block.ghost - 2) && (fluids[0].yindex < block.ny - block.ghost + 1))
 	{
@@ -3469,8 +3468,8 @@ void weno_9th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 	
 	// beta[3] represent the 5th-order smoothness indicator
 	beta[3] = beta5[2];
-	beta[5] = 1.0 / 15.0 * (beta5[0] + 5.0 * beta5[1] + 3.0 * beta5[2] + 5.0 * beta5[3] + beta5[4]) + abs(beta5[0] + beta5[1] - beta5[2] - beta5[3]);
-			
+	beta[5] = 1.0 / 70.0 * (beta5[0] + 16.0 * beta5[1] + 36.0 * beta5[2] + 16.0 * beta5[3] + beta5[4]) + abs(beta5[0] - beta5[1] - beta5[3] + beta5[4]);
+	
 	double tau5 = 0.2 * (abs(beta[5] - beta[0]) + abs(beta[5] - beta[1]) + abs(beta[5] - beta[2]) + abs(beta[5] - beta[3]) + abs(beta[5] - beta[4]));
 
 	sum_alpha = 0.0;
@@ -3494,78 +3493,119 @@ void weno_9th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 
 	double sqrt5 = 2.236067977499790;
 	// gauss point 1
-	// x = -1
-	p[0] = w0 + df[0] * ((2 * w0 + 5 * wn1 - wn2) / 6.0 - w0);
-	p[1] = w0 + df[1] * ((5 * w0 + 2 * wn1 - wp1) / 6.0 - w0);
-	p[2] = w0 + df[2] * ((11 * w0 - 7 * wp1 + 2 * wp2) / 6.0 - w0);
-	p[3] = w0 + df[3] * ((47 * w0 + 27 * wn1 - 3 * wn2 - 13 * wp1 + 2 * wp2) / 60.0 - w0);
-	p[4] = w0 + df[4] * ((319.0 * w0 + 214.0 * wn1 - 38.0 * wn2 + 4.0 * wn3 - 101.0 * wp1 + 25.0 * wp2 - 3.0 * wp3) / 420.0 - w0);
-	p[5] = w0 + df[5] * ((1879.0 * w0 + 1375.0 * wn1 - 305.0 * wn2 + 55.0 * wn3 - 5.0 * wn4 - 641.0 * wp1 + 199.0 * wp2 - 41.0 * wp3 + 4.0 * wp4) / 2520.0 - w0);
+	double x = -1.0;
+	Polynomial_9th(p, px, df, wn4, wn3, wn2, wn1, w0, wp1, wp2, wp3, wp4, x, h);
 	
-	px[0] = df[0] * (w0 - wn1) / h;
-	px[1] = df[1] * (w0 - wn1) / h;
-	px[2] = df[2] * (-2 * w0 + 3 * wp1 - wp2) / h;
-	px[3] = df[3] * (15 * w0 - 15 * wn1 + wn2 - wp1) / (12.0 * h);
-	px[4] = df[4] * (245.0 * w0 - 245.0 * wn1 + 25.0 * wn2 - 2.0 * wn3 - 25.0 * wp1 + 2.0 * wp2) / (180.0 * h);
-	px[5] = df[5] * (7175.0 * w0 - 7175.0 * wn1 + 889.0 * wn2 - 119.0 * wn3 + 9.0 * wn4 - 889.0 * wp1 + 119.0 * wp2 - 9.0 * wp3) / (5040.0 * h);
-	
-	g1 = p[4];
-	g1x = px[4];
+	//-- - combination-- -
+	g1 = 0.0;
+	g1x = 0.0;
+
+	for (int k = 0; k < 6; k++)
+	{
+		g1 += final_weight[k] * p[k];
+		g1x += final_weight[k] * px[k];
+	}
 	
 	// gauss point 2
-	// x = 0
-	p[0] = w0 + df[0] * ((11 * w0 - 7 * wn1 + 2 * wn2) / 6.0 - w0);
-	p[1] = w0 + df[1] * ((5 * w0 - wn1 + 2 * wp1) / 6.0 - w0);
-	p[2] = w0 + df[2] * ((2 * w0 + 5 * wp1 - wp2) / 6.0 - w0);
-	p[3] = w0 + df[3] * ((47 * w0 - 13 * wn1 + 2 * wn2 + 27 * wp1 - 3 * wp2) / 60.0 - w0);
-	p[4] = w0 + df[4] * ((319.0 * w0 - 101.0 * wn1 + 25.0 * wn2 - 3.0 * wn3 + 214.0 * wp1 - 38.0 * wp2 + 4.0 * wp3) / 420.0 - w0);
-	p[5] = w0 + df[5] * ((1879.0 * w0 - 641.0 * wn1 + 199.0 * wn2 - 41.0 * wn3 + 4.0 * wn4 + 1375.0 * wp1 - 305.0 * wp2 + 55.0 * wp3 - 5.0 * wp4) / 2520.0 - w0);
-	
-	px[0] = df[0] * (2 * w0 - 3 * wn1 + wn2) / h;
-	px[1] = df[1] * (-w0 + wp1) / h;
-	px[2] = df[2] * (-w0 + wp1) / h;
-	px[3] = df[3] * (-15 * w0 + wn1 + 15 * wp1 - wp2) / (12.0 * h);
-	px[4] = df[4] * (-245.0 * w0 + 25.0 * wn1 - 2.0 * wn2 + 245.0 * wp1 - 25.0 * wp2 + 2.0 * wp3) / (180.0 * h);
-	px[5] = df[5] * (-7175.0 * w0 + 889.0 * wn1 - 119.0 * wn2 + 9.0 * wn3 + 7175.0 * wp1 - 889.0 * wp2 + 119.0 * wp3 - 9.0 * wp4) / (5040.0 * h);
-	
-	g2 = p[4];
-	g2x = px[4];
+	x = 0.0;
+	Polynomial_9th(p, px, df, wn4, wn3, wn2, wn1, w0, wp1, wp2, wp3, wp4, x, h);
+	//-- - combination-- -
+	g2 = 0.0;
+	g2x = 0.0;
+
+	for (int k = 0; k < 6; k++)
+	{
+		g2 += final_weight[k] * p[k];
+		g2x += final_weight[k] * px[k];
+	}
 
 	// gauss point 3
-	// x = -0.5 - sqrt(5) / 10
-	p[0] = w0 + df[0] * (((59 - 9 * sqrt5) * w0 + 2 * (1 + 6 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wn2) / 60.0 - w0);
-	p[1] = w0 + df[1] * ((62 * w0 + (-1 + 3 * sqrt5) * wn1 - (1 + 3 * sqrt5) * wp1) / 60.0 - w0);
-	p[2] = w0 + df[2] * (((59 + 9 * sqrt5) * w0 + (2 - 12 * sqrt5) * wp1 + (-1 + 3 * sqrt5) * wp2) / 60.0 - w0);
-	p[3] = w0 + df[3] * ((626 * w0 + 14 * (-1 + 3 * sqrt5) * wn1 + wn2 - 6 * sqrt5 * wn2 - 14 * wp1 - 42 * sqrt5 * wp1 + wp2 + 6 * sqrt5 * wp2) / 600.0 - w0);
-	p[4] = w0 + df[4] * ((1320580 * w0 + 5 * (-6777 + 20321 * sqrt5) * wn1 + 3894 * wn2 - 23324 * sqrt5 * wn2 - 299 * wn3 + 2681 * sqrt5 * wn3 - 33885 * wp1 - 
- 		   101605 * sqrt5 * wp1 + 3894 * wp2 + 23324 * sqrt5 * wp2 - 299 * wp3 - 2681 * sqrt5 * wp3) / 1260000.0 - w0);
+	x = -0.5 - sqrt5 / 10.0;
+	Polynomial_9th(p, px, df, wn4, wn3, wn2, wn1, w0, wp1, wp2, wp3, wp4, x, h);
+	
+	//-- - combination-- -
+	g3 = 0.0;
+	g3x = 0.0;
 
-	px[0] = df[0] * ((-((-15 + sqrt5) * w0) + 2 * (-10 + sqrt(5)) * wn1 - (-5 + sqrt5) * wn2)) / (10.0 * h);
-	px[1] = df[1] * (2 * sqrt5 * w0 - (5 + sqrt5) * wn1 - (-5 + sqrt5) * wp1) / (10.0 * h);
-	px[2] = df[2] * (-((15 + sqrt5) * w0) + 2 * (10 + sqrt5) * wp1 - (5 + sqrt5) * wp2) / (10.0 * h);
-	px[3] = df[3] * (162 * sqrt5 * w0 - 2 * (205 + 44 * sqrt5) * wn1 + 55 * wn2 + 7 * sqrt5 * wn2 + 410 * wp1 - 88 * sqrt5 * wp1 - 55 * wp2 + 7 * sqrt5 * wp2) / (600.0 * h);
-	px[4] = df[4] * (13730 * sqrt5 * w0 - 5 * (7000 + 1557 * sqrt5) * wn1 + 7525 * wn2 + 999 * sqrt5 * wn2 - 850 * wn3 - 79 * sqrt5 * wn3 + 35000 * wp1 - 
- 			7785 * sqrt5 * wp1 - 7525 * wp2 + 999 * sqrt5 * wp2 + 850 * wp3 - 79 * sqrt5 * wp3) / (45000.0 * h);
-	g3 = p[4];
-	g3x = px[4];
+	for (int k = 0; k < 6; k++)
+	{
+		g3 += final_weight[k] * p[k];
+		g3x += final_weight[k] * px[k];
+	}
 
 	// gauss point 4
-	// x = -0.5 + sqrt(5) / 10
-	p[0] = w0 + df[0] * (((59 + 9 * sqrt5) * w0 + (2 - 12 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wn2) / 60.0 - w0);
-	p[1] = w0 + df[1] * ((62 * w0 - (1 + 3 * sqrt5) * wn1 + (-1 + 3 * sqrt5) * wp1) / 60.0 - w0);
-	p[2] = w0 + df[2] * (((59 - 9 * sqrt5) * w0 + 2 * (1 + 6 * sqrt5) * wp1 - (1 + 3 * sqrt5) * wp2) / 60.0 - w0);
-	p[3] = w0 + df[3] * ((626 * w0 - 14 * (1 + 3 * sqrt5) * wn1 + wn2 + 6 * sqrt5 * wn2 - 14 * wp1 + 42 * sqrt5 * wp1 + wp2 - 6 * sqrt5 * wp2) / 600.0 - w0);
-	p[4] = w0 + df[4] * ((1320580 * w0 - 5 * (6777 + 20321 * sqrt5) * wn1 + 3894 * wn2 + 23324 * sqrt5 * wn2 - 299 * wn3 - 2681 * sqrt5 * wn3 - 33885 * wp1 + 
- 		   101605 * sqrt5 * wp1 + 3894 * wp2 - 23324 * sqrt5 * wp2 - 299 * wp3 + 2681 * sqrt5 * wp3) / 1260000.0 - w0);
+	x = -0.5 + sqrt5 / 10.0;
+	Polynomial_9th(p, px, df, wn4, wn3, wn2, wn1, w0, wp1, wp2, wp3, wp4, x, h);
+	
+	//-- - combination-- -
+	g4 = 0.0;
+	g4x = 0.0;
 
-	px[0] = df[0] *  ((15 + sqrt5) * w0 - 2 * (10 + sqrt5) * wn1 + (5 + sqrt5) * wn2) / (10.0 * h);
-	px[1] = df[1] * (-2 * sqrt5 * w0 + (-5 + sqrt5) * wn1 + (5 + sqrt5) * wp1) / (10.0 * h);
-	px[2] = df[2] * ((-15 + sqrt5) * w0 - 2 * (-10 + sqrt5) * wp1 + (-5 + sqrt5) * wp2) / (10.0 * h);
-	px[3] = df[3] * (-162 * sqrt5 * w0 + (-410 + 88 * sqrt5) * wn1 + 55 * wn2 - 7 * sqrt5 * wn2 + 410 * wp1 + 88 * sqrt5 * wp1 - 55 * wp2 - 7 * sqrt5 * wp2) / (600.0 * h);
-	px[4] = df[4] * (-13730 * sqrt5 * w0 + 5 * (-7000 + 1557 * sqrt5) * wn1 + 7525 * wn2 - 999 * sqrt5 * wn2 - 850 * wn3 + 79 * sqrt5 * wn3 + 35000 * wp1 + 
- 			7785 * sqrt5 * wp1 - 7525 * wp2 - 999 * sqrt5 * wp2 + 850 * wp3 + 79 * sqrt5 * wp3) / (45000.0 * h);
-	g4 = p[4];
-	g4x = px[4];
+	for (int k = 0; k < 6; k++)
+	{
+		g4 += final_weight[k] * p[k];
+		g4x += final_weight[k] * px[k];
+	}
+}
+
+void Polynomial_9th(double* p, double* px, double* df, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double x, double h)
+{
+	// 3rd-order polynomial
+	double a3, b3, c3;
+	a3 = (11 * w0 - 7 * wn1 + 2 * wn2) / 6.0;
+	b3 = (2 * w0 - 3 * wn1 + wn2);
+	c3 = (w0 - 2 * wn1 + wn2) / 2.0;
+	p[0] = w0 + df[0] * (a3 + b3 * x + c3 * x * x - w0);
+	px[0] = df[0] * (b3 + 2.0 * c3 * x) / h;
+
+	a3 = (5 * w0 - wn1 + 2 * wp1) / 6.0;
+	b3 = (-w0 + wp1);
+	c3 = (-2 * w0 + wn1 + wp1) / 2.0;
+	p[1] = w0 + df[1] * (a3 + b3 * x + c3 * x * x - w0);
+	px[1] = df[1] * (b3 + 2.0 * c3 * x) / h;
+
+	a3 = (2 * w0 + 5 * wp1 - wp2) / 6.0;
+	b3 = (-w0 + wp1);
+	c3 = (w0 - 2 * wp1 + wp2) / 2.0;
+	p[2] = w0 + df[2] * (a3 + b3 * x + c3 * x * x - w0);
+	px[2] = df[2] * (b3 + 2.0 * c3 * x) / h;
+	// 5th-order polynomial
+	double a5, b5, c5, d5, e5;
+	a5 = (47 * w0 - 13 * wn1 + 2 * wn2 + 27 * wp1 - 3 * wp2) / 60.0;
+	b5 = (-15 * w0 + wn1 + 15 * wp1 - wp2) / 12.0;
+	c5 = (-8 * w0 + 6 * wn1 - wn2 + 2 * wp1 + wp2) / 8.0;
+	d5 = (3 * w0 - wn1 - 3 * wp1 + wp2) / 6.0;
+	e5 = (6 * w0 - 4 * wn1 + wn2 - 4 * wp1 + wp2) / 24.0;
+	p[3] = w0 + df[3] * (a5 + b5 * x + c5 * x * x + d5 * x * x * x + e5 * x * x * x * x - w0);
+	px[3] = df[3] * (b5 + 2.0 * c5 * x + 3.0 * d5 * x * x + 4.0 * e5 * x * x * x) / h;
+	// 7th-order polynomial
+	double a7, b7, c7, d7, e7, f7, g7;
+	a7 = (319 * w0 - 101 * wn1 + 25 * wn2 - 3 * wn3 + 214 * wp1 - 38 * wp2 + 4 * wp3) / 420.0;
+	b7 = (-245 * w0 + 25 * wn1 - 2 * wn2 + 245 * wp1 - 25 * wp2 + 2 * wp3) / 180.0;
+	c7 = (-230 * w0 + 210 * wn1 - 57 * wn2 + 7 * wn3 + 15 * wp1 + 63 * wp2 - 8 * wp3) / 240.0;
+	d7 = (28 * w0 - 11 * wn1 + wn2 - 28 * wp1 + 11 * wp2 - wp3) / 36.0;
+	e7 = (46 * w0 - 39 * wn1 + 15 * wn2 - 2 * wn3 - 24 * wp1 + 3 * wp2 + wp3) / 144.0;
+	f7 = (-10 * w0 + 5 * wn1 - wn2 + 10 * wp1 - 5 * wp2 + wp3) / 120.0;
+	g7 = (-20 * w0 + 15 * wn1 - 6 * wn2 + wn3 + 15 * wp1 - 6 * wp2 + wp3) / 720.0;
+	p[4] = w0 + df[4] * (a7 + b7 * x + c7 * x * x + d7 * x * x * x + e7 * x * x * x * x + f7 * x * x * x * x * x
+		 + g7 * x * x * x * x * x * x - w0);
+	px[4] = df[4] * (b7 + 2.0 * c7 * x + 3.0 * d7 * x * x + 4.0 * e7 * x * x * x + 5.0 * f7 * x * x * x * x
+		 + 6.0 * g7 * x * x * x * x * x) / h;
+	// 9th-order polynomial
+	double a9, b9, c9, d9, e9, f9, g9, h9, i9;
+	a9 = (1879 * w0 - 641 * wn1 + 199 * wn2 - 41 * wn3 + 4 * wn4 + 1375 * wp1 - 305 * wp2 + 55 * wp3 - 5 * wp4) / 2520.0;
+	b9 = (-7175 * w0 + 889 * wn1 - 119 * wn2 + 9 * wn3 + 7175 * wp1 - 889 * wp2 + 119 * wp3 - 9 * wp4) / 5040.0;
+	c9 = (-27895 * w0 + 28679 * wn1 - 9835 * wn2 + 2081 * wn3 - 205 * wn4 - 2065 * wp1 + 11459 * wp2 - 2455 * wp3 + 236 * wp4) / 30240.0;
+	d9 = (1365 * w0 - 587 * wn1 + 89 * wn2 - 7 * wn3 - 1365 * wp1 + 587 * wp2 - 89 * wp3 + 7 * wp4) / 1440.0;
+	e9 = (1174 * w0 - 1160 * wn1 + 556 * wn2 - 128 * wn3 + 13 * wn4 - 464 * wp1 - 68 * wp2 + 88 * wp3 - 11 * wp4) / 3456.0;
+	f9 = (-75 * w0 + 41 * wn1 - 11 * wn2 + wn3 + 75 * wp1 - 41 * wp2 + 11 * wp3 - wp4) / 480.0;
+	g9 = (-380 * w0 + 334 * wn1 - 170 * wn2 + 46 * wn3 - 5 * wn4 + 250 * wp1 - 86 * wp2 + 10 * wp3 + wp4) / 8640.0;
+	h9 = (35 * w0 - 21 * wn1 + 7 * wn2 - wn3 - 35 * wp1 + 21 * wp2 - 7 * wp3 + wp4) / 5040.0;
+	i9 = (70 * w0 - 56 * wn1 + 28 * wn2 - 8 * wn3 + wn4 - 56 * wp1 + 28 * wp2 - 8 * wp3 + wp4) / 40320.0;
+	p[5] = w0 + df[5] * (a9 + b9 * x + c9 * x * x + d9 * x * x * x + e9 * x * x * x * x + f9 * x * x * x * x * x
+		 + g9 * x * x * x * x * x * x + h9 * x * x * x * x * x * x * x + i9 * x * x * x * x * x * x * x * x - w0);
+	px[5] = df[5] * (b9 + 2.0 * c9 * x + 3.0 * d9 * x * x + 4.0 * e9 * x * x * x + 5.0 * f9 * x * x * x * x
+		 + 6.0 * g9 * x * x * x * x * x + 7.0 * h9 * x * x * x * x * x * x + 8.0 * i9 * x * x * x * x * x * x * x) / h;
 }
 
 // cell center rreconstruction

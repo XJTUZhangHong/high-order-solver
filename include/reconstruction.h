@@ -80,6 +80,7 @@ void weno_7th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x
 void WENO9_AO_with_df_tangent(Interface2d* left, Interface2d* right, Interface2d* down, Interface2d* up, Fluid2d* fluids, Block2d block);
 void weno_9th_ao_with_df_tangential(Recon2d* re, Recon2d& wn4, Recon2d& wn3, Recon2d& wn2, Recon2d& wn1, Recon2d& w0, Recon2d& wp1, Recon2d& wp2, Recon2d& wp3, Recon2d& wp4, double* alpha1, double* alpha2, double h);
 void weno_9th_ao_with_df_2gauss(double& g1, double& g1x, double& g2, double& g2x, double& g3, double& g3x, double& g4, double& g4x, double* df, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double h, int order);
+void Polynomial_9th(double* p, double* px, double* df, double wn4, double wn3, double wn2, double wn1, double w0, double wp1, double wp2, double wp3, double wp4, double x, double h);
 
 void Reconstruction_forg0(Interface2d *xinterfaces, Interface2d *yinterfaces, Fluid2d *fluids, Block2d block);
 typedef void(*Reconstruction_forG0_2D_normal)(Interface2d *xinterfaces, Interface2d *yinterfaces, Fluid2d *fluids, Block2d block);

@@ -8,7 +8,7 @@ void PlanarShock()
 	block.uniform = true;
 	block.nodex = 500;
 	block.nodey = 500;
-	block.ghost = 4;
+	block.ghost = 5;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -28,7 +28,7 @@ void PlanarShock()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 3;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -131,8 +131,8 @@ void PlanarShock()
 
 			if (is_using_df_factor)
 			{
-				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
 			}
 			for (int i = 0; i < block.stages; i++)
 			{
@@ -176,7 +176,7 @@ void PlanarSheer()
 	block.uniform = true;
 	block.nodex = 500;
 	block.nodey = 500;
-	block.ghost = 4;
+	block.ghost = 5;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -196,7 +196,7 @@ void PlanarSheer()
 	upboundary = free_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 2;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -306,8 +306,8 @@ void PlanarSheer()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -391,9 +391,9 @@ void High_mach_astrophusical_jet()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 256;
-	block.nodey = 256;
-	block.ghost = 4;
+	block.nodex = 448;
+	block.nodey = 448;
+	block.ghost = 5;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -468,7 +468,7 @@ void High_mach_astrophusical_jet()
 	//ended mesh part
 
 	//RM 2 T=0.6 with x,y = 0.7
-	double tstop[]{ 0.0001 };
+	double tstop[]{ 0.001 };
 	IC_for_astrophusical_jet(fluids, block);
 
 	runtime.finish_initial = clock();
@@ -508,7 +508,7 @@ void High_mach_astrophusical_jet()
 			CopyFluid_new_to_old(fluids, block);
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
-			block.dt = 2e-7;
+			block.dt = 1e-6;
 			if (is_using_df_factor)
 			{
 				if (block.step == 0)
@@ -518,8 +518,8 @@ void High_mach_astrophusical_jet()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -546,7 +546,6 @@ void High_mach_astrophusical_jet()
 				}
 			}
 			block.step++;
-			//cout << "The step is " << block.step << endl;
 			block.t = block.t + block.dt;
 		}
 		output2d(fluids, block);
@@ -561,14 +560,13 @@ void IC_for_astrophusical_jet(Fluid2d* fluid, Block2d block)
 {	
     int n = block.nx;
 	for (int i = 0; i < block.nx; i++)
-	for (int i = 0; i < block.nx; i++)
 	{
-		for (int j = 0; j < block.nx; j++)
+		for (int j = 0; j < block.ny; j++)
 		{
-			fluid[i * block.nx + j].primvar[0] = 0.5;
-			fluid[i * block.nx + j].primvar[1] = 0.0;
-			fluid[i * block.nx + j].primvar[2] = 0.0;
-			fluid[i * block.nx + j].primvar[3] = 0.4127;
+			fluid[i * block.ny + j].primvar[0] = 0.5;
+			fluid[i * block.ny + j].primvar[1] = 0.0;
+			fluid[i * block.ny + j].primvar[2] = 0.0;
+			fluid[i * block.ny + j].primvar[3] = 0.4127;
 		}
 	}
 
@@ -589,17 +587,17 @@ void inflow_boundary_left(Fluid2d* fluids, Block2d block)
 		{
 			if (j * block.dy > 0.45 && j * block.dy < 0.55)
 			{
-				fluids[i * block.nx + j].primvar[0] = 5.0;
-				fluids[i * block.nx + j].primvar[1] = 8000.0;
-				fluids[i * block.nx + j].primvar[2] = 0.0;
-				fluids[i * block.nx + j].primvar[3] = 0.4127;
+				fluids[i * block.ny + j].primvar[0] = 5.0;
+				fluids[i * block.ny + j].primvar[1] = 800.0;
+				fluids[i * block.ny + j].primvar[2] = 0.0;
+				fluids[i * block.ny + j].primvar[3] = 0.4127;
 			}
 			else
 			{
-				fluids[i * block.nx + j].primvar[0] = fluids[(i + 1) * block.nx + j].primvar[0];
-				fluids[i * block.nx + j].primvar[1] = fluids[(i + 1) * block.nx + j].primvar[1];
-				fluids[i * block.nx + j].primvar[2] = fluids[(i + 1) * block.nx + j].primvar[2];
-				fluids[i * block.nx + j].primvar[3] = fluids[(i + 1) * block.nx + j].primvar[3];
+				fluids[i * block.ny + j].primvar[0] = fluids[(i + 1) * block.ny + j].primvar[0];
+				fluids[i * block.ny + j].primvar[1] = fluids[(i + 1) * block.ny + j].primvar[1];
+				fluids[i * block.ny + j].primvar[2] = fluids[(i + 1) * block.ny + j].primvar[2];
+				fluids[i * block.ny + j].primvar[3] = fluids[(i + 1) * block.ny + j].primvar[3];
 			}
 
 			Primvar_to_convar_2D(fluids[i * block.ny + j].convar, fluids[i * block.ny + j].primvar);
@@ -615,7 +613,7 @@ void RT_instability()
 	block.uniform = true;
 	block.nodex = 100;
 	block.nodey = 400;
-	block.ghost = 4;
+	block.ghost = 5;
 
 	block.CFL = 0.5;
 	Fluid2d* bcvalue = new Fluid2d[4];
@@ -630,7 +628,7 @@ void RT_instability()
 	BoundaryCondition2d upboundary(0);
 
 	//prepare the reconstruction function
-	gausspoint = 3;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -648,7 +646,7 @@ void RT_instability()
 	tau_type = Euler;
 	c1_euler = 0.05;
 	c2_euler = 1;
-	flux_function_2d = GKS2D;
+	flux_function_2d = LF2D;
 
 	//prepare time marching stratedgy
 
@@ -738,8 +736,8 @@ void RT_instability()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -762,7 +760,6 @@ void RT_instability()
 				}
 			}
 			block.step++;
-			//cout << "The step is " << block.step << endl;
 			block.t = block.t + block.dt;
 		}
 		output2d(fluids, block);
@@ -824,7 +821,7 @@ void doubleMach()
 	block.uniform = true;
 	block.nodex = 960;
 	block.nodey = 240;
-	block.ghost = 4;
+	block.ghost = 5;
 
 	double tstop = 0.2;
 	block.CFL = 0.5;
@@ -844,7 +841,7 @@ void doubleMach()
 
 	//prepare the reconstruction function
 
-	gausspoint = 3;
+	gausspoint = 4;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -946,8 +943,8 @@ void doubleMach()
 			}
 			else
 			{
-				cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
-				cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
+				cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
+				cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
 			}
 		}
 		for (int i = 0; i < block.stages; i++)
@@ -1325,7 +1322,7 @@ void accuracy_sinwave_2d()
 	int mesh_set = 4;
 	int mesh_number_start = 10;
 	double length = 2.0;
-	double CFL = 0.02;
+	double CFL = 0.05;
 	double dt_ratio = 1.0;
 
 	double mesh_size_start = length / mesh_number_start;
