@@ -521,7 +521,8 @@ void accuracy_sinwave_1d()
 	int mesh_set = 4; 
 	int mesh_number_start = 10; 
 	double length = 2.0; 
-	double CFL = 0.02;
+	//double CFL = 0.02;
+	double CFL = 0.1;
 
 	double dt_ratio = 1.0;
 	//end
@@ -583,7 +584,7 @@ void accuracy_sinwave_1d(double& CFL, double& dt_ratio, int& mesh_number, double
 	//end
 
 
-	cellreconstruction = WENO9_AO_with_DF;
+	cellreconstruction = WENO5_AO_with_DF;
 	wenotype = wenoz;
 	reconstruction_variable = conservative;
 	g0reconstruction = Center_collision;

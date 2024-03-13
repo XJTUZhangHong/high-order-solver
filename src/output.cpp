@@ -68,7 +68,11 @@ void output2d(Fluid2d* fluids, Block2d block)
 
 	// Lunix File Output Directory
 	ofstream ofs;
-	ofs.open("../data/R2d.txt", ios::trunc);
+	stringstream name;
+	name << "../data/R-" << block.step << ".txt";
+	string s;
+	name >> s;
+	ofs.open(s, ios::trunc);
 	for (int j = block.ghost; j < block.ghost + block.nodey; j++)
 	{
 		for (int i = block.ghost; i < block.ghost + block.nodex; i++)

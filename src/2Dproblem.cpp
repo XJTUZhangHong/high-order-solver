@@ -391,8 +391,8 @@ void High_mach_astrophusical_jet()
 	runtime.start_initial = clock();
 	Block2d block;
 	block.uniform = true;
-	block.nodex = 448;
-	block.nodey = 448;
+	block.nodex = 1600;
+	block.nodey = 1600;
 	block.ghost = 5;
 
 	block.CFL = 0.5;
@@ -413,7 +413,7 @@ void High_mach_astrophusical_jet()
 	upboundary = periodic_boundary_up;
 
 	//prepare the reconstruction function
-	gausspoint = 4;
+	gausspoint = 3;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -468,7 +468,7 @@ void High_mach_astrophusical_jet()
 	//ended mesh part
 
 	//RM 2 T=0.6 with x,y = 0.7
-	double tstop[]{ 0.001 };
+	double tstop[]{ 0.0001 };
 	IC_for_astrophusical_jet(fluids, block);
 
 	runtime.finish_initial = clock();
@@ -508,7 +508,7 @@ void High_mach_astrophusical_jet()
 			CopyFluid_new_to_old(fluids, block);
 
 			block.dt = Get_CFL(block, fluids, tstop[instant]);
-			block.dt = 1e-6;
+			block.dt = 0.5e-7;
 			if (is_using_df_factor)
 			{
 				if (block.step == 0)
@@ -518,8 +518,8 @@ void High_mach_astrophusical_jet()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO7_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO7_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -544,6 +544,10 @@ void High_mach_astrophusical_jet()
 				{
 					Update_alpha(xinterfaces, yinterfaces, fluids, block);
 				}
+			}
+			if (block.step % 20 == 0)
+			{
+				output2d(fluids, block);
 			}
 			block.step++;
 			block.t = block.t + block.dt;
@@ -588,7 +592,7 @@ void inflow_boundary_left(Fluid2d* fluids, Block2d block)
 			if (j * block.dy > 0.45 && j * block.dy < 0.55)
 			{
 				fluids[i * block.ny + j].primvar[0] = 5.0;
-				fluids[i * block.ny + j].primvar[1] = 800.0;
+				fluids[i * block.ny + j].primvar[1] = 8000.0;
 				fluids[i * block.ny + j].primvar[2] = 0.0;
 				fluids[i * block.ny + j].primvar[3] = 0.4127;
 			}
