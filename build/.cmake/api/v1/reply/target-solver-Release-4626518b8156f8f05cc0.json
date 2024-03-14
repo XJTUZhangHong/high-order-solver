@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "I:/solver/solver.exe"
+			"path" : "D:/Research/high-order-solver/solver.exe"
 		},
 		{
-			"path" : "I:/solver/solver.pdb"
+			"path" : "D:/Research/high-order-solver/solver.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -52,7 +52,7 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "I:/solver/include"
+					"path" : "D:/Research/high-order-solver/include"
 				}
 			],
 			"language" : "CXX",
