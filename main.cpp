@@ -14,8 +14,8 @@ int main()
     //accuracy_sinwave_1d();
     //ShuOsher();
     // 2-D problem
-    //RT_instability();
-    PlanarShock();
+    RT_instability();
+    //PlanarShock();
     //PlanarSheer();
     //High_mach_astrophusical_jet();
     //doubleMach();

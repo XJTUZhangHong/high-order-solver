@@ -41,7 +41,7 @@ void Update_with_gauss(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** y
 
 void Update_with_gauss_RK3(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
 
-void Update_RT(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
+void Update_with_source(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage);
 
 // three-dimensional problem
 typedef void(*TimeMarchingCoefficient_3d)(Block3d &block);

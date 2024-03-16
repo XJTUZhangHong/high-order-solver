@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "d:/Research/high-order-solver/build"
+			"value" : "d:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -587,7 +587,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "D:/Research/high-order-solver/build/CMakeFiles/pkgRedirects"
+			"value" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/build/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -659,7 +659,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "D:/Research/high-order-solver"
+			"value" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1499,7 +1499,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "D:/Research/high-order-solver/build"
+			"value" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/build"
 		},
 		{
 			"name" : "Project_IS_TOP_LEVEL",
@@ -1523,7 +1523,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "D:/Research/high-order-solver"
+			"value" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver"
 		},
 		{
 			"name" : "_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED",

@@ -174,8 +174,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "D:/Research/high-order-solver/build",
-		"source" : "D:/Research/high-order-solver"
+		"build" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/build",
+		"source" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver"
 	},
 	"version" : 
 	{

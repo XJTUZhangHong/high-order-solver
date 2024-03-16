@@ -397,8 +397,6 @@ void Update(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Blo
 
 						}
 						xfluxes[i * (block.ny + 1) + j][stage].gauss[num_gauss].x[var] = Flux;
-						// calculate the final flux of the interface, in x in xfluxes, by the obtained the flux and its derivative (f, def, der2f) at guass points, in xfluxes, and the corresponding weight factors
-						// calculate by several stages according to the time marching method. same for yfluxes
 					}
 				}
 			}
@@ -430,48 +428,48 @@ void Update(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Blo
 		}
 	}
 
-	void Update_with_gauss(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage)
+void Update_with_gauss(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage)
+{
+	//Note : calculate the final flux of the cell, in fluids, by the obtained final flux of interface, in xfluxes and yfluxes
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost + 1; i++)
 	{
-		//Note : calculate the final flux of the cell, in fluids, by the obtained final flux of interface, in xfluxes and yfluxes
-	#pragma omp parallel  for
-		for (int i = block.ghost; i < block.nodex + block.ghost + 1; i++)
+		for (int j = block.ghost; j < block.nodey + block.ghost + 1; j++)
 		{
-			for (int j = block.ghost; j < block.nodey + block.ghost + 1; j++)
+			int face = i * (block.ny + 1) + j;
+			for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
 			{
-				int face = i * (block.ny + 1) + j;
-				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
-				{
-					Local_to_Global(yfluxes[face][stage].gauss[num_gauss].x, yfluxes[face][stage].gauss[num_gauss].normal);
-					Local_to_Global(xfluxes[face][stage].gauss[num_gauss].x, xfluxes[face][stage].gauss[num_gauss].normal);
-				}
+				Local_to_Global(yfluxes[face][stage].gauss[num_gauss].x, yfluxes[face][stage].gauss[num_gauss].normal);
+				Local_to_Global(xfluxes[face][stage].gauss[num_gauss].x, xfluxes[face][stage].gauss[num_gauss].normal);
 			}
 		}
+	}
 
-	#pragma omp parallel  for
-		for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+#pragma omp parallel  for
+	for (int i = block.ghost; i < block.nodex + block.ghost; i++)
+	{
+		for (int j = block.ghost; j < block.nodey + block.ghost; j++)
 		{
-			for (int j = block.ghost; j < block.nodey + block.ghost; j++)
+			int cell = i * (block.ny) + j;
+			int face = i * (block.ny + 1) + j;
+			
+			double total_flux;
+			for (int var = 0; var < 4; var++)
 			{
-				int cell = i * (block.ny) + j;
-				int face = i * (block.ny + 1) + j;
-				
-				double total_flux;
-				for (int var = 0; var < 4; var++)
+				fluids[cell].convar[var] = fluids[cell].convar_old[var]; //get the Wn from convar_old
+				total_flux = 0.0;
+				for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
 				{
-					fluids[cell].convar[var] = fluids[cell].convar_old[var]; //get the Wn from convar_old
-					total_flux = 0.0;
-					for (int num_gauss = 0; num_gauss < gausspoint; num_gauss++)
-					{
-						total_flux += yfluxes[face][stage].gauss[num_gauss].length * yfluxes[face][stage].gauss[num_gauss].x[var];
-						total_flux += -yfluxes[face + 1][stage].gauss[num_gauss].length * yfluxes[face + 1][stage].gauss[num_gauss].x[var];
-						total_flux += xfluxes[face][stage].gauss[num_gauss].length * xfluxes[face][stage].gauss[num_gauss].x[var];
-						total_flux += -xfluxes[face + block.ny + 1][stage].gauss[num_gauss].length * xfluxes[face + block.ny + 1][stage].gauss[num_gauss].x[var];
-					}
-					fluids[cell].convar[var] += total_flux / fluids[cell].area;
-					// calculate the final flux of the cell, in fluids, by the obtained final flux of interface, in xfluxes and yfluxes
-					// in 2d, the total flux be updated by the line-averaged flux of four interface
+					total_flux += yfluxes[face][stage].gauss[num_gauss].length * yfluxes[face][stage].gauss[num_gauss].x[var];
+					total_flux += -yfluxes[face + 1][stage].gauss[num_gauss].length * yfluxes[face + 1][stage].gauss[num_gauss].x[var];
+					total_flux += xfluxes[face][stage].gauss[num_gauss].length * xfluxes[face][stage].gauss[num_gauss].x[var];
+					total_flux += -xfluxes[face + block.ny + 1][stage].gauss[num_gauss].length * xfluxes[face + block.ny + 1][stage].gauss[num_gauss].x[var];
 				}
+				fluids[cell].convar[var] += total_flux / fluids[cell].area;
+				// calculate the final flux of the cell, in fluids, by the obtained final flux of interface, in xfluxes and yfluxes
+				// in 2d, the total flux be updated by the line-averaged flux of four interface
 			}
+		}
 	}
 }
 
@@ -533,7 +531,7 @@ void Update_with_gauss_RK3(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss
 	}
 }
 
-void Update_RT(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage)
+void Update_with_source(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, Block2d block, int stage)
 {
 	double dt = block.dt;
 #pragma omp parallel  for
@@ -638,20 +636,45 @@ void Update_RT(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** yfluxes, 
 			if (timecoe_list_2d == RK2_2D)
 			{
 				if (stage == 0)
-			{
-				for (int k = 0; k < 4; k++)
 				{
-					fluids[cell].convar[k] = fluids[cell].convar_old[k] + block.dt * fluids[cell].Lw1[stage][k];
+					for (int k = 0; k < 4; k++)
+					{
+						fluids[cell].convar[k] = fluids[cell].convar_old[k] + block.dt * fluids[cell].Lw1[stage][k];
+					}
 				}
-			}
 				if (stage == 1)
-			{
-				for (int k = 0; k < 4; k++)
 				{
-					fluids[cell].convar[k] = fluids[cell].convar_old[k] + 0.5 * block.dt * fluids[cell].Lw1[0][k]
-						+ 0.5 * block.dt * fluids[cell].Lw1[1][k];
+					for (int k = 0; k < 4; k++)
+					{
+						fluids[cell].convar[k] = fluids[cell].convar_old[k] + 0.5 * block.dt * fluids[cell].Lw1[0][k]
+							+ 0.5 * block.dt * fluids[cell].Lw1[1][k];
+					}
 				}
 			}
+			// RK3
+			if (timecoe_list_2d == RK3_2D)
+			{
+				if (stage == 0)
+				{
+					for (int k = 0; k < 4; k++)
+					{
+						fluids[cell].convar[k] = fluids[cell].convar_old[k] + block.dt * fluids[cell].Lw1[stage][k];
+					}
+				}
+				if (stage == 1)
+				{
+					for (int k = 0; k < 4; k++)
+					{
+						fluids[cell].convar[k] = 0.75 * fluids[cell].convar_old[k] + 0.25 * fluids[cell].convar[k] + 0.25 * block.dt * fluids[cell].Lw1[stage][k];
+					}
+				}
+				if (stage == 2)
+				{
+					for (int k = 0; k < 4; k++)
+					{
+						fluids[cell].convar[k] = fluids[cell].convar_old[k] / 3 + 2 * fluids[cell].convar[k] / 3 + 2 * block.dt * fluids[cell].Lw1[stage][k] / 3;
+					}
+				}
 			}
 			// RK4
 			if(timecoe_list_2d == RK4_2D)

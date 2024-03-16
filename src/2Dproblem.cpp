@@ -631,7 +631,7 @@ void RT_instability()
 	BoundaryCondition2d upboundary(0);
 
 	//prepare the reconstruction function
-	gausspoint = 4;
+	gausspoint = 2;
 	SetGuassPoint();
 
 	reconstruction_variable = characteristic;
@@ -655,7 +655,7 @@ void RT_instability()
 
 
 	//time coe list must be 2d
-	timecoe_list_2d = RK2_2D;
+	timecoe_list_2d = RK3_2D;
 	Initial_stages(block);
 
 
@@ -739,8 +739,8 @@ void RT_instability()
 				}
 				else
 				{
-					cellreconstruction_2D_normal = WENO9_AO_with_df_normal;
-					cellreconstruction_2D_tangent = WENO9_AO_with_df_tangent;
+					cellreconstruction_2D_normal = WENO5_AO_with_df_normal;
+					cellreconstruction_2D_tangent = WENO5_AO_with_df_tangent;
 				}
 			}
 			for (int i = 0; i < block.stages; i++)
@@ -755,7 +755,7 @@ void RT_instability()
 
 				Calculate_flux(xfluxes, yfluxes, xinterfaces, yinterfaces, block, i);
 
-				Update_RT(fluids, xfluxes, yfluxes, block, i);
+				Update_with_source(fluids, xfluxes, yfluxes, block, i);
 
 				if (is_using_df_factor)
 				{

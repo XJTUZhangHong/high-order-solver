@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "D:/Research/high-order-solver/solver.exe"
+			"path" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/solver.exe"
 		},
 		{
-			"path" : "D:/Research/high-order-solver/solver.pdb"
+			"path" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/solver.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -52,7 +52,7 @@
 			[
 				{
 					"backtrace" : 2,
-					"path" : "D:/Research/high-order-solver/include"
+					"path" : "D:/Research/Arbitrary high-order reconstruction based on DF/high-order-solver/include"
 				}
 			],
 			"language" : "CXX",
