@@ -651,31 +651,6 @@ void Update_with_source(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** 
 					}
 				}
 			}
-			// RK3
-			if (timecoe_list_2d == RK3_2D)
-			{
-				if (stage == 0)
-				{
-					for (int k = 0; k < 4; k++)
-					{
-						fluids[cell].convar[k] = fluids[cell].convar_old[k] + block.dt * fluids[cell].Lw1[stage][k];
-					}
-				}
-				if (stage == 1)
-				{
-					for (int k = 0; k < 4; k++)
-					{
-						fluids[cell].convar[k] = 0.75 * fluids[cell].convar_old[k] + 0.25 * fluids[cell].convar[k] + 0.25 * block.dt * fluids[cell].Lw1[stage][k];
-					}
-				}
-				if (stage == 2)
-				{
-					for (int k = 0; k < 4; k++)
-					{
-						fluids[cell].convar[k] = fluids[cell].convar_old[k] / 3 + 2 * fluids[cell].convar[k] / 3 + 2 * block.dt * fluids[cell].Lw1[stage][k] / 3;
-					}
-				}
-			}
 			// RK4
 			if(timecoe_list_2d == RK4_2D)
 			{
@@ -712,6 +687,18 @@ void Update_with_source(Fluid2d* fluids, Flux2d_gauss** xfluxes, Flux2d_gauss** 
 				}
 			}
 			}
+			// S2O4
+			if (timecoe_list_2d == S2O4_2D)
+			{
+				if (stage == 0)
+				{
+					for (int k = 0; k < 4; k++)
+					{
+						fluids[cell].convar[k] = fluids[cell].convar_old[k] + block.dt * fluids[cell].Lw1[stage][k];
+					}
+				}
+			}
+		
 		}
 	}
 }
